@@ -3,6 +3,9 @@
   <div class="page-header">
     <div class="container-fluid">
       <div class="pull-right">
+        {% if preview_url %}
+        <a href="{{ preview_url }}" target="_blank" data-toggle="tooltip" title="Preview Product" class="btn btn-info" style="margin-right:6px;"><i class="fa fa-eye"></i> Preview</a>
+        {% endif %}
         <button type="submit" form="form-product" data-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary"><i class="fa fa-save"></i></button>
         <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default"><i class="fa fa-reply"></i></a></div>
       <h1>{{ heading_title }}</h1>
@@ -117,7 +120,7 @@
                     {% if helper.currency().getSymbolLeft(helper.config('config_currency')) %}
                     <div class="input-group-addon">{{ helper.currency().getSymbolLeft(helper.config('config_currency')) }}</div>
                     {% endif %}
-                    <input type="text" name="price" value="{{ price|round(2) }}" placeholder="{{ entry_price }}" id="input-price" class="form-control"/>
+                    <input type="text" name="price" value="{{ price ? price|round(2) : '0.00' }}" placeholder="{{ entry_price }}" id="input-price" class="form-control"/>
                     {% if helper.currency().getSymbolRight(helper.config('config_currency')) %}
                     <div class="input-group-addon">{{ helper.currency().getSymbolRight(helper.config('config_currency')) }}</div>
                     {% endif %}
@@ -249,19 +252,19 @@
                     <div class="col-md-3">
                       <div class="input-group">
                         <div class="input-group-addon">{{ entry_length }}</div>
-                        <input type="text" onkeyup="value=value.match(/-?[0-9]*\.?[0-9]*/)" name="length" value="{{ length|round(2) }}" placeholder="{{ entry_length }}" id="input-length" class="form-control"/>
+                        <input type="text" onkeyup="value=value.match(/-?[0-9]*\.?[0-9]*/)" name="length" value="{{ length ? length|round(2) : '0.00' }}" placeholder="{{ entry_length }}" id="input-length" class="form-control"/>
                       </div>
                     </div>
                     <div class="col-md-3">
                       <div class="input-group">
                         <div class="input-group-addon">{{ entry_width }}</div>
-                        <input type="text" onkeyup="value=value.match(/-?[0-9]*\.?[0-9]*/)" name="width" value="{{ width|round(2) }}" placeholder="{{ entry_width }}" id="input-width" class="form-control"/>
+                        <input type="text" onkeyup="value=value.match(/-?[0-9]*\.?[0-9]*/)" name="width" value="{{ width ? width|round(2) : '0.00' }}" placeholder="{{ entry_width }}" id="input-width" class="form-control"/>
                       </div>
                     </div>
                     <div class="col-md-3">
                       <div class="input-group">
                         <div class="input-group-addon">{{ entry_height }}</div>
-                        <input type="text" onkeyup="value=value.match(/-?[0-9]*\.?[0-9]*/)" name="height" value="{{ height|round(2) }}" placeholder="{{ entry_height }}" id="input-height" class="form-control"/>
+                        <input type="text" onkeyup="value=value.match(/-?[0-9]*\.?[0-9]*/)" name="height" value="{{ height ? height|round(2) : '0.00' }}" placeholder="{{ entry_height }}" id="input-height" class="form-control"/>
                       </div>
                     </div>
                     <div class="col-md-3">
@@ -283,7 +286,7 @@
                 <div class="col-md-6">
                   <div class="row">
                     <div class="col-md-6">
-                      <input type="text" onkeyup="value=value.match(/-?[0-9]*\.?[0-9]*/)" name="weight" value="{{ weight|round(2) }}" placeholder="{{ entry_weight }}" id="input-weight" class="form-control"/>
+                      <input type="text" onkeyup="value=value.match(/-?[0-9]*\.?[0-9]*/)" name="weight" value="{{ weight ? weight|round(2) : '0.00' }}" placeholder="{{ entry_weight }}" id="input-weight" class="form-control"/>
                     </div>
                     <div class="col-md-6">
                       <select name="weight_class_id" id="input-weight-class" class="form-control">
@@ -361,6 +364,24 @@
                       {{ text_disabled }}
                     {% else %}
                       <input type="radio" name="status" value="0"/>
+                      {{ text_disabled }}
+                    {% endif %} </label>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-md-2 control-label" for="input-show-on-homepage">Show on Homepage</label>
+                <div class="col-md-10">
+                  <label class="radio-inline"> {% if show_on_homepage %}
+                      <input type="radio" name="show_on_homepage" value="1" checked="checked"/>
+                      {{ text_enabled }}
+                    {% else %}
+                      <input type="radio" name="show_on_homepage" value="1"/>
+                      {{ text_enabled }}
+                    {% endif %} </label> <label class="radio-inline"> {% if not show_on_homepage %}
+                      <input type="radio" name="show_on_homepage" value="0" checked="checked"/>
+                      {{ text_disabled }}
+                    {% else %}
+                      <input type="radio" name="show_on_homepage" value="0"/>
                       {{ text_disabled }}
                     {% endif %} </label>
                 </div>

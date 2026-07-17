@@ -855,6 +855,22 @@ class ControllerCatalogProduct extends Controller {
 		} else {
 			$data['status'] = true;
 		}
+		// Show on Homepage toggle
+		if (isset($this->request->post['show_on_homepage'])) {
+			$data['show_on_homepage'] = $this->request->post['show_on_homepage'];
+		} elseif (!empty($product_info)) {
+			$data['show_on_homepage'] = $product_info['show_on_homepage'];
+		} else {
+			$data['show_on_homepage'] = 0;
+		}
+
+		// Preview URL
+		if (!empty($product_info)) {
+			$data['preview_url'] = HTTP_CATALOG . 'index.php?route=product/product&product_id=' . (int)$product_info['product_id'];
+		} else {
+			$data['preview_url'] = '';
+		}
+
 
 		if (isset($this->request->post['weight'])) {
 			$data['weight'] = $this->request->post['weight'];

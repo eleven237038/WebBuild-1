@@ -572,4 +572,35 @@ class ModelCatalogProduct extends Model {
 			'href'        => $href ?: $this->url->link('product/product', 'product_id=' . $product['product_id'])
 		);
 	}
+
+	public function getHomepageProducts($limit = 8) {
+		$query = $this->db->query("SELECT p.product_id, p.price, p.image, pd.name, pd.description
+			FROM " . DB_PREFIX . "product p
+			LEFT JOIN " . DB_PREFIX . "product_description pd ON (p.product_id = pd.product_id)
+			WHERE p.status = 1
+				AND p.show_on_homepage = 1
+				AND pd.language_id = '" . (int)$this->config->get('config_language_id') . "'
+			ORDER BY p.sort_order ASC
+			LIMIT " . (int)$limit);
+
+		$results = array();
+		foreach ($query->rows as $row) {
+			$clean_desc = trim(strip_tags(html_entity_decode($row['description'], ENT_QUOTES, 'UTF-8')));
+			$summary = utf8_substr($clean_desc, 0, 150);
+			if (utf8_strlen($clean_desc) > 150) {
+				$summary .= '...';
+			}
+
+			$results[] = array(
+				'product_id'  => $row['product_id'],
+				'name'        => $row['name'],
+				'summary'     => $summary,
+				'price'       => $row['price'],
+				'image'       => $row['image'],
+				'href'        => $this->url->link('product/product', 'product_id=' . $row['product_id']),
+			);
+		}
+
+		return $results;
+	}
 }

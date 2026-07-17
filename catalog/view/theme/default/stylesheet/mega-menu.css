@@ -1,0 +1,205 @@
+/* ==========================================================================
+ * GenScript Mega Menu — Absolute-Positioned Under Nav Group
+ * Width = nav group | Floating card style | 24%/52%/24% Grid
+ * ========================================================================== */
+
+/* ---- Positioning anchor: wraps only the 5 nav-tab labels, NOT Quick Order / Cart ---- */
+.main-nav-tabs {
+  position: relative;
+}
+
+/* Nav item hover state when mega panel is open */
+.nav-item.nav-hovered > a {
+  color: #a3e635 !important;
+}
+
+/* ---- Mega panel — absolute floating card, dynamic width, no-wrap text ---- */
+.mega-panel {
+  position: absolute;
+  top: calc(100% + 28px);
+  left: 0;
+  width: max-content;
+  min-width: auto;
+  background: #ffffff;
+  color: #333;
+  z-index: 9999;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 10, 70, 0.15);
+  padding: 20px 24px;
+  transition: max-height 0.35s ease, opacity 0.25s ease, visibility 0.25s ease;
+}
+.mega-panel.open {
+  max-height: 650px;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* ---- Inner grid — two columns: left tabs 30% + mid links 70% ---- */
+.mega-panel-inner {
+  display: grid;
+  grid-template-columns: minmax(200px, 30%) 1fr;
+  gap: 0;
+  min-height: 380px;
+  max-height: 600px;
+}
+
+/* ==========================================================================
+ * LEFT COLUMN — category tabs
+ * ========================================================================== */
+.mega-left {
+  background: #f8f9fa;
+  border-right: 1px solid #e5e7eb;
+  padding: 14px 0;
+  overflow-y: auto;
+}
+.mega-left-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #555;
+  cursor: pointer;
+  border-right: 3px solid transparent;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+.mega-left-item:hover,
+.mega-left-item.active {
+  background: #ffffff;
+  color: #1a56db;
+  border-right-color: #1a56db;
+  font-weight: 600;
+}
+.mega-left-item .mega-left-arrow {
+  margin-left: auto;
+  font-size: 14px;
+  color: #ccc;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.mega-left-item.active .mega-left-arrow {
+  opacity: 1;
+  color: #1a56db;
+}
+
+/* ==========================================================================
+ * MIDDLE COLUMN — links with red italic badges
+ * ========================================================================== */
+.mega-mid {
+  background: #ffffff;
+  padding: 18px 24px;
+  overflow-y: auto;
+}
+.mega-mid-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #999;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 7px;
+  white-space: nowrap;
+}
+.mega-mid-group {
+  display: none;
+}
+.mega-mid-group.active {
+  display: block;
+  animation: slideUpFade 0.25s ease;
+}
+
+.mega-mid-link {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: nowrap;
+  padding: 7px 0;
+  font-size: 13.5px;
+  color: #333;
+  text-decoration: none;
+  border-bottom: 1px solid #f4f4f4;
+  white-space: nowrap;
+  transition: color 0.15s;
+}
+.mega-mid-link:hover {
+  color: #1a56db;
+}
+.mega-mid-link .mega-badge {
+  font-style: italic;
+  color: #ff3b30;
+  font-size: 11.5px;
+  margin-left: 8px;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+/* ==========================================================================
+ * Animations
+ * ========================================================================== */
+@keyframes slideUpFade {
+  from { opacity: 0; transform: translateY(15px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInMid {
+  from { opacity: 0; transform: translateX(6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ==========================================================================
+ * Mobile (≤ 992px) — accordion style
+ * ========================================================================== */
+@media (max-width: 992px) {
+  .mega-panel {
+    position: static;
+    max-height: none;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    box-shadow: none;
+    border-radius: 0;
+    top: 0;
+  }
+  .mega-panel.open { max-height: none; }
+  .mega-panel-inner {
+    grid-template-columns: 1fr;
+    min-height: auto;
+    max-height: none;
+  }
+  .mega-left {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    background: #f0f2f5;
+    border-right: none;
+    padding: 6px 10px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .mega-left-item {
+    font-size: 11.5px;
+    padding: 5px 10px;
+    border-right: none;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+  }
+  .mega-left-item.active { border-bottom-color: #1a56db; }
+  .mega-left-item .mega-left-arrow { display: none; }
+  .mega-mid { padding: 14px; }
+  .mega-mid-link { font-size: 12.5px; }
+  /* right column and promo cards removed */
+}
+
+@media (max-width: 640px) {
+  .mega-panel-inner { grid-template-columns: 1fr; }
+  .mega-left-item { font-size: 11px; padding: 4px 8px; }
+  .mega-mid-link { font-size: 12px; }
+}

@@ -23,9 +23,10 @@ class ControllerCommonHome extends Controller {
 			JOIN " . DB_PREFIX . "product_description pd
 				ON (p.product_id = pd.product_id)
 			WHERE p.status = '1'
-			  AND p.date_available <= NOW()
+				  AND p.show_on_homepage = 1
+				  AND p.date_available <= NOW()
 			  AND pd.description IS NOT NULL AND pd.description != ''
-			GROUP BY p.product_id
+			
 			ORDER BY p.sort_order ASC
 			LIMIT 8
 		");

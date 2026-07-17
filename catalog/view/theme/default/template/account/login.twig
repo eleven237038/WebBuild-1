@@ -1,88 +1,151 @@
 {{ header }}
-<div class="login-bg-wrapper" style="background-image:url(catalog/view/theme/default/image/login-bg.png)">
-  <div class="container">
-    {{ include(helper.template('_partial/breadcrumb')) }}
-    <div class="row">
-      <div id="content" class="col-sm-12">{{ content_top }}
-        {% if false %}
-        <div class="col-sm-6">
-          <div class="well">
-            <h2>{{ text_new_customer }}</h2>
-            <p><strong>{{ text_register }}</strong></p>
-            <p>{{ text_register_account }}</p>
-            <a href="{{ register }}" class="btn btn-primary">{{ button_continue }}</a></div>
-        </div>
-        {% endif %}
-        <div class="well login-wrapper">
-          <!-- <h2>{{ text_returning_customer }}</h2> -->
-          <div class="title-link">
-            <a href="javascript:;" class="active">{{ text_returning_customer }}</a>
-            <a href="{{ helper.url.link('account/register') }}">{{ text_new_customer }}</a>
-          </div>
-          {% if success %}
-          <div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> {{ success }}</div>
-          {% endif %}
-          {% if error_warning %}
-          <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}</div>
-          {% endif %}
-          <form action="{{ action }}" method="post" enctype="multipart/form-data">
-            <ul class="nav nav-tabs mb-1">
-              <li id="tab-mobile-li" class="{{ type == 'mobile' ? 'active' : '' }}"><a href="#tab-mobile" data-toggle="tab">{{ text_login_mobile }}</a></li>
-              <li id="tab-email-li" class="{{ type == 'email' ? 'active' : '' }}"><a href="#tab-email" data-toggle="tab">{{ text_login_email }}</a></li>
-            </ul>
-            <div class="tab-content form-group">
-              <div class="tab-pane {{ type == 'mobile' ? 'active' : '' }}" id="tab-mobile">
-                {% if helper.is_ft() %}
-                  <div class="row">
-                    <div class="col-xs-4">
-                      <select id="input-pre-telephone" name="calling_code" class="form-control" data-toggle="tooltip" style="height: 48px;">
-                        {% for country in helper.get_calling_codes() %}
-                          {% if calling_code == country.code %}
-                            <option value="{{ country.code }}" selected="selected">{{ country.name }}(+{{ country.code }})</option>
-                          {% else %}
-                            <option value="{{ country.code }}">{{ country.name }}(+{{ country.code }})</option>
-                          {% endif %}
-                        {% endfor %}
-                      </select>
-                    </div>
-                    <div class="col-xs-8">
-                      <input name="telephone" value="{{ telephone }}" id="input-telephone"
-                             class="form-control" placeholder="{{ entry_telephone }}" />
-                    </div>
-                  </div>
-                {% else %}
-                  <input type="tel" name="telephone" value="{{ telephone }}" placeholder="{{ entry_telephone }}" id="input-telephone" class="form-control" />
-                {% endif %}
-              </div>
-              <div class="tab-pane {{ type == 'email' ? 'active' : '' }}" id="tab-email">
-                <input type="text" name="email" value="{{ email }}" placeholder="{{ entry_email }}" id="input-email" class="form-control" />
-              </div>
-              <input type="hidden" name="type" value="{{ type }}" id="input-type"/>
-            </div>
-            <div class="form-group">
-              <input type="password" name="password" value="{{ password }}" placeholder="{{ entry_password }}" id="input-password" class="form-control" />
-            </div>
-            <div class="form-group register-box">
-              <a class="pull-left" href="{{ forgotten }}">{{ text_forgotten }}</a>
-              <a class="pull-right" href="{{ register }}">{{ text_new_customer }}</a>
-            </div>
-            <input type="submit" value="{{ button_login }}" class="btn btn-primary" />
-            {% if redirect %}
-            <input type="hidden" name="redirect" value="{{ redirect }}" />
-            {% endif %}
-            {{ include(helper.template('_partial/omni_auth_section')) }}
-          </form>
-        </div>
-        {{ content_bottom }}</div>
-      </div>
+<!-- ==========================================================================
+ *  GenScript — Login Page Redesign (Split Card Layout)
+ *  Left: Brand area (deep blue + geometric overlay)
+ *  Right: Login form (white card with all OpenCart bindings intact)
+ * ========================================================================== -->
+<div class="login-page-wrapper">
+
+  <!-- ════ Top Bar: Logo + Contact ════ -->
+  <div class="login-top-bar">
+    <a href="{{ home }}" class="login-top-logo">
+      <img src="catalog/view/theme/default/image/logo-icon.svg" alt="" width="36" height="36">
+      <span>GenScript</span>
+    </a>
+    <a href="{{ contact }}" class="login-top-contact">
+      <i class="fa-solid fa-phone"></i> CONTACT US
+    </a>
   </div>
+
+  <!-- ════ Split Card ════ -->
+  <div class="login-card-wrapper">
+    <div class="login-card">
+
+      {# ── LEFT: Brand Showcase ── #}
+      <div class="login-brand">
+        <div class="login-brand-geo"></div>
+        <div class="login-brand-geo login-brand-geo--2"></div>
+        <div class="login-brand-content">
+          <h1 class="login-brand-title">Welcome to<br>GenScript</h1>
+          <p class="login-brand-sub">Start a pleasant buying journey</p>
+        </div>
+      </div>
+
+      {# ── RIGHT: Login Form ── #}
+      <div class="login-form-side">
+
+        {% if success %}
+        <div class="login-alert login-alert--success"><i class="fa fa-check-circle"></i> {{ success }}</div>
+        {% endif %}
+        {% if error_warning %}
+        <div class="login-alert login-alert--error"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}</div>
+        {% endif %}
+
+        <h2 class="login-form-title">Please Sign in</h2>
+
+        <form action="{{ action }}" method="post" enctype="multipart/form-data">
+
+          {# Email / Account #}
+          <div class="login-field">
+            <label class="login-label" for="input-email">Email Address / Account No.</label>
+            <input type="text" name="email" value="{{ email }}" id="input-email"
+                   class="login-input" placeholder="Enter your email or account number" autocomplete="email">
+          </div>
+
+          {# Password with eye toggle #}
+          <div class="login-field">
+            <div class="login-password-header">
+              <label class="login-label" for="input-password">Password</label>
+              <a href="{{ forgotten }}" class="login-forgot-link">Forgot your password?</a>
+            </div>
+            <div class="login-password-wrap">
+              <input type="password" name="password" value="{{ password }}" id="input-password"
+                     class="login-input login-input--password" placeholder="Enter your password" autocomplete="current-password">
+              <button type="button" class="login-eye-toggle" id="btn-toggle-password" aria-label="Toggle password visibility">
+                <i class="fa-regular fa-eye-slash" id="icon-password"></i>
+              </button>
+            </div>
+          </div>
+
+          {# Captcha #}
+          <div class="login-field">
+            {{ captcha }}
+          </div>
+
+          {# Hidden redirect #}
+          {% if redirect %}
+          <input type="hidden" name="redirect" value="{{ redirect }}">
+          {% endif %}
+
+          {# Hidden type field — preserve original OpenCart mobile/email tab logic #}
+          <input type="hidden" name="type" value="email">
+
+          {# Submit #}
+          <button type="submit" class="login-btn-submit">Sign In</button>
+        </form>
+
+        {# Social login #}
+        <div class="login-social-row">
+          <span class="login-social-label">Login With</span>
+          <div class="login-social-icons">
+            <a href="#" class="login-social-icon" title="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+            <a href="#" class="login-social-icon" title="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+            <a href="#" class="login-social-icon" title="Google"><i class="fa-brands fa-google"></i></a>
+          </div>
+        </div>
+
+        {# Register CTA #}
+        <div class="login-register-row">
+          <p class="login-register-text">New to GenScript?</p>
+          <a href="{{ register }}" class="login-btn-register">Register</a>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
 </div>
-<script type="text/javascript"><!--
-  $('#tab-email-li').on('click', function () {
-    $('#input-type').val('email');
-  });
-  $('#tab-mobile-li').on('click', function () {
-    $('#input-type').val('mobile');
-  });
-  //--></script>
+
+{# ════ Password Toggle JS ════ #}
+<script>
+(function() {
+  var btn = document.getElementById('btn-toggle-password');
+  var input = document.getElementById('input-password');
+  var icon = document.getElementById('icon-password');
+  if (btn && input && icon) {
+    btn.addEventListener('click', function() {
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'fa-regular fa-eye';
+      } else {
+        input.type = 'password';
+        icon.className = 'fa-regular fa-eye-slash';
+      }
+    });
+  }
+})();
+</script>
+
+{# ════ Restyle captcha to match our design ════ #}
+<script>
+(function() {
+  // Wrap captcha image + input into a flex row for our layout
+  var capImg = document.querySelector('.captcha-img img, img[src*="captcha"]');
+  var capInput = document.querySelector('input[name="captcha"]');
+  if (capImg && capInput) {
+    capImg.style.height = '44px';
+    capImg.style.borderRadius = '4px';
+    capImg.style.border = '1px solid #d1d5db';
+    capInput.classList.add('login-input');
+    // Remove old Bootstrap wrappers
+    var wrapper = capInput.closest('.input-captcha-wrap');
+    if (wrapper) wrapper.style.display = 'flex';
+    if (wrapper) wrapper.style.gap = '10px';
+    var fieldset = capInput.closest('fieldset');
+    if (fieldset) fieldset.style.cssText = 'border:none;padding:0;margin:0';
+  }
+})();
+</script>
+
 {{ footer }}
