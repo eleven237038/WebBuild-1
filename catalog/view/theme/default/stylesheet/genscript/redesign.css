@@ -1,0 +1,1005 @@
+/**
+ * GenScript Redesign — Global Theme + Header + Service Cards
+ * ============================================================
+ * Part 1: Two-row header with gradient logo, wide search, icon actions, clean nav
+ * Part 2: Deep navy dark mode + 4x2 service cards with per-card color backgrounds
+ */
+
+/* ==========================================================================
+ * GLOBAL DARK THEME
+ * ========================================================================== */
+body {
+  background-color: #000c2a;
+  color: #ffffff;
+  font-family: "Figtree", "Poppins", sans-serif;
+}
+
+/* ==========================================================================
+ * PART 1: HEADER — Deep Navy Two-Row Navigation
+ * Background: #000a46 | Text: white | Width: 100% with 5% side padding
+ * ========================================================================== */
+
+/* -- Header Container (fixed, full-width) -- */
+/* !important is a defensive measure against competing rules in */
+/* header-nav.css (#header at L1209) and .scroll-header (L1245)  */
+#header,
+#header.scroll-header,
+header.scroll-header {
+  background: #000a46 !important;
+  padding: 15px 5%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+#header .header-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ==========================================================================
+ * TOP ROW — justify-content: space-between; align-items: center
+ * [Logo]  [Search Bar (flex:1)]  [User Tools]
+ * ========================================================================== */
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 30px;
+}
+
+/* ---- Logo — Flexbox: [DNA Icon] + [Main Text + Tagline] ---- */
+.header-logo {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+.header-logo .logo-icon-img {
+  display: block;
+  flex-shrink: 0;
+}
+.header-logo .logo-text-group {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+.header-logo .logo-main-text {
+  font-family: "Figtree", sans-serif;
+  font-weight: 900;
+  font-size: 24px;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+}
+.header-logo .logo-tagline {
+  font-family: "Figtree", sans-serif;
+  font-weight: 600;
+  font-size: 10px;
+  color: #22c55e;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+/* ---- Search Bar (pill shape) ---- */
+.header-search {
+  flex: 1;
+  max-width: 680px;
+  min-width: 280px;
+  position: relative;
+}
+.header-search input {
+  width: 100%;
+  height: 44px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 22px;
+  padding: 0 50px 0 22px;
+  color: #fff;
+  font-size: 14px;
+  font-family: "Figtree", sans-serif;
+  outline: none;
+  transition: border-color 0.25s, background 0.25s;
+}
+.header-search input::placeholder {
+  color: rgba(255,255,255,0.7);
+  font-size: 13px;
+}
+.header-search input:focus {
+  border-color: rgba(255,255,255,0.6);
+  background: rgba(255,255,255,0.05);
+}
+.header-search .search-btn {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 10px 12px;
+  line-height: 1;
+  transition: opacity 0.2s;
+}
+.header-search .search-btn:hover {
+  opacity: 0.7;
+}
+
+/* ---- User Tools (icon + text, gap 20px) ---- */
+.header-tools {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.header-tools .tool-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.2s, opacity 0.2s;
+}
+.header-tools .tool-link:hover {
+  color: #a3e635;
+}
+.header-tools .tool-link i {
+  font-size: 16px;
+  color: #ffffff;
+  transition: color 0.2s;
+}
+.header-tools .tool-link:hover i {
+  color: #a3e635;
+}
+.tool-divider {
+  color: rgba(255,255,255,0.35);
+  margin: 0 2px;
+}
+
+/* ==========================================================================
+ * BOTTOM ROW — justify-content: space-between; align-items: center
+ * [Nav Links]  [Quick Order + Cart]
+ * ========================================================================== */
+.header-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+}
+
+/* ---- Main Navigation Links (all white text) ---- */
+.main-nav .nav-list {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.main-nav .nav-item {
+  position: relative;
+}
+.main-nav .nav-item > a,
+.main-nav .nav-list .nav-item a {
+  color: #ffffff !important;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  letter-spacing: 0.5px;
+  transition: color 0.2s;
+}
+.main-nav .nav-item > a:hover,
+.main-nav .nav-list .nav-item a:hover {
+  color: #a3e635 !important;
+}
+
+/* ---- "Hot!" Badge — italic white text, no background, absolute positioned ---- */
+.nav-item.has-badge {
+  position: relative;
+}
+.hot-badge {
+  position: absolute;
+  top: -11px;
+  right: -28px;
+  background: transparent;
+  color: #a3e635;
+  font-size: 10px;
+  font-weight: 700;
+  font-style: italic;
+  padding: 0;
+  border-radius: 0;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* ---- Quick Actions (right side) ---- */
+.header-actions-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+/* Quick Order — green-bordered pill button with bright green text */
+.btn-quick-order {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 20px;
+  border: 1px solid #22c55e;
+  border-radius: 20px;
+  color: #22c55e;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  background: transparent;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+.btn-quick-order:hover {
+  background: #22c55e;
+  color: #000a46;
+  text-decoration: none;
+}
+
+/* Cart icon */
+.header-actions-right .cart-icon {
+  color: #ffffff;
+  font-size: 20px;
+  text-decoration: none;
+  position: relative;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+.header-actions-right .cart-icon:hover {
+  color: #a3e635;
+}
+.header-actions-right .cart-icon .cart-number {
+  position: absolute;
+  top: -6px;
+  right: -10px;
+  background: #e74c3c;
+  color: #fff;
+  font-size: 10px;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+/* ==========================================================================
+ * PART 2: SERVICE CARDS — 4×2 Grid (bulletproof layout)
+ * ========================================================================== */
+
+/* Section wrapper */
+.products-services {
+  background: #060b1e;
+  padding: 80px 0;
+}
+.products-services .section-title {
+  text-align: center;
+  font-family: "Figtree", sans-serif;
+  font-weight: 800;
+  font-size: 40px;
+  color: #fff;
+  margin-bottom: 14px;
+}
+.products-services .section-desc {
+  text-align: center;
+  font-size: 16px;
+  color: rgba(255,255,255,0.55);
+  max-width: 750px;
+  margin: 0 auto 50px;
+  line-height: 1.6;
+}
+
+/* -- 4-column CSS Grid (reinforced against all conflicts) -- */
+.service-cards {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 24px !important;
+  max-width: 1320px !important;
+  width: auto !important;
+  margin: 0 auto !important;
+  padding: 0 20px !important;
+  box-sizing: border-box !important;
+}
+/* Tablet: 2 columns */
+@media (max-width: 1024px) {
+  .service-cards {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+/* Phone: 1 column */
+@media (max-width: 640px) {
+  .service-cards {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* -- Base card — flexbox interior, bottom elements pinned -- */
+.service-card {
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  border-radius: 16px !important;
+  padding: 32px 28px 28px !important;
+  min-height: 280px !important;
+  text-decoration: none !important;
+  overflow: hidden !important;
+  transition: transform 0.25s, box-shadow 0.25s !important;
+  box-sizing: border-box !important;
+}
+.service-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.35);
+}
+
+/* Card title — left-aligned */
+.service-card .card-title {
+  font-family: "Figtree", sans-serif !important;
+  font-size: 22px !important;
+  font-weight: 800 !important;
+  margin: 0 0 12px 0 !important;
+  text-align: left !important;
+  line-height: 1.25 !important;
+  flex-shrink: 0 !important;
+}
+
+/* Card description — left-aligned, grows to push footer down */
+.service-card .card-desc {
+  font-size: 14px !important;
+  line-height: 1.65 !important;
+  text-align: left !important;
+  flex: 1 !important;
+  margin: 0 0 20px 0 !important;
+  word-break: break-word !important;
+  overflow: hidden !important;
+}
+
+/* Card bottom row: pill button (left) + arrow (right) */
+.service-card .card-footer {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-top: auto !important;
+  flex-shrink: 0 !important;
+}
+
+.service-card .card-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 10px 24px !important;
+  border-radius: 24px !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  text-decoration: none !important;
+  line-height: 1 !important;
+  transition: opacity 0.2s, transform 0.2s !important;
+  white-space: nowrap !important;
+}
+.service-card .card-btn:hover {
+  opacity: 0.88;
+  transform: scale(1.03);
+}
+
+.service-card .card-arrow {
+  font-size: 28px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  opacity: 0.85 !important;
+  flex-shrink: 0 !important;
+}
+
+/* ==========================================================================
+ * CARD COLOR VARIANTS — 8 unique backgrounds (user-specified colors)
+ * ========================================================================== */
+
+/* 1. Gene Services — transparent bg, 1px white border */
+.service-card.card-gene {
+  background: transparent !important;
+  border: 1px solid rgba(255,255,255,0.18) !important;
+}
+.service-card.card-gene .card-title   { color: #fff; }
+.service-card.card-gene .card-desc    { color: rgba(255,255,255,0.55); }
+.service-card.card-gene .card-btn     { background: #56bb37; color: #fff; }
+.service-card.card-gene .card-arrow   { color: rgba(255,255,255,0.6); }
+
+/* 2. Protein Services — deep indigo #1d2a6a */
+.service-card.card-protein {
+  background: #1d2a6a !important;
+  border: none !important;
+}
+.service-card.card-protein .card-title  { color: #fff; }
+.service-card.card-protein .card-desc   { color: rgba(255,255,255,0.7); }
+.service-card.card-protein .card-btn    { background: #56bb37; color: #fff; }
+.service-card.card-protein .card-arrow  { color: rgba(255,255,255,0.6); }
+
+/* 3. mRNA Services — bright blue #0a52df */
+.service-card.card-mrna {
+  background: #0a52df !important;
+  border: none !important;
+}
+.service-card.card-mrna .card-title  { color: #fff; }
+.service-card.card-mrna .card-desc   { color: rgba(255,255,255,0.82); }
+.service-card.card-mrna .card-btn    { background: #fff; color: #0a52df; }
+.service-card.card-mrna .card-arrow  { color: rgba(255,255,255,0.85); }
+
+/* 4. CRISPR Services — sky blue #2563eb */
+.service-card.card-crispr {
+  background: #2563eb !important;
+  border: none !important;
+}
+.service-card.card-crispr .card-title  { color: #fff; }
+.service-card.card-crispr .card-desc   { color: rgba(255,255,255,0.82); }
+.service-card.card-crispr .card-btn    { background: #fff; color: #2563eb; }
+.service-card.card-crispr .card-arrow  { color: rgba(255,255,255,0.85); }
+
+/* 5. Peptide Services — bright green #10b981 */
+.service-card.card-peptide {
+  background: #10b981 !important;
+  border: none !important;
+}
+.service-card.card-peptide .card-title  { color: #fff; }
+.service-card.card-peptide .card-desc   { color: rgba(255,255,255,0.82); }
+.service-card.card-peptide .card-btn    { background: #fff; color: #10b981; }
+.service-card.card-peptide .card-arrow  { color: rgba(255,255,255,0.85); }
+
+/* 6. Oligo Services — emerald green #22c55e */
+.service-card.card-oligo {
+  background: #22c55e !important;
+  border: none !important;
+}
+.service-card.card-oligo .card-title  { color: #fff; }
+.service-card.card-oligo .card-desc   { color: rgba(255,255,255,0.82); }
+.service-card.card-oligo .card-btn    { background: #fff; color: #22c55e; }
+.service-card.card-oligo .card-arrow  { color: rgba(255,255,255,0.85); }
+
+/* 7. Reagent Antibody — light green #86efac, black text */
+.service-card.card-antibody {
+  background: #86efac !important;
+  border: none !important;
+}
+.service-card.card-antibody .card-title  { color: #1a1a2e; }
+.service-card.card-antibody .card-desc   { color: #333; }
+.service-card.card-antibody .card-btn    { background: #1a1a2e; color: #fff; }
+.service-card.card-antibody .card-arrow  { color: #666; }
+
+/* 8. Catalog Products — pure white #ffffff, black text */
+.service-card.card-catalog {
+  background: #ffffff !important;
+  border: none !important;
+}
+.service-card.card-catalog .card-title  { color: #1a1a2e; }
+.service-card.card-catalog .card-desc   { color: #555; }
+.service-card.card-catalog .card-btn    { background: #56bb37; color: #fff; }
+.service-card.card-catalog .card-arrow  { color: #ccc; }
+
+/* ==========================================================================
+ * DARK-MODE OVERRIDES for remaining sections
+ * ========================================================================== */
+
+/* Events section */
+.events-section {
+  background: #0a1030 !important;
+}
+.events-section h2 {
+  color: #fff;
+}
+.events-section .card {
+  background: #0e1a44;
+  border: 1px solid rgba(255,255,255,0.06) !important;
+  color: #fff;
+}
+.events-section .card .badge {
+  background: #56bb37;
+}
+.events-section .card-title {
+  color: #fff !important;
+}
+.events-section .card-text {
+  color: rgba(255,255,255,0.5) !important;
+}
+.events-section .btn-outline-primary {
+  border-color: rgba(255,255,255,0.25);
+  color: rgba(255,255,255,0.8);
+}
+.events-section .btn-outline-primary:hover {
+  background: #56bb37;
+  border-color: #56bb37;
+  color: #fff;
+}
+
+/* Testimonials */
+.testimonials-section {
+  background: #060b1e;
+  color: #fff;
+}
+.testimonials-section h1 {
+  color: #fff;
+}
+.testimonials-section blockquote {
+  background: rgba(255,255,255,0.03);
+  border-radius: 12px;
+  padding: 24px;
+  margin: 8px;
+}
+.testimonials-section blockquote p {
+  color: rgba(255,255,255,0.75);
+}
+.testimonials-section .blockquote-footer {
+  color: rgba(255,255,255,0.45);
+}
+.testimonials-section .blockquote-footer strong {
+  color: rgba(255,255,255,0.7);
+}
+
+/* News & Blogs */
+.news-blogs {
+  background: #0a1030 !important;
+}
+.news-blogs h1 {
+  color: #fff;
+}
+.news-blogs .card {
+  background: #0e1a44;
+  border: 1px solid rgba(255,255,255,0.06) !important;
+}
+.news-blogs .card-title {
+  color: #56bb37 !important;
+}
+.news-blogs .card-text {
+  color: rgba(255,255,255,0.5) !important;
+}
+
+/* Footer stays dark (already dark) */
+#footer {
+  background: #030716;
+}
+
+/* Cookie banner dark */
+.cookie-banner {
+  background: #0a1030 !important;
+  border-top: 1px solid rgba(255,255,255,0.08) !important;
+}
+
+/* Swiper pagination light dots for dark bg */
+.banner-container .swiper-pagination-bullet {
+  border-color: rgba(255,255,255,0.5) !important;
+}
+.banner-container .swiper-pagination-bullet-active {
+  background: #56bb37 !important;
+  border-color: #56bb37 !important;
+}
+
+/* jQuery UI autocomplete dark */
+.ui-autocomplete {
+  background: #0e1a44 !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  color: #fff !important;
+}
+.ui-autocomplete .ui-menu-item a {
+  color: rgba(255,255,255,0.75) !important;
+}
+.ui-autocomplete .ui-menu-item a:hover,
+.ui-autocomplete .ui-menu-item a.ui-state-focus {
+  background: #1a56db !important;
+  color: #fff !important;
+}
+
+/* ==========================================================================
+ * PART 3: REGISTER PAGE — Card-Based Redesign
+ * Clean white card on #f4f6f9 background, replaces old banner-bg layout
+ * ========================================================================== */
+
+/* ---- Page Wrapper — light blue-grey background ---- */
+.register-page-wrapper {
+  min-height: 100vh;
+  background: #f4f6f9;
+  padding-top: 0;
+}
+
+/* ---- Top Bar — Logo + Contact ---- */
+.register-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px 32px;
+}
+.register-top-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+.register-top-logo img {
+  display: block;
+}
+.register-top-logo span {
+  font-family: "Figtree", sans-serif;
+  font-weight: 900;
+  font-size: 22px;
+  color: #22c55e;
+  letter-spacing: 0.5px;
+}
+.register-top-contact {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #555;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.register-top-contact:hover {
+  color: #22c55e;
+}
+.register-top-contact i {
+  font-size: 16px;
+}
+
+/* ---- Card Wrapper — centers the white card ---- */
+.register-card-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 0 20px 60px;
+}
+
+/* ---- White Card ---- */
+.register-card {
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  padding: 44px 48px 48px;
+  width: 100%;
+  max-width: 560px;
+  box-sizing: border-box;
+}
+
+/* ---- Heading ---- */
+.register-heading {
+  font-family: "Figtree", sans-serif;
+  font-weight: 800;
+  font-size: 26px;
+  color: #1a1a2e;
+  text-align: center;
+  margin: 0 0 16px;
+}
+
+/* ---- Divider ---- */
+.register-divider {
+  width: 50px;
+  height: 3px;
+  background: #e0e0e0;
+  margin: 0 auto 20px;
+  border-radius: 2px;
+}
+
+/* ---- Switch link ---- */
+.register-switch {
+  text-align: center;
+  font-size: 14px;
+  color: #888;
+  margin: 0 0 28px;
+}
+.register-switch a {
+  color: #22c55e;
+  font-weight: 600;
+  text-decoration: none;
+}
+.register-switch a:hover {
+  text-decoration: underline;
+}
+
+/* ---- Alert ---- */
+.register-alert {
+  background: #fff5f5;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  padding: 12px 16px;
+  color: #dc2626;
+  font-size: 13px;
+  margin-bottom: 20px;
+}
+
+/* ---- Form Layout ---- */
+
+/* Dual column row */
+.register-row--dual {
+  display: flex;
+  gap: 16px;
+}
+.register-row--dual .register-field {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Single field wrapper */
+.register-field {
+  margin-bottom: 20px;
+}
+
+/* Label */
+.register-label {
+  display: block;
+  font-family: "Figtree", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 6px;
+}
+.register-label.required::after {
+  content: " *";
+  color: #e74c3c;
+}
+
+/* Text input */
+.register-input {
+  display: block;
+  width: 100%;
+  height: 44px;
+  padding: 0 14px;
+  font-family: "Figtree", sans-serif;
+  font-size: 14px;
+  color: #333;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.register-input::placeholder {
+  color: #aaa;
+  font-size: 13px;
+}
+.register-input:focus {
+  border-color: #22c55e;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+}
+
+/* Input with icon inside (Organization, Password) */
+.register-input-icon {
+  position: relative;
+}
+.register-input-icon .register-input {
+  padding-right: 40px;
+}
+.register-input-icon-symbol {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
+  font-size: 15px;
+  pointer-events: none;
+}
+
+/* Password toggle button */
+.register-password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 6px;
+  line-height: 1;
+  transition: color 0.2s;
+}
+.register-password-toggle:hover {
+  color: #333;
+}
+
+/* Select (dropdown) */
+.register-select {
+  display: block;
+  width: 100%;
+  height: 44px;
+  padding: 0 36px 0 14px;
+  font-family: "Figtree", sans-serif;
+  font-size: 14px;
+  color: #333;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23999' d='M6 8L0 0h12z'/%3E%3C/svg%3E") no-repeat right 14px center;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  outline: none;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.register-select:focus {
+  border-color: #22c55e;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+}
+.register-loading {
+  position: absolute;
+  right: 40px;
+  margin-top: -32px;
+  color: #22c55e;
+  font-size: 16px;
+}
+
+/* Hint text below input */
+.register-hint {
+  display: block;
+  font-size: 12px;
+  color: #999;
+  margin-top: 5px;
+}
+
+/* Error text */
+.register-error {
+  display: block;
+  font-size: 12px;
+  color: #dc2626;
+  margin-top: 5px;
+}
+
+/* Code row: input + button */
+.register-row--code {
+  display: flex;
+  gap: 10px;
+}
+.register-row--code .register-input {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Send Code button */
+.register-btn-send-code {
+  flex-shrink: 0;
+  height: 44px;
+  padding: 0 20px;
+  font-family: "Figtree", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #22c55e;
+  background: #fff;
+  border: 1px solid #22c55e;
+  border-radius: 22px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s, color 0.2s;
+}
+.register-btn-send-code:hover {
+  background: #22c55e;
+  color: #fff;
+}
+
+/* CAPTCHA Image — clickable, borders match input */
+.register-captcha-img {
+  flex-shrink: 0;
+  height: 44px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.register-captcha-img:hover {
+  border-color: #22c55e;
+}
+
+/* Submit Button — full width, dark grey */
+.register-btn-submit {
+  display: block;
+  width: 100%;
+  height: 48px;
+  margin-top: 28px;
+  font-family: "Figtree", sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+  background: #374151;
+  border: none;
+  border-radius: 24px;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.2s, transform 0.1s;
+}
+.register-btn-submit:hover {
+  background: #1f2937;
+}
+.register-btn-submit:active {
+  transform: scale(0.98);
+}
+
+/* ---- Privacy Agreement Checkbox ---- */
+.register-agree {
+  margin-top: 18px;
+  text-align: center;
+}
+.register-checkbox-label {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #666;
+  line-height: 1.5;
+}
+.register-checkbox-label input[type="checkbox"] {
+  display: none;
+}
+.register-checkbox-custom {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #ccc;
+  border-radius: 3px;
+  position: relative;
+  margin-top: 1px;
+  transition: border-color 0.2s, background 0.2s;
+}
+.register-checkbox-label input:checked + .register-checkbox-custom {
+  background: #22c55e;
+  border-color: #22c55e;
+}
+.register-checkbox-label input:checked + .register-checkbox-custom::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 6px;
+  height: 10px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+.register-agree-text {
+  flex: 1;
+  text-align: left;
+}
+.register-agree-text a {
+  color: #22c55e;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 640px) {
+  .register-card {
+    padding: 32px 24px 36px;
+    max-width: 100%;
+  }
+  .register-row--dual {
+    flex-direction: column;
+    gap: 0;
+  }
+  .register-row--code {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .register-btn-send-code {
+    width: 100%;
+  }
+  .register-heading {
+    font-size: 22px;
+  }
+  .register-top-bar {
+    padding: 16px 20px;
+  }
+}

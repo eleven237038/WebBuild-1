@@ -1,0 +1,55 @@
+/**
+ * GenScript Iconfont — Minimal Shim
+ * ==================================
+ * The original site uses a custom iconfont (iconfont-new/iconfont.css).
+ * Since we cannot extract the actual font file, we provide CSS fallbacks:
+ *   - Classes used in the HTML get Font Awesome equivalents
+ *   - Emoji already used inline in the skeleton are preserved
+ */
+
+/* Base iconfont class — maps to Font Awesome */
+[class^="icon-"], [class*=" icon-"] {
+  font-family: 'FontAwesome', sans-serif;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Common icons used in the original GenScript header/footer */
+.icon-search::before    { content: '\f002'; }  /* fa-search */
+.icon-user::before      { content: '\f007'; }  /* fa-user */
+.icon-globe::before     { content: '\f0ac'; }  /* fa-globe */
+.icon-phone::before     { content: '\f095'; }  /* fa-phone */
+.icon-cart::before      { content: '\f07a'; }  /* fa-shopping-cart */
+.icon-envelope::before  { content: '\f0e0'; }  /* fa-envelope */
+.icon-facebook::before  { content: '\f09a'; }  /* fa-facebook */
+.icon-twitter::before   { content: '\f099'; }  /* fa-twitter */
+.icon-linkedin::before  { content: '\f0e1'; }  /* fa-linkedin */
+.icon-arrow-right::before { content: '\f054'; } /* fa-chevron-right */
+.icon-arrow-left::before  { content: '\f053'; } /* fa-chevron-left */
+.icon-close::before     { content: '\f00d'; }  /* fa-times */
+.icon-check::before     { content: '\f00c'; }  /* fa-check */
+
+/* Navigation-specific icons from the original iconfont */
+.icon-nav-gene::before       { content: '\f1c0'; }  /* fa-database */
+.icon-nav-protein::before    { content: '\f0c3'; }  /* fa-flask */
+.icon-nav-mrna::before       { content: '\f10c'; }  /* fa-circle-o */
+.icon-nav-crispr::before     { content: '\f0ad'; }  /* fa-wrench */
+.icon-nav-peptide::before    { content: '\f043'; }  /* fa-tint */
+.icon-nav-oligo::before      { content: '\f121'; }  /* fa-code */
+.icon-nav-antibody::before   { content: '\f0f9'; }  /* fa-ambulance */
+.icon-nav-catalog::before    { content: '\f07a'; }  /* fa-shopping-cart */
+
+/* Service card icons */
+.icon-service-gene::before       { content: '\f1c0'; }
+.icon-service-protein::before    { content: '\f0c3'; }
+.icon-service-mrna::before       { content: '\f10c'; }
+.icon-service-crispr::before     { content: '\f0ad'; }
+.icon-service-peptide::before    { content: '\f043'; }
+.icon-service-oligo::before      { content: '\f121'; }
+.icon-service-antibody::before   { content: '\f0f1'; }
+.icon-service-catalog::before    { content: '\f07a'; }

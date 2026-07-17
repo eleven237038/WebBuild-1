@@ -1,0 +1,60 @@
+# =============================================================================
+# GenScript OpenCart — .gitignore
+# =============================================================================
+# Keeps the repo clean: no local secrets, no generated caches, no Docker volumes.
+# =============================================================================
+
+# --- Secrets (NEVER commit the real .env) ---
+.env
+! .env.example
+
+# --- Dev Runtime Assets (screenshots, test output, temporary backups) ---
+/dev_runtime_assets/
+
+# --- Stale legacy front-end (locked by OS, pending cleanup) ---
+/front-end/
+
+# --- Playwright MCP artifacts ---
+/.playwright-mcp/
+
+# --- Claude Code sessions ---
+/.claude/
+
+# --- Sensitive config files ---
+config.php
+admin/config.php
+
+# --- Docker Compose (local dev only) ---
+docker-compose.yml
+
+# --- Release artifact ---
+/release.zip
+
+# --- OpenCart Runtime (generated data — never commit) ---
+/system/storage/cache/*
+/system/storage/download/*
+/system/storage/logs/*
+/system/storage/marketplace/*
+/system/storage/modification/*
+/system/storage/session/*
+/system/storage/upload/*
+/system/storage/backup/*
+
+# --- MySQL data volume (Docker-managed) ---
+/mysql/
+
+# --- Composer vendor ---
+/vendor/
+
+# --- OS junk ---
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# --- IDE / Editor ---
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace

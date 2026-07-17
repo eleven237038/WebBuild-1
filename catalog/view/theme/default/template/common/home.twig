@@ -1,0 +1,188 @@
+{{ header }}
+
+<!-- ========================================================================= -->
+<!--  HERO BANNER  (Swiper.js — 6 slides)                                       -->
+<!-- ========================================================================= -->
+<section class="homeBanner">
+  <div class="banner-container swiper-container">
+    <div class="swiper-wrapper">
+
+      <div class="swiper-slide">
+        <div class="pcBanner" style="background:linear-gradient(135deg,#000a47,#0a1e6b,#1a3f9e);height:600px;"></div>
+        <div class="banner-txt">
+          <h1>Scripting Possibilities</h1>
+          <p>Reliable and professional platforms for life science<br>development. Industry-leading scale.<br>Commitment to high-impact innovations.</p>
+          <a href="https://www.genscript.com/our-business.html?src=banner">Learn More</a>
+        </div>
+      </div>
+
+      <div class="swiper-slide">
+        <div class="pcBanner" style="background:linear-gradient(135deg,#001a33,#003d6b,#006994);height:600px;"></div>
+        <div class="banner-txt">
+          <h1>Infinite Possibilities<br>Made Possible</h1>
+          <p>The validation engine for AI discovery in <strong>4 days</strong>.</p>
+          <a href="https://www.genscript.com/ai-drug-discovery-solutions.html?src=banner">Start Validation</a>
+        </div>
+      </div>
+
+      <div class="swiper-slide">
+        <div class="pcBanner" style="background:linear-gradient(135deg,#1a0a2e,#3d1a6e,#6b3fa0);height:600px;"></div>
+        <div class="banner-txt">
+          <h1>IGNITE YOUR SCIENTIFIC<br>POSSIBILITIES</h1>
+          <p>Up to <strong>$1.5M Funding Pool</strong> • Technical Expertise • Global Ecosystem</p>
+          <a href="https://www.genscript.com/lsrg-program.html?src=banner">Apply Now</a>
+        </div>
+      </div>
+
+      <div class="swiper-slide">
+        <div class="pcBanner" style="background:linear-gradient(135deg,#0a2e0a,#1a5e1a,#2d8f2d);height:600px;"></div>
+        <div class="banner-txt">
+          <h1>A launchpad in<br>every kit.</h1>
+          <p>TurboCHO™ Protein Expression Kit</p>
+          <a href="https://www.genscript.com/turbocho-protein-expression-kit.html?src=banner">Learn More</a>
+        </div>
+      </div>
+
+      <div class="swiper-slide">
+        <div class="pcBanner" style="background:linear-gradient(135deg,#2e0a1a,#5e1a3d,#8f2d6b);height:600px;"></div>
+        <div class="banner-txt">
+          <h1>Publication<br>Spotlight</h1>
+          <p>Accelerate In-House Antibody Production<br>and Purification from Days to Hours</p>
+          <a href="https://www.genscript.com/quatro-publication-spotlight.html?src=banner">Learn More</a>
+        </div>
+      </div>
+
+      <div class="swiper-slide">
+        <div class="pcBanner" style="background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);height:600px;"></div>
+        <div class="banner-txt">
+          <h1>Cut. Through. Limits.<br>OmniGuide RNA</h1>
+          <p>For any gene editing system, up to 266 nt</p>
+          <a href="https://www.genscript.com/omniguide-rna.html?src=banner">Learn More</a>
+        </div>
+      </div>
+
+    </div>
+    <div class="swiper-pagination"></div>
+    <div class="swiper-button-prev"></div>
+    <div class="swiper-button-next"></div>
+  </div>
+</section>
+
+<!-- ========================================================================= -->
+<!--  PRODUCTS & SERVICES  (4×2 CSS Grid + dynamic data from backend)           -->
+<!-- ========================================================================= -->
+<section class="products-services">
+  <h1 class="section-title">Products &amp; Services</h1>
+  <p class="section-desc">
+    GenScript offers highly customizable and tailor-made solutions for your research needs.
+    Learn more about our full service portfolios by clicking on the icons below.
+    Reach out to our Ph.D. level customer support personnel for more information today!
+  </p>
+
+  <div class="service-cards">
+    {% if products is defined and products is not empty %}
+      {# --- Dynamic: render cards from OpenCart backend data --- #}
+      {% set cardClasses = ['card-gene','card-protein','card-mrna','card-crispr','card-peptide','card-oligo','card-antibody','card-catalog'] %}
+      {% for product in products %}
+        {% set idx = loop.index0 % 8 %}
+        <a href="{{ product.href }}" class="service-card {{ cardClasses[idx] }}">
+          <h2 class="card-title">{{ product.name }}</h2>
+          <p class="card-desc">{{ product.description|striptags|e }}</p>
+          <div class="card-footer">
+            <span class="card-btn">Learn More</span>
+            <span class="card-arrow">↗</span>
+          </div>
+        </a>
+      {% endfor %}
+    {% else %}
+      {# --- Fallback: static cards (visible until you add products in admin) --- #}
+
+      <a href="https://www.genscript.com/gene_synthesis.html" class="service-card card-gene">
+        <h2 class="card-title">Gene Services</h2>
+        <p class="card-desc">100% sequence-verified clonal gene<br>99.99% delivery rate<br>Largest gene provider in the US since 2008</p>
+        <div class="card-footer">
+          <span class="card-btn">Learn More</span>
+          <span class="card-arrow">↗</span>
+        </div>
+      </a>
+
+      <a href="https://www.genscript.com/recombinant-protein-services.html?src=home" class="service-card card-protein">
+        <h2 class="card-title">Protein Services</h2>
+        <p class="card-desc">5 BDs for HT gene-to-antibody<br>10 BDs for gram-level expression<br>70+ BsAb formats produced</p>
+        <div class="card-footer">
+          <span class="card-btn">Learn More</span>
+          <span class="card-arrow">↗</span>
+        </div>
+      </a>
+
+      <a href="https://www.genscript.com/ivt-rna.html?=home" class="service-card card-mrna">
+        <h2 class="card-title">mRNA Services</h2>
+        <p class="card-desc">From Design to Delivery: mRNA, saRNA, circRNA &amp; LNP Formulation</p>
+        <div class="card-footer">
+          <span class="card-btn">Learn More</span>
+          <span class="card-arrow">↗</span>
+        </div>
+      </a>
+
+      <a href="https://www.genscript.com/crispr-services.html?src=home" class="service-card card-crispr">
+        <h2 class="card-title">CRISPR Services</h2>
+        <p class="card-desc">To achieve the best genome editing efficiency in any cell!</p>
+        <div class="card-footer">
+          <span class="card-btn">Learn More</span>
+          <span class="card-arrow">↗</span>
+        </div>
+      </a>
+
+      <a href="https://www.genscript.com/peptide-services.html?=home" class="service-card card-peptide">
+        <h2 class="card-title">Peptide Services</h2>
+        <p class="card-desc">Quantity from mg to kg, &gt;300 available modifications, Deliver as fast as 5 days</p>
+        <div class="card-footer">
+          <span class="card-btn">Learn More</span>
+          <span class="card-arrow">↗</span>
+        </div>
+      </a>
+
+      <a href="https://www.genscript.com/oligo-synthesis-applications.html?=home" class="service-card card-oligo">
+        <h2 class="card-title">Oligo Services</h2>
+        <p class="card-desc">Up to 218nt DNA oligo and 266nt RNA oligo<br>Up to kg level • ISO 13485 available<br>High quality &amp; consistency</p>
+        <div class="card-footer">
+          <span class="card-btn">Learn More</span>
+          <span class="card-arrow">↗</span>
+        </div>
+      </a>
+
+      <a href="https://www.genscript.com/custom-antibody-production-services.html?src=home" class="service-card card-antibody">
+        <h2 class="card-title">Reagent Antibody Services</h2>
+        <p class="card-desc">Comprehensive and Custom Antibody Development for Research and Diagnostics</p>
+        <div class="card-footer">
+          <span class="card-btn">Learn More</span>
+          <span class="card-arrow">↗</span>
+        </div>
+      </a>
+
+      <a href="https://www.genscript.com/products.html?src=home" class="service-card card-catalog">
+        <h2 class="card-title">Catalog Products</h2>
+        <p class="card-desc">Reliable reagents &amp; optimized kits with next-day shipping</p>
+        <div class="card-footer">
+          <span class="card-btn">Learn More</span>
+          <span class="card-arrow">↗</span>
+        </div>
+      </a>
+
+    {% endif %}
+  </div>
+</section>
+
+<!-- ========================================================================= -->
+<!--  NEWS & BLOGS  (AJAX from data/learncenter.json)                           -->
+<!-- ========================================================================= -->
+<section class="news-blogs">
+  <div class="container">
+    <h1 class="text-center mb-4" style="font-family:Figtree,sans-serif;font-weight:800;">News &amp; Blogs</h1>
+    <div class="learncenter-container">
+      <p class="text-center" style="color:rgba(255,255,255,0.4);">Loading content…</p>
+    </div>
+  </div>
+</section>
+
+{{ footer }}

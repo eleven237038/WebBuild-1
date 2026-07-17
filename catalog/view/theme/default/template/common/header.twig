@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html dir="{{ direction }}" lang="{{ lang }}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<title>{{ title }}</title>
+<base href="{{ base }}">
+
+{% if description %}
+<meta name="description" content="{{ description }}">
+{% endif %}
+{% if keywords %}
+<meta name="keywords" content="{{ keywords }}">
+{% endif %}
+
+<!-- Facebook share -->
+<meta property="og:site_name" content="{{ facebook_site_name }}">
+<meta property="og:url" content="{{ facebook_share_url }}">
+<meta property="og:type" content="{{ facebook_share_type }}">
+<meta property="og:title" content="{{ facebook_share_title }}">
+<meta property="og:description" content="{{ facebook_share_description }}">
+<meta property="og:image" content="{{ facebook_share_image }}">
+<meta property="og:image:width" content="{{ facebook_share_image_width }}">
+<meta property="og:image:height" content="{{ facebook_share_image_height }}">
+{% if facebook_share_type == 'product' %}
+<meta property="product:price:amount" content="{{ facebook_product_price_amount }}">
+<meta property="product:price:currency" content="{{ facebook_product_price_currency }}">
+{% endif %}
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧬</text></svg>">
+
+<!-- External CDN CSS -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="preconnect" href="https://cdnjs.cloudflare.com">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800;900&display=swap">
+
+<!-- jQuery (must load first — OpenCart layer.js and common.js depend on it) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+
+<!-- GenScript Custom CSS (our design system) -->
+<link rel="stylesheet" href="catalog/view/theme/default/stylesheet/genscript/index-performance.css">
+<link rel="stylesheet" href="catalog/view/theme/default/stylesheet/genscript/header-nav.css">
+<link rel="stylesheet" href="catalog/view/theme/default/stylesheet/genscript/header-nav-screen.css">
+<link rel="stylesheet" href="catalog/view/theme/default/stylesheet/genscript/home.css">
+<link rel="stylesheet" href="catalog/view/theme/default/stylesheet/genscript/redesign.css">
+<link rel="stylesheet" href="catalog/view/theme/default/stylesheet/genscript/iconfont.css">
+
+<!-- Deferred non-critical CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Swiper/3.4.2/css/swiper.min.css" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" media="print" onload="this.media='all'">
+
+{% for style in styles %}
+<link href="{{ style.href }}" type="text/css" rel="{{ style.rel }}" media="{{ style.media }}">
+{% endfor %}
+{% for link in links %}
+<link href="{{ link.href }}" rel="{{ link.rel }}">
+{% endfor %}
+{% for analytic in analytics %}
+{{ analytic }}
+{% endfor %}
+{{ helper.debug_bar.renderHead }}
+</head>
+<body class="{{ class }}">
+
+{% if not modal %}
+<!-- ========================================================================= -->
+<!--  HEADER — Deep Navy Two-Row Layout                                        -->
+<!--  Top Row:    [Logo] | [Search Bar] | [SIGN IN|REGISTER] [EN] [CONTACT]   -->
+<!--  Bottom Row: [REAGENT(Hot!) PRODUCTS APPLICATIONS RESOURCES ABOUT US]    -->
+<!--              [Quick Order ⚡] [🛒 Cart]                                   -->
+<!-- ========================================================================= -->
+<header id="header">
+  <div class="header-inner">
+
+    <!-- ===== Mobile Toolbar (hidden on desktop) ===== -->
+    <div class="header-mobile-tools">
+      <button class="mob-icon mob-icon-search" aria-label="Search" title="Search">
+        <i class="fa-solid fa-magnifying-glass"></i>
+      </button>
+      <a href="{{ contact }}" class="mob-icon" aria-label="Contact Us" title="Contact">
+        <i class="fa-solid fa-phone"></i>
+      </a>
+      <a href="{{ shopping_cart }}" class="mob-icon" aria-label="Shopping Cart" title="Cart">
+        <i class="fa-solid fa-cart-shopping"></i>
+      </a>
+      <button class="mob-icon mob-icon-menu" id="menu-toggle" aria-label="Open Menu" title="Menu">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+    </div>
+
+    <!-- ===== Top Row: Logo | Search | User Tools ===== -->
+    <div class="header-top">
+
+      <!-- Left: Logo — Flexbox: [DNA Icon] + [GenScript Text + Tagline] -->
+      <a href="{{ home }}" class="header-logo" aria-label="GenScript Home">
+        <img src="catalog/view/theme/default/image/logo-icon.svg" alt="" class="logo-icon-img" width="40" height="40">
+        <div class="logo-text-group">
+          <span class="logo-main-text">GenScript</span>
+          <span class="logo-tagline">Scripting Possibilities</span>
+        </div>
+      </a>
+
+      <!-- Center: Wide Rounded Search Bar -->
+      <form class="header-search" action="{{ helper.url.link('product/search') }}" method="GET">
+        <input type="text" class="search-query" name="search" placeholder="FLASH Gene: 4 days delivery" autocomplete="off">
+        <button type="submit" class="search-btn" aria-label="Search">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+      </form>
+
+      <!-- Right: User Tools (icon + text pairs) -->
+      <div class="header-tools">
+        {% if logged %}
+        <a href="{{ account }}" class="tool-link">
+          <i class="fa-regular fa-user"></i>
+          <span>MY ACCOUNT</span>
+        </a>
+        <a href="{{ logout }}" class="tool-link">
+          <i class="fa-solid fa-right-from-bracket"></i>
+          <span>LOGOUT</span>
+        </a>
+        {% else %}
+        <a href="{{ login }}" class="tool-link">
+          <i class="fa-regular fa-user"></i>
+          <span>SIGN IN <span class="tool-divider">|</span> REGISTER</span>
+        </a>
+        {% endif %}
+        <a href="#" class="tool-link">
+          <i class="fa-solid fa-globe"></i>
+          <span>EN</span>
+        </a>
+        <a href="{{ contact }}" class="tool-link">
+          <i class="fa-solid fa-phone"></i>
+          <span>CONTACT US</span>
+        </a>
+      </div>
+
+    </div>
+
+    <!-- ===== Bottom Row: Main Nav | Quick Order + Cart ===== -->
+    <div class="header-bottom">
+
+      <nav class="main-nav">
+        <ul class="nav-list">
+          <li class="nav-item has-badge">
+            <a href="{{ helper.url.link('product/category&path=59') }}">REAGENT SERVICES</a>
+            <span class="hot-badge">Hot!</span>
+          </li>
+          <li class="nav-item"><a href="{{ helper.url.link('product/category&path=17') }}">PRODUCTS</a></li>
+          <li class="nav-item"><a href="#">APPLICATIONS</a></li>
+          <li class="nav-item"><a href="#">RESOURCES</a></li>
+          <li class="nav-item"><a href="{{ helper.url.link('information/information&information_id=4') }}">ABOUT US</a></li>
+        </ul>
+      </nav>
+
+      <div class="header-actions-right">
+        <a href="#" class="btn-quick-order">
+          Quick Order
+        </a>
+        <a href="{{ shopping_cart }}" class="cart-icon my-cart" id="get-box" aria-label="Shopping Cart">
+          <i class="fa-solid fa-cart-shopping"></i>
+        </a>
+      </div>
+
+    </div>
+
+  </div>
+</header>
+
+<!-- ====== Mobile Drawer Menu (slides in from right, ≤1024px) ====== -->
+<div class="drawer-overlay" id="drawer-overlay"></div>
+
+<aside id="mobile-menu" class="mobile-drawer">
+  <button class="drawer-close" id="drawer-close" aria-label="Close Menu">
+    <i class="fa-solid fa-times"></i>
+  </button>
+
+  <nav class="drawer-nav">
+    <a href="{{ home }}" class="drawer-link">HOME</a>
+    <a href="{{ helper.url.link('product/category&path=59') }}" class="drawer-link has-hot">
+      REAGENT SERVICES <span class="drawer-hot">Hot!</span>
+      <span class="drawer-arrow">&gt;</span>
+    </a>
+    <a href="{{ helper.url.link('product/category&path=17') }}" class="drawer-link">PRODUCTS <span class="drawer-arrow">&gt;</span></a>
+    <a href="#" class="drawer-link">APPLICATIONS <span class="drawer-arrow">&gt;</span></a>
+    <a href="#" class="drawer-link">RESOURCES <span class="drawer-arrow">&gt;</span></a>
+    <a href="{{ helper.url.link('information/information&information_id=4') }}" class="drawer-link">ABOUT US <span class="drawer-arrow">&gt;</span></a>
+  </nav>
+
+  <div class="drawer-auth">
+    {% if logged %}
+    <a href="{{ account }}" class="drawer-link">MY ACCOUNT <span class="drawer-arrow">&gt;</span></a>
+    <a href="{{ logout }}" class="drawer-link">LOGOUT <span class="drawer-arrow">&gt;</span></a>
+    {% else %}
+    <a href="{{ login }}" class="drawer-link">SIGN IN <span class="drawer-arrow">&gt;</span></a>
+    <a href="{{ register }}" class="drawer-link">REGISTER <span class="drawer-arrow">&gt;</span></a>
+    {% endif %}
+  </div>
+</aside>
+{% endif %}

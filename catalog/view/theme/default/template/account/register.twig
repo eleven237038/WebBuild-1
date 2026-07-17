@@ -1,0 +1,332 @@
+{{ header }}
+<!-- ==========================================================================
+ *  GenScript — Register Page Redesign (Card-Based Layout)
+ *  Clean white card on light blue-grey background
+ *  Dual/single column hybrid form layout with all OpenCart bindings intact
+ * ========================================================================== -->
+<div class="register-page-wrapper">
+  <!-- ===== Top Bar: Logo + Contact ===== -->
+  <div class="register-top-bar">
+    <a href="{{ home }}" class="register-top-logo" aria-label="GenScript Home">
+      <img src="catalog/view/theme/default/image/logo-icon.svg" alt="" width="36" height="36">
+      <span>GenScript</span>
+    </a>
+    <a href="{{ contact }}" class="register-top-contact">
+      <i class="fa-solid fa-phone"></i>
+      <span>CONTACT US</span>
+    </a>
+  </div>
+
+  <!-- ===== Central Card ===== -->
+  <div class="register-card-wrapper">
+    <div class="register-card">
+
+      <!-- Heading -->
+      <h1 class="register-heading">{{ heading_title }}</h1>
+      <div class="register-divider"></div>
+
+      <!-- Already have account -->
+      <p class="register-switch">
+        Already have an account? <a href="{{ login }}">Back to Login</a>
+      </p>
+
+      <!-- Global Warning -->
+      {% if error_warning %}
+      <div class="register-alert">{{ error_warning }}</div>
+      {% endif %}
+
+      <!-- ===== Registration Form ===== -->
+      <form action="{{ action }}" method="post" enctype="multipart/form-data">
+
+        <!-- Hidden: customer_group_id -->
+        {% for customer_group in customer_groups %}
+        {% if customer_group.customer_group_id == customer_group_id %}
+        <input type="hidden" name="customer_group_id" value="{{ customer_group.customer_group_id }}">
+        {% endif %}
+        {% endfor %}
+        <!-- Hidden: telephone + calling_code (auto-filled, bypasses OpenCart requirement) -->
+        <input type="hidden" name="telephone" id="input-telephone" value="">
+        <input type="hidden" name="calling_code" value="+1">
+        <input type="hidden" name="confirm" id="input-confirm" value="">
+        <input type="hidden" name="type" value="{{ register_type }}">
+
+        <!-- Row 1: First Name + Last Name (dual column) -->
+        <div class="register-row register-row--dual">
+          <div class="register-field">
+            <label class="register-label required" for="input-firstname">{{ entry_firstname }}</label>
+            <input type="text" name="firstname" value="{{ firstname }}" id="input-firstname" class="register-input" placeholder="Enter your first name">
+            {% if error_firstname %}
+            <span class="register-error">{{ error_firstname }}</span>
+            {% endif %}
+          </div>
+          <div class="register-field">
+            <label class="register-label required" for="input-lastname">{{ entry_lastname }}</label>
+            <input type="text" name="lastname" value="{{ lastname }}" id="input-lastname" class="register-input" placeholder="Enter your last name">
+            {% if error_lastname %}
+            <span class="register-error">{{ error_lastname }}</span>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Row 2: Country/Region (single column, dropdown) -->
+        <div class="register-field">
+          <label class="register-label required" for="input-country">Country/Region</label>
+          <select name="country_id" id="input-country" class="register-select">
+            <option value="">{{ text_select }}</option>
+            {% for country in countries %}
+            {% if country.country_id == country_id %}
+            <option value="{{ country.country_id }}" selected="selected">{{ country.name }}</option>
+            {% else %}
+            <option value="{{ country.country_id }}">{{ country.name }}</option>
+            {% endif %}
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Row 3: State (single column, dropdown, AJAX-loaded via country) -->
+        <div class="register-field">
+          <label class="register-label required" for="input-zone">State</label>
+          <select name="zone_id" id="input-zone" class="register-select">
+          </select>
+        </div>
+
+        <!-- Row 4: Organization / Company -->
+        <div class="register-field">
+          <label class="register-label" for="input-company">Organization</label>
+          <div class="register-input-icon">
+            <input type="text" name="company" value="{{ company }}" id="input-company" class="register-input" placeholder="Enter your institution or company name">
+            <i class="fa-solid fa-magnifying-glass register-input-icon-symbol"></i>
+          </div>
+        </div>
+
+        <!-- Row 5: Password (with eye toggle) -->
+        <div class="register-field">
+          <label class="register-label required" for="input-password">{{ entry_password }}</label>
+          <div class="register-input-icon">
+            <input type="password" name="password" value="{{ password }}" id="input-password" class="register-input" placeholder="Create a password (4-40 characters)">
+            <button type="button" class="register-password-toggle" data-target="input-password" aria-label="Toggle password visibility">
+              <i class="fa-regular fa-eye-slash" id="input-password-icon"></i>
+            </button>
+          </div>
+          {% if error_password %}
+          <span class="register-error">{{ error_password }}</span>
+          {% endif %}
+        </div>
+
+        <!-- Confirm Password — auto-synced from Password via JS below -->
+
+        <!-- Row 7: Work Email -->
+        <div class="register-field">
+          <label class="register-label required" for="input-email">{{ entry_email }}</label>
+          <input type="email" name="email" value="{{ email }}" id="input-email" class="register-input" placeholder="Work email is recommended">
+          <span class="register-hint">This will be your username</span>
+          {% if error_email %}
+          <span class="register-error">{{ error_email }}</span>
+          {% endif %}
+        </div>
+
+        <!-- Row 8: Email Verification Code (static UI with 60s countdown) -->
+        <div class="register-field">
+          <label class="register-label" for="input-code">Email Activation Code</label>
+          <div class="register-row--code">
+            <input type="text" name="activation_code" id="input-code" class="register-input" placeholder="Enter verification code">
+            <button type="button" class="register-btn-send-code" id="btn-send-code" onclick="startCodeCountdown()">Send Code</button>
+          </div>
+        </div>
+
+        <!-- CAPTCHA — clean, integrated with card design -->
+        {% if captcha_enabled %}
+        <div class="register-field">
+          <label class="register-label" for="input-captcha">Verification Code</label>
+          <div class="register-row--code">
+            <input type="text" name="captcha" id="input-captcha" class="register-input" placeholder="Enter the characters shown" autocomplete="off">
+            <img src="index.php?route=extension/captcha/basic/captcha" alt="CAPTCHA" class="register-captcha-img" id="captcha-image" onclick="refreshCaptcha()" title="Click to refresh">
+          </div>
+          {% if error_captcha %}
+          <span class="register-error">{{ error_captcha }}</span>
+          {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Custom Fields -->
+        {% for custom_field in custom_fields %}
+        {% if custom_field.type == 'select' %}
+        <div id="custom-field{{ custom_field.custom_field_id }}" class="register-field custom-field" data-sort="{{ custom_field.sort_order }}">
+          <label class="register-label" for="input-custom-field{{ custom_field.custom_field_id }}">{{ custom_field.name }}</label>
+          <select name="custom_field[{{ custom_field.location }}][{{ custom_field.custom_field_id }}]" id="input-custom-field{{ custom_field.custom_field_id }}" class="register-select">
+            <option value="">{{ text_select }}</option>
+            {% for custom_field_value in custom_field.custom_field_value %}
+            {% if register_custom_field[custom_field.location][custom_field.custom_field_id] and custom_field_value.custom_field_value_id == register_custom_field[custom_field.custom_field_id] %}
+            <option value="{{ custom_field_value.custom_field_value_id }}" selected="selected">{{ custom_field_value.name }}</option>
+            {% else %}
+            <option value="{{ custom_field_value.custom_field_value_id }}">{{ custom_field_value.name }}</option>
+            {% endif %}
+            {% endfor %}
+          </select>
+          {% if error_custom_field[custom_field.custom_field_id] %}
+          <span class="register-error">{{ error_custom_field[custom_field.custom_field_id] }}</span>
+          {% endif %}
+        </div>
+        {% endif %}
+        {% if custom_field.type == 'text' %}
+        <div id="custom-field{{ custom_field.custom_field_id }}" class="register-field custom-field" data-sort="{{ custom_field.sort_order }}">
+          <label class="register-label" for="input-custom-field{{ custom_field.custom_field_id }}">{{ custom_field.name }}</label>
+          <input type="text" name="custom_field[{{ custom_field.location }}][{{ custom_field.custom_field_id }}]" value="{% if register_custom_field[custom_field.custom_field_id] %}{{ register_custom_field[custom_field.custom_field_id] }}{% else %}{{ custom_field.value }}{% endif %}" id="input-custom-field{{ custom_field.custom_field_id }}" class="register-input">
+          {% if error_custom_field[custom_field.custom_field_id] %}
+          <span class="register-error">{{ error_custom_field[custom_field.custom_field_id] }}</span>
+          {% endif %}
+        </div>
+        {% endif %}
+        {% endfor %}
+
+        <!-- Submit Button -->
+        <button type="submit" class="register-btn-submit">Create Account</button>
+
+        <!-- Privacy Agreement -->
+        {% if text_agree %}
+        <div class="register-agree">
+          <label class="register-checkbox-label">
+            <input type="checkbox" name="agree" value="1" {{ agree ? 'checked="checked"' }}>
+            <span class="register-checkbox-custom"></span>
+            <span class="register-agree-text">* {{ text_agree }}</span>
+          </label>
+        </div>
+        {% endif %}
+
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Country → Zone AJAX (OpenCart native) ===== -->
+<script type="text/javascript"><!--
+$('select[name=\'country_id\']').on('change', function() {
+  $.ajax({
+    url: 'index.php?route=account/register/country&country_id=' + this.value,
+    dataType: 'json',
+    beforeSend: function() {
+      $('select[name=\'country_id\']').after('<i class="fa fa-circle-o-notch fa-spin register-loading"></i>');
+    },
+    complete: function() {
+      $('.register-loading').remove();
+    },
+    success: function(json) {
+      var html = '<option value="">{{ text_select }}</option>';
+      if (json['zone'] && json['zone'] !== '') {
+        for (i = 0; i < json['zone'].length; i++) {
+          html += '<option value="' + json['zone'][i]['zone_id'] + '"';
+          if (json['zone'][i]['zone_id'] == '{{ zone_id }}') {
+            html += ' selected="selected"';
+          }
+          html += '>' + json['zone'][i]['name'] + '</option>';
+        }
+      }
+      $('select[name=\'zone_id\']').html(html);
+    },
+    error: function(xhr, ajaxOptions, thrownError) {
+      alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+    }
+  });
+});
+
+// Trigger on page load to pre-populate zones
+$('select[name=\'country_id\']').trigger('change');
+//--></script>
+
+<!-- ===== Generate Unique Telephone + Auto-Sync Confirm ===== -->
+<script type="text/javascript"><!--
+// Generate a unique telephone to bypass OpenCart's phone requirement
+(function() {
+  var ts = Date.now().toString().slice(-10);
+  $('#input-telephone').val(ts);
+})();
+
+// Auto-copy password to hidden confirm field on any password input
+$('#input-password').on('input', function() {
+  $('#input-confirm').val($(this).val());
+});
+//--></script>
+
+<!-- ===== Send Code Countdown (60s) ===== -->
+<script type="text/javascript"><!--
+var codeTimer = null;
+function startCodeCountdown() {
+  var $btn = $('#btn-send-code');
+  if ($btn.prop('disabled')) return;
+  $btn.prop('disabled', true).text('Sent!');
+  var seconds = 60;
+  codeTimer = setInterval(function() {
+    seconds--;
+    if (seconds <= 0) {
+      clearInterval(codeTimer);
+      $btn.prop('disabled', false).text('Send Code');
+    } else {
+      $btn.text(seconds + 's');
+    }
+  }, 1000);
+}
+//--></script>
+
+<!-- ===== Refresh CAPTCHA Image ===== -->
+<script type="text/javascript"><!--
+function refreshCaptcha() {
+  var img = document.getElementById('captcha-image');
+  if (img) {
+    img.src = 'index.php?route=extension/captcha/basic/captcha&t=' + Date.now();
+  }
+}
+//--></script>
+
+<!-- ===== Password Toggle JS ===== -->
+<script type="text/javascript"><!--
+$('.register-password-toggle').on('click', function() {
+  var targetId = $(this).data('target');
+  var $input = $('#' + targetId);
+  var $icon = $('#' + targetId + '-icon');
+  if ($input.attr('type') === 'password') {
+    $input.attr('type', 'text');
+    $icon.removeClass('fa-eye-slash').addClass('fa-eye');
+  } else {
+    $input.attr('type', 'password');
+    $icon.removeClass('fa-eye').addClass('fa-eye-slash');
+  }
+});
+//--></script>
+
+<!-- ===== Custom Fields Sort ===== -->
+<script type="text/javascript"><!--
+$('.custom-field[data-sort]').detach().each(function() {
+  var target = $(this);
+  var siblings = $('.register-field.custom-field');
+  if ($(this).attr('data-sort') >= 0 && $(this).attr('data-sort') <= siblings.length) {
+    siblings.eq($(this).attr('data-sort')).before(target);
+  }
+  if ($(this).attr('data-sort') > siblings.length) {
+    siblings.last().after(target);
+  }
+});
+
+$('input[name=\'customer_group_id\']').on('change', function() {
+  $.ajax({
+    url: 'index.php?route=account/register/customfield&customer_group_id=' + this.value,
+    dataType: 'json',
+    success: function(json) {
+      $('.custom-field').hide();
+      $('.custom-field').removeClass('required');
+      for (i = 0; i < json.length; i++) {
+        custom_field = json[i];
+        $('#custom-field' + custom_field['custom_field_id']).show();
+        if (custom_field['required']) {
+          $('#custom-field' + custom_field['custom_field_id']).addClass('required');
+        }
+      }
+    },
+    error: function(xhr, ajaxOptions, thrownError) {
+      alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+    }
+  });
+});
+$('input[name=\'customer_group_id\']:checked').trigger('change');
+//--></script>
+
+{{ footer }}

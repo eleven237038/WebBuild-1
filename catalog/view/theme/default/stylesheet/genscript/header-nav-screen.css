@@ -1,0 +1,299 @@
+/**
+ * GenScript Header — Responsive Design (v4)
+ * ==========================================
+ * Desktop  (>1024px): Full two-row nav, mobile toolbar + drawer hidden
+ * Tablet   (≤1024px): Logo + 4-icon toolbar, desktop rows hidden
+ * Mobile   (≤768px):  Compact toolbar
+ * Tiny     (≤480px):  Minimal
+ *
+ * The drawer slides in from the right; `.active` triggers the transition.
+ */
+
+/* ==========================================================================
+ * MOBILE TOOLBAR — hidden on desktop, appears at ≤1024px
+ * ========================================================================== */
+.header-mobile-tools {
+  display: none;
+}
+
+/* ==========================================================================
+ * DRAWER + OVERLAY — hidden on desktop, toggled via JS at ≤1024px
+ * ========================================================================== */
+.drawer-overlay,
+.mobile-drawer {
+  display: none;
+}
+
+/* ==========================================================================
+ * TABLET / MOBILE: ≤ 1024px
+ * ========================================================================== */
+@media screen and (max-width: 1024px) {
+
+  /* ----- Header: single row, full width, fixed top ----- */
+  #header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    padding: 0;
+    background: #000a46 !important;
+    box-sizing: border-box;
+    z-index: 1000;
+  }
+  #header .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+    padding: 0 20px;
+    max-width: 100%;
+  }
+
+  /* Hide all desktop-only elements */
+  .header-top,
+  .header-bottom,
+  .header-tools,
+  .header-search,
+  .header-actions-right,
+  .btn-quick-order {
+    display: none !important;
+  }
+
+  /* Show mobile toolbar */
+  .header-mobile-tools {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-shrink: 0;
+  }
+
+  /* Mobile logo — simplified: icon + main text, hide tagline */
+  .header-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .header-logo .logo-icon-img {
+    width: 28px;
+    height: 28px;
+  }
+  .header-logo .logo-text-group {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+  }
+  .header-logo .logo-main-text {
+    font-size: 18px;
+    font-weight: 900;
+    color: #ffffff;
+  }
+  .header-logo .logo-tagline {
+    display: none;
+  }
+
+  /* Mobile icon buttons (white, borderless) */
+  .mob-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: none;
+    border: none;
+    color: #ffffff;
+    font-size: 20px;
+    cursor: pointer;
+    text-decoration: none;
+    padding: 0;
+    transition: opacity 0.2s;
+  }
+  .mob-icon:active {
+    opacity: 0.55;
+  }
+  .mob-icon-menu {
+    font-size: 24px;
+  }
+
+  /* =====================================================================
+   * DRAWER OVERLAY — semi-transparent black backdrop
+   * ===================================================================== */
+  .drawer-overlay {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 9998;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .drawer-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* =====================================================================
+   * MOBILE DRAWER — slides in from the right
+   * ===================================================================== */
+  .mobile-drawer {
+    display: block;
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 80%;
+    max-width: 400px;
+    height: 100vh;
+    background: #ffffff;
+    z-index: 9999;
+    transform: translateX(100%);
+    transition: transform 0.3s ease-in-out;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .mobile-drawer.active {
+    transform: translateX(0);
+  }
+
+  /* ---- Close (×) button — top right ---- */
+  .drawer-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 40px;
+    height: 40px;
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #333;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.2s;
+    z-index: 2;
+  }
+  .drawer-close:active {
+    opacity: 0.45;
+  }
+
+  /* ---- Navigation list ---- */
+  .drawer-nav {
+    display: flex;
+    flex-direction: column;
+    padding: 68px 0 0;
+  }
+
+  /* Each link row (flex, space-between, bottom border) */
+  .drawer-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    font-family: "Figtree", sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: #1a1a2e;
+    text-decoration: none;
+    border-bottom: 1px solid #eee;
+    transition: background 0.15s;
+    position: relative;
+  }
+  .drawer-link:active {
+    background: #f6f7f9;
+  }
+
+  /* Right chevron */
+  .drawer-arrow {
+    font-size: 20px;
+    color: #bbb;
+    font-weight: 400;
+    flex-shrink: 0;
+    margin-left: 12px;
+  }
+
+  /* Hot! badge inside drawer */
+  .drawer-link.has-hot {
+    position: relative;
+  }
+  .drawer-hot {
+    display: inline-block;
+    background: #e74c3c;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 700;
+    font-style: italic;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 6px;
+    line-height: 1.2;
+    vertical-align: middle;
+  }
+
+  /* ---- Auth links (SIGN IN / REGISTER) grouped below main nav ---- */
+  .drawer-auth {
+    border-top: 6px solid #f0f0f0;
+  }
+  .drawer-auth .drawer-link {
+    font-size: 14px;
+    font-weight: 500;
+    color: #555;
+  }
+
+  /* ---- Banner scale-down ---- */
+  .banner-txt h1 { font-size: 36px !important; }
+  .banner-txt p  { font-size: 16px !important; margin-bottom: 24px !important; height: auto !important; }
+  .banner-txt a  { width: 180px !important; height: 44px !important; font-size: 16px !important; }
+
+  /* Hide chat widget */
+  .custom-chat-popup { display: none !important; }
+}
+
+/* ==========================================================================
+ * MOBILE: ≤ 768px
+ * ========================================================================== */
+@media screen and (max-width: 767px) {
+
+  #header { height: 54px; }
+  #header .header-inner { padding: 0 16px; }
+
+  .header-logo .logo-icon-img { width: 24px; height: 24px; }
+  .header-logo .logo-main-text { font-size: 16px; }
+  .header-mobile-tools { gap: 8px; }
+  .mob-icon { width: 36px; height: 36px; font-size: 18px; }
+  .mob-icon-menu { font-size: 22px; }
+
+  .drawer-link { font-size: 14px; padding: 14px 20px; }
+
+  .pcBanner { display: none !important; }
+  .banner-txt h1 { font-size: 26px !important; line-height: 1.2; }
+  .banner-txt p  { font-size: 14px !important; margin-bottom: 16px !important; }
+  .banner-txt a  { width: 150px !important; height: 38px !important; font-size: 14px !important; border-radius: 20px; }
+
+  .service-cards { grid-template-columns: 1fr !important; }
+  footer .row > .col { flex: 0 0 100%; max-width: 100%; margin-bottom: 24px; }
+  .cookie-banner { flex-direction: column; text-align: center; gap: 10px; }
+}
+
+/* ==========================================================================
+ * TINY: ≤ 480px
+ * ========================================================================== */
+@media screen and (max-width: 480px) {
+
+  .header-logo .logo-icon-img { width: 22px; height: 22px; }
+  .header-logo .logo-main-text { font-size: 14px; }
+  .header-mobile-tools { gap: 4px; }
+  .mob-icon { width: 32px; height: 32px; font-size: 16px; }
+  .mob-icon-menu { font-size: 20px; }
+
+  .mobile-drawer { width: 85%; max-width: 320px; }
+  .drawer-link { font-size: 13px; padding: 12px 16px; }
+
+  .banner-txt h1 { font-size: 20px !important; }
+  .banner-txt p  { font-size: 12px !important; }
+  .banner-txt a  { width: 130px !important; height: 34px !important; font-size: 13px !important; }
+  .homeBanner { margin-top: 54px; }
+}

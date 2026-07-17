@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 40" width="240" height="40">
+  <defs>
+    <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#1D73DD;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#56bb37;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <text x="0" y="30" font-family="Figtree,-apple-system,BlinkMacSystemFont,sans-serif" font-weight="900" font-size="28" fill="url(#logoGrad)">GenScript</text>
+</svg>

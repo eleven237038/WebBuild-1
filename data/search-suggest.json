@@ -1,0 +1,50 @@
+{
+  "data": {
+    "suggestHits": [
+      "Gene Synthesis",
+      "Gene Synthesis Service",
+      "Gene Synthesis Price",
+      "Gene Synthesis Protocol",
+      "Gene Synthesis Companies",
+      "Gene Expression",
+      "Gene Editing",
+      "GenCRISPR"
+    ],
+    "serviceHits": [
+      {
+        "url": "https://www.genscript.com/gene_synthesis.html",
+        "title": "Gene Synthesis Service — Custom Gene Synthesis from GenScript"
+      },
+      {
+        "url": "https://www.genscript.com/crispr-services.html",
+        "title": "CRISPR Gene Editing Services — Complete Solutions"
+      },
+      {
+        "url": "https://www.genscript.com/recombinant-protein-services.html",
+        "title": "Recombinant Protein Expression Services"
+      }
+    ],
+    "productHits": [
+      {
+        "url": "https://www.genscript.com/product/SC1010",
+        "spuNo": "SC1010",
+        "shortName": "Custom Gene Synthesis, 1-5 kb — Starting at $0.23/bp"
+      },
+      {
+        "url": "https://www.genscript.com/product/SC1699",
+        "spuNo": "SC1699",
+        "shortName": "Express Gene Synthesis, 1-3 kb, 4 Business Days"
+      },
+      {
+        "url": "https://www.genscript.com/product/SC1828",
+        "spuNo": "SC1828",
+        "shortName": "TurboCHO™ Transient Expression Kit"
+      },
+      {
+        "url": "https://www.genscript.com/product/SC1192",
+        "spuNo": "SC1192",
+        "shortName": "GenCRISPR™ gRNA Construct — All-in-one Plasmid"
+      }
+    ]
+  }
+}
