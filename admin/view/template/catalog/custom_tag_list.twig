@@ -1,50 +1,200 @@
+<!-- ==========================================================================
+ *  GenScript — Tag Management with Nestable2 Drag-Drop Tree UI
+ *  Left panel: Add new tag form   |   Right panel: Drag-drop tree
+ * ========================================================================== -->
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/nestable2/1.6.0/jquery.nestable.min.css">
+
+<style>
+.tag-manager { display: grid; grid-template-columns: 280px 1fr; gap: 24px; min-height: 500px; }
+.tag-left  {  }
+.tag-right {  }
+.dd { max-width: 100%; }
+.dd-item > button { font-family: monospace; }
+.dd-item .dd-handle { display:flex; align-items:center; gap:10px; justify-content:space-between; cursor:grab; }
+.dd-item .tag-name { font-weight:600; flex:1; }
+.dd-item .tag-actions { display:flex; gap:6px; white-space:nowrap; }
+.dd-item .tag-actions .btn { font-size:11px; padding:2px 8px; }
+.dd-empty, .dd-placeholder { border:2px dashed #ccc; min-height:40px; background:#f9f9f9; border-radius:4px; }
+.dd-dragel > .dd-item .dd-handle { box-shadow:0 4px 12px rgba(0,0,0,0.15); }
+.tree-toolbar { margin-bottom:12px; display:flex; gap:8px; align-items:center; }
+#save-status { font-size:12px; color:#999; margin-left:auto; }
+#save-status.saved { color:#10B981; }
+</style>
+
 {{ header }}{{ column_left }}
 <div id="content">
   <div class="page-header">
     <div class="container-fluid">
       <div class="pull-right">
-        <a href="{{ add }}" data-toggle="tooltip" title="添加" class="btn btn-primary"><i class="fa fa-plus"></i></a>
-        <button type="button" form="form-tag" formaction="{{ delete }}" data-toggle="tooltip" title="删除" class="btn btn-danger" onclick="return confirm('确认删除?') && $('#form-tag').submit();"><i class="fa fa-trash-o"></i></button>
+        <button type="button" onclick="deleteSelected()" class="btn btn-danger"><i class="fa fa-trash-o"></i> 批量删除</button>
       </div>
-      <h1>标签管理</h1>
+      <h1>标签管理 (拖拽排序)</h1>
     </div>
   </div>
   <div class="container-fluid">
-    {% if error_warning %}<div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}</div>{% endif %}
-    {% if success %}<div class="alert alert-success"><i class="fa fa-check-circle"></i> {{ success }}</div>{% endif %}
-    <div class="panel panel-default">
-      <div class="panel-body">
-        <form action="{{ delete }}" method="post" enctype="multipart/form-data" id="form-tag">
-          <div class="table-responsive">
-            <table class="table table-bordered table-hover">
-              <thead>
-                <tr>
-                  <td style="width:1px;"><input type="checkbox" onclick="$('input[name*=\'selected\']').prop('checked', this.checked);"/></td>
-                  <td>标签名称</td>
-                  <td>上级ID</td><td>排序</td>
-                  <td>状态</td>
-                  <td>操作</td>
-                </tr>
-              </thead>
-              <tbody>
-                {% for tag in tags %}
-                <tr>
-                  <td><input type="checkbox" name="selected[]" value="{{ tag.tag_id }}"/></td>
-                  <td>{{ tag.name }}</td>
-                  <td>{{ tag.parent_id }}</td><td>{{ tag.sort_order }}</td>
-                  <td>{{ tag.status ? '启用' : '禁用' }}</td>
-                  <td><a href="index.php?route=catalog/custom_tag/edit&user_token={{ user_token }}&tag_id={{ tag.tag_id }}" class="btn btn-primary btn-xs"><i class="fa fa-pencil"></i> 编辑</a></td>
-                </tr>
-                {% endfor %}
-                {% if not tags %}
-                <tr><td colspan="5" class="text-center">暂无标签数据</td></tr>
-                {% endif %}
-              </tbody>
-            </table>
+    {% if error_warning %}<div class="alert alert-danger">{{ error_warning }}</div>{% endif %}
+    {% if success %}<div class="alert alert-success">{{ success }}</div>{% endif %}
+
+    <div class="tag-manager">
+
+      <!-- ═══ LEFT: Add new tag ═══ -->
+      <div class="tag-left">
+        <div class="panel panel-default">
+          <div class="panel-heading"><h4 class="panel-title">添加标签</h4></div>
+          <div class="panel-body">
+            <form id="form-add-tag">
+              <div class="form-group">
+                <label>标签名称</label>
+                <input type="text" name="name" id="input-tag-name" class="form-control" placeholder="输入标签名称" required>
+              </div>
+              <div class="form-group">
+                <label>状态</label>
+                <select name="status" id="input-tag-status" class="form-control">
+                  <option value="1">启用</option>
+                  <option value="0">禁用</option>
+                </select>
+              </div>
+              <button type="submit" class="btn btn-primary btn-block"><i class="fa fa-plus"></i> 添加</button>
+            </form>
+            <hr>
+            <p style="font-size:11px;color:#999;">提示: 添加后在右侧拖拽排列层级。<br>拖拽标签到另一个标签下方可变为其子标签。点击「保存树形结构」写入数据库。</p>
           </div>
-        </form>
+        </div>
       </div>
+
+      <!-- ═══ RIGHT: Tree panel ═══ -->
+      <div class="tag-right">
+        <div class="tree-toolbar">
+          <button onclick="expandAll()" class="btn btn-default btn-xs">展开全部</button>
+          <button onclick="collapseAll()" class="btn btn-default btn-xs">折叠全部</button>
+          <button onclick="saveTree()" class="btn btn-success btn-sm" id="btn-save-tree"><i class="fa fa-save"></i> 保存树形结构</button>
+          <span id="save-status"></span>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <div class="dd" id="tag-tree">
+              <ol class="dd-list">
+                {% macro treeNode(tag, tree) %}
+                  {% if tag.tag_id is defined %}
+                    <li class="dd-item" data-id="{{ tag.tag_id }}">
+                      <div class="dd-handle">
+                        <span class="tag-name">{{ tag.name }}</span>
+                        <span class="tag-actions">
+                          <span style="font-size:10px;color:#aaa;">ID:{{ tag.tag_id }}</span>
+                          <a href="index.php?route=catalog/custom_tag/edit&user_token={{ user_token }}&tag_id={{ tag.tag_id }}" class="btn btn-default btn-xs" onclick="event.stopPropagation()"><i class="fa fa-pencil"></i></a>
+                          <button type="button" class="btn btn-danger btn-xs" onclick="event.stopPropagation();deleteTag({{ tag.tag_id }})"><i class="fa fa-trash"></i></button>
+                        </span>
+                      </div>
+                      {% if tag.children is defined and tag.children is not empty %}
+                        <ol class="dd-list">
+                          {% for child in tag.children %}
+                            {{ _self.treeNode(child, tree) }}
+                          {% endfor %}
+                        </ol>
+                      {% endif %}
+                    </li>
+                  {% endif %}
+                {% endmacro %}
+                {% import _self as treeMacro %}
+                {% for rootTag in tag_tree %}
+                  {{ treeMacro.treeNode(rootTag, tag_tree) }}
+                {% endfor %}
+              </ol>
+            </div>
+            {% if tag_tree is empty %}
+              <div class="dd-empty" style="display:block;text-align:center;padding:30px;color:#999;">
+                暂无标签，请在左侧添加
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/nestable2/1.6.0/jquery.nestable.min.js"></script>
+<script>
+var userToken = '{{ user_token }}';
+
+$(function() {
+// ── Init Nestable2 ──
+var nestable = $('#tag-tree').nestable({
+  maxDepth: 5,
+  group: 1,
+  expandBtnHTML: '<button data-action="expand" type="button">+</button>',
+  collapseBtnHTML: '<button data-action="collapse" type="button">-</button>',
+});
+
+function expandAll()  { $('.dd').nestable('expandAll'); }
+function collapseAll() { $('.dd').nestable('collapseAll'); }
+
+// ── Add tag via AJAX ──
+$('#form-add-tag').on('submit', function(e) {
+  e.preventDefault();
+  var name = $('#input-tag-name').val().trim();
+  if (!name) return alert('请输入标签名称');
+  var status = $('#input-tag-status').val();
+  $.post('index.php?route=catalog/custom_tag/add&user_token=' + userToken, {
+    name: name, status: status, sort_order: 0
+  }, function(res) {
+    location.reload();
+  }).fail(function() { alert('添加失败'); });
+});
+
+// ── Delete single tag ──
+function deleteTag(id) {
+  if (!confirm('确认删除此标签及其子标签?')) return;
+  $.post('index.php?route=catalog/custom_tag/delete&user_token=' + userToken, {
+    'selected[]': [id]
+  }, function() { location.reload(); }).fail(function() { alert('删除失败'); });
+}
+
+// ── Batch delete ──
+function deleteSelected() {
+  var ids = [];
+  $('.dd-item').each(function() {
+    if ($(this).find('input[type="checkbox"]:checked').length) {
+      ids.push($(this).data('id'));
+    }
+  });
+  if (!ids.length) return alert('请先勾选要删除的标签');
+  if (!confirm('确认删除选中的 ' + ids.length + ' 个标签?')) return;
+  $.post('index.php?route=catalog/custom_tag/delete&user_token=' + userToken, {
+    'selected[]': ids
+  }, function() { location.reload(); });
+}
+
+// ── Save tree structure via AJAX ──
+function saveTree() {
+  var data = nestable.nestable('serialize');
+  var $btn = $('#btn-save-tree');
+  var $status = $('#save-status');
+  $btn.prop('disabled', true).text('保存中...');
+  $status.text('').removeClass('saved');
+
+  $.ajax({
+    url: 'index.php?route=catalog/custom_tag/saveTree&user_token=' + userToken,
+    type: 'POST',
+    contentType: 'application/json',
+    data: JSON.stringify({ tree: data }),
+    success: function(res) {
+      try { var r = JSON.parse(res); if (r.success) {
+        $status.text('✓ 已保存').addClass('saved');
+        setTimeout(function() { $status.text('').removeClass('saved'); }, 3000);
+      }} catch(e) { $status.text('保存失败: ' + res).css('color','red'); }
+    },
+    error: function(xhr, status, err) {
+      $status.text('保存失败: ' + err).css('color','red');
+    },
+    complete: function() {
+      $btn.prop('disabled', false).text('保存树形结构');
+    }
+  });
+}
+});
+</script>
 {{ footer }}

@@ -14,7 +14,7 @@ class ControllerCatalogCustomTag extends Controller {
 	}
 
 	protected function getList() {
-		$data['tags'] = $this->model_catalog_custom_tag->getTagsFlatTree();
+		$data['tag_tree']   = $this->model_catalog_custom_tag->getCustomTagTree();
 		$data['user_token'] = $this->session->data['user_token'];
 
 		if (isset($this->error['warning'])) { $data['error_warning'] = $this->error['warning']; } else { $data['error_warning'] = ''; }
@@ -34,11 +34,16 @@ class ControllerCatalogCustomTag extends Controller {
 			return;
 		}
 		$this->load->language('catalog/category');
-		$this->document->setTitle('添加标签');
 		$this->load->model('catalog/custom_tag');
 		if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validateForm()) {
 			$this->model_catalog_custom_tag->addTag($this->request->post);
 			$this->session->data['success'] = '标签已添加';
+			// If AJAX (from drag-drop UI), return JSON; else redirect
+			if (!empty($this->request->server['HTTP_X_REQUESTED_WITH']) && strtolower($this->request->server['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+				$this->response->addHeader('Content-Type: application/json');
+				$this->response->setOutput(json_encode(['success' => true]));
+				return;
+			}
 			$this->response->redirect($this->url->link('catalog/custom_tag', 'user_token=' . $this->session->data['user_token']));
 		}
 		$this->getForm();
@@ -109,5 +114,29 @@ class ControllerCatalogCustomTag extends Controller {
 			$this->error['name'] = '标签名称必须在 1-64 字符之间';
 		}
 		return !$this->error;
+	}
+
+	public function saveTree() {
+		if (!$this->user->hasPermission('modify', 'catalog/custom_tag')) {
+			$this->response->addHeader('Content-Type: application/json');
+			$this->response->setOutput(json_encode(['error' => 'Permission denied']));
+			return;
+		}
+		if (!isset($this->request->get['user_token']) || $this->request->get['user_token'] !== $this->session->data['user_token']) {
+			$this->response->addHeader('Content-Type: application/json');
+			$this->response->setOutput(json_encode(['error' => 'Invalid CSRF token']));
+			return;
+		}
+		$this->load->model('catalog/custom_tag');
+		$json = file_get_contents('php://input');
+		$data = json_decode($json, true);
+		if (empty($data['tree'])) {
+			$this->response->addHeader('Content-Type: application/json');
+			$this->response->setOutput(json_encode(['error' => 'No tree data']));
+			return;
+		}
+		$this->model_catalog_custom_tag->saveTree($data['tree']);
+		$this->response->addHeader('Content-Type: application/json');
+		$this->response->setOutput(json_encode(['success' => true]));
 	}
 }

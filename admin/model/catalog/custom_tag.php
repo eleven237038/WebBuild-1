@@ -14,6 +14,19 @@ class ModelCatalogCustomTag extends Model {
 		$this->db->query("DELETE FROM " . DB_PREFIX . "product_to_custom_tag WHERE tag_id = '" . (int)$tag_id . "'");
 	}
 
+	// Batch save tree from Nestable2 serialize output
+	public function saveTree($tree, $parent_id = 0) {
+		$sort = 0;
+		foreach ($tree as $node) {
+			$tag_id = (int)$node['id'];
+			$this->db->query("UPDATE " . DB_PREFIX . "custom_tag SET parent_id = '" . (int)$parent_id . "', sort_order = '" . (int)$sort . "' WHERE tag_id = '" . $tag_id . "'");
+			$sort++;
+			if (!empty($node['children'])) {
+				$this->saveTree($node['children'], $tag_id);
+			}
+		}
+	}
+
 	public function getTag($tag_id) {
 		$query = $this->db->query("SELECT * FROM " . DB_PREFIX . "custom_tag WHERE tag_id = '" . (int)$tag_id . "'");
 		return $query->row;
