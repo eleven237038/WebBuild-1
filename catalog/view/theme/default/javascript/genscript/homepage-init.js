@@ -207,7 +207,7 @@
     initBannerSwiper();
     initTestimonialSwiper();
     initEventsOwlCarousel();
-    initScrollUp();
+    // initScrollUp();  // disabled — footer.twig provides its own back-to-top button
     loadLearncenterContent();
 
     // Mobile menu (vanilla JS — self-contained, no jQuery dependency)

@@ -38,10 +38,10 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800;900&display=swap">
 
-<!-- jQuery (must load first — OpenCart layer.js and common.js depend on it) -->
+<!-- jQuery (must load first —  layer.js and common.js depend on it) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 
-<!-- GenScript Custom CSS (our design system) -->
+<!-- LabCo Custom CSS (our design system) -->
 <link rel="stylesheet" href="catalog/view/theme/default/stylesheet/genscript/index-performance.css">
 <link rel="stylesheet" href="catalog/view/theme/default/stylesheet/genscript/header-nav.css">
 <link rel="stylesheet" href="catalog/view/theme/default/stylesheet/genscript/header-nav-screen.css">
@@ -80,7 +80,7 @@
   <div class="header-inner">
 
     <!-- ===== Mobile Toolbar (hidden on desktop) ===== -->
-    <div class="header-mobile-tools">
+    <div class="header-mobile-tools" style="justify-content:center; gap:18px;">
       <button class="mob-icon mob-icon-search" aria-label="Search">
         <i class="fa-solid fa-magnifying-glass"></i>
       </button>
@@ -99,10 +99,10 @@
     <div class="header-row">
 
       <!-- Left: Logo -->
-      <a href="{{ home }}" class="header-logo" aria-label="GenScript Home">
+      <a href="{{ home }}" class="header-logo" aria-label="LabCo Home">
         <img src="catalog/view/theme/default/image/logo-icon.svg" alt="" class="logo-icon-img" width="40" height="40">
         <div class="logo-text-group">
-          <span class="logo-main-text">GenScript</span>
+          <span class="logo-main-text">LabCo</span>
           <span class="logo-tagline">Scripting Possibilities</span>
         </div>
       </a>
@@ -161,15 +161,12 @@
   </button>
 
   <nav class="drawer-nav">
-    <a href="{{ home }}" class="drawer-link">HOME</a>
-    <a href="{{ helper.url.link('product/category&path=59') }}" class="drawer-link has-hot">
-      REAGENT SERVICES <span class="drawer-hot">Hot!</span>
-      <span class="drawer-arrow">&gt;</span>
-    </a>
-    <a href="{{ helper.url.link('product/category&path=17') }}" class="drawer-link">PRODUCTS <span class="drawer-arrow">&gt;</span></a>
-    <a href="#" class="drawer-link">APPLICATIONS <span class="drawer-arrow">&gt;</span></a>
-    <a href="#" class="drawer-link">RESOURCES <span class="drawer-arrow">&gt;</span></a>
-    <a href="{{ helper.url.link('information/information&information_id=4') }}" class="drawer-link">ABOUT US <span class="drawer-arrow">&gt;</span></a>
+    <a href="index.php?route=product/category&path=59" class="drawer-link">SHOP <span class="drawer-arrow">&gt;</span></a>
+    <a href="index.php?route=information/information&information_id=7" class="drawer-link">LAB RESULTS <span class="drawer-arrow">&gt;</span></a>
+    <a href="index.php?route=information/information&information_id=4" class="drawer-link">ABOUT <span class="drawer-arrow">&gt;</span></a>
+    <a href="index.php?route=information/information&information_id=8" class="drawer-link">ARTICLES <span class="drawer-arrow">&gt;</span></a>
+    <a href="index.php?route=information/contact" class="drawer-link">CONTACT <span class="drawer-arrow">&gt;</span></a>
+    <hr class="drawer-divider">
   </nav>
 
   <div class="drawer-auth">

@@ -118,7 +118,7 @@
     <div class="product-grid">
       {% if products is defined and products is not empty %}
         {% for product in products %}
-          {% include 'default/template/product/_partial_product_card.twig' with {'product': product} %}
+          {% include 'default/template/product/product_card.twig' with {'product': product} %}
         {% endfor %}
       {% else %}
         {# --- Static demo cards when no products in DB --- #}

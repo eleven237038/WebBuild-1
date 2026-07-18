@@ -16,110 +16,21 @@ class ControllerCommonColumnLeft extends Controller {
 				'children' => array()
 			);
 
-			// Catalog
-			$catalog = array();
+		// Catalog — single top-level entry for white-label
+		$catalog = array();
+		$catalog[] = array(
+			'name'	   => 'All Content',
+			'href'     => $this->url->link('catalog/product', 'user_token=' . $this->session->data['user_token']),
+			'children' => array()
+		);
+		$data['menus'][] = array(
+			'id'       => 'menu-catalog',
+			'icon'	   => 'fa-tags',
+			'name'	   => $this->language->get('text_catalog'),
+			'href'     => '',
+			'children' => $catalog
+		);
 
-			if ($this->user->hasPermission('access', 'catalog/category')) {
-				$catalog[] = array(
-					'name'	   => $this->language->get('text_category'),
-					'href'     => $this->url->link('catalog/category', 'user_token=' . $this->session->data['user_token']),
-					'children' => array()
-				);
-			}
-
-			// Products
-			if ($this->user->hasPermission('access', 'catalog/product')) {
-				$catalog[] = array(
-					'name'	   => $this->language->get('text_product'),
-					'href'     => $this->url->link('catalog/product', 'user_token=' . $this->session->data['user_token']),
-					'children' => array()
-				);
-			}
-
-			if ($this->user->hasPermission('access', 'catalog/filter')) {
-				$catalog[] = array(
-					'name'	   => $this->language->get('text_filter'),
-					'href'     => $this->url->link('catalog/filter', 'user_token=' . $this->session->data['user_token']),
-					'children' => array()
-				);
-			}
-
-			// Attributes
-			$attribute = array();
-
-			if ($this->user->hasPermission('access', 'catalog/attribute')) {
-				$attribute[] = array(
-					'name'     => $this->language->get('text_attribute'),
-					'href'     => $this->url->link('catalog/attribute', 'user_token=' . $this->session->data['user_token']),
-					'children' => array()
-				);
-			}
-
-			if ($this->user->hasPermission('access', 'catalog/attribute_group')) {
-				$attribute[] = array(
-					'name'	   => $this->language->get('text_attribute_group'),
-					'href'     => $this->url->link('catalog/attribute_group', 'user_token=' . $this->session->data['user_token']),
-					'children' => array()
-				);
-			}
-
-			if ($attribute) {
-				$catalog[] = array(
-					'name'	   => $this->language->get('text_attribute'),
-					'href'     => '',
-					'children' => $attribute
-				);
-			}
-
-			if ($this->user->hasPermission('access', 'catalog/option')) {
-				$catalog[] = array(
-					'name'	   => $this->language->get('text_option'),
-					'href'     => $this->url->link('catalog/option', 'user_token=' . $this->session->data['user_token']),
-					'children' => array()
-				);
-			}
-
-			if ($this->user->hasPermission('access', 'catalog/manufacturer')) {
-				$catalog[] = array(
-					'name'	   => $this->language->get('text_manufacturer'),
-					'href'     => $this->url->link('catalog/manufacturer', 'user_token=' . $this->session->data['user_token']),
-					'children' => array()
-				);
-			}
-
-			if ($this->user->hasPermission('access', 'catalog/download')) {
-				$catalog[] = array(
-					'name'	   => $this->language->get('text_download'),
-					'href'     => $this->url->link('catalog/download', 'user_token=' . $this->session->data['user_token']),
-					'children' => array()
-				);
-			}
-
-			if ($this->user->hasPermission('access', 'catalog/review')) {
-				$catalog[] = array(
-					'name'	   => $this->language->get('text_review'),
-					'href'     => $this->url->link('catalog/review', 'user_token=' . $this->session->data['user_token']),
-					'children' => array()
-				);
-			}
-
-			if ($this->user->hasPermission('access', 'catalog/information')) {
-				$catalog[] = array(
-					'name'	   => $this->language->get('text_information'),
-					'href'     => $this->url->link('catalog/information', 'user_token=' . $this->session->data['user_token']),
-					'children' => array()
-				);
-			}
-
-			if ($catalog) {
-				$data['menus'][] = array(
-					'id'       => 'menu-catalog',
-					'icon'	   => 'fa-tags',
-					'name'	   => $this->language->get('text_catalog'),
-					'href'     => '',
-					'children' => $catalog
-				);
-			}
 
 			// Extension
 			$marketplace = array();
@@ -186,58 +97,21 @@ class ControllerCommonColumnLeft extends Controller {
 				);
 			}
 
-			// Design
-			$design = array();
+		// Design — page content editor for white-label
+		$design = array();
+		$design[] = array(
+			'name'     => 'Page Editor',
+			'href'     => $this->url->link('catalog/information', 'user_token=' . $this->session->data['user_token']),
+			'children' => array()
+		);
+		$data['menus'][] = array(
+			'id'       => 'menu-design',
+			'icon'     => 'fa-pencil',
+			'name'     => 'Design',
+			'href'     => '',
+			'children' => $design
+		);
 
-			if ($this->user->hasPermission('access', 'design/layout')) {
-				$design[] = array(
-					'name'	   => $this->language->get('text_layout'),
-					'href'     => $this->url->link('design/layout', 'user_token=' . $this->session->data['user_token']),
-					'children' => array()
-				);
-			}
-
-			if ($this->user->hasPermission('access', 'design/theme')) {
-				$design[] = array(
-					'name'	   => $this->language->get('text_theme'),
-					'href'     => $this->url->link('design/theme', 'user_token=' . $this->session->data['user_token']),
-					'children' => array()
-				);
-			}
-
-			if ($this->user->hasPermission('access', 'design/translation')) {
-				$design[] = array(
-					'name'	   => $this->language->get('text_language_editor'),
-					'href'     => $this->url->link('design/translation', 'user_token=' . $this->session->data['user_token']),
-					'children' => array()
-				);
-			}
-
-			if ($this->user->hasPermission('access', 'design/banner')) {
-				$design[] = array(
-					'name'	   => $this->language->get('text_banner'),
-					'href'     => $this->url->link('design/banner', 'user_token=' . $this->session->data['user_token']),
-					'children' => array()
-				);
-			}
-
-			if ($this->user->hasPermission('access', 'design/seo_url')) {
-				$design[] = array(
-					'name'	   => $this->language->get('text_seo_url'),
-					'href'     => $this->url->link('design/seo_url', 'user_token=' . $this->session->data['user_token']),
-					'children' => array()
-				);
-			}
-
-			if ($design) {
-				$data['menus'][] = array(
-					'id'       => 'menu-design',
-					'icon'	   => 'fa-television',
-					'name'	   => $this->language->get('text_design'),
-					'href'     => '',
-					'children' => $design
-				);
-			}
 
 			// Sales
 			$sale = array();

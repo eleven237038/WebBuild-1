@@ -50,45 +50,30 @@
     max-width: 100%;
   }
 
-  /* Hide all desktop-only elements (preserve mobile toolbar + logo) */
-  .header-row .main-nav,
-  .header-row .header-actions-right,
-  .header-search,
-  .btn-quick-order {
+  /* Hide desktop-only elements */
+  #header .header-row .main-nav,
+  #header .header-row .header-actions-right,
+  #header .header-row .header-logo,
+  #header .header-search,
+  #header .btn-quick-order {
     display: none !important;
   }
   .header-row { height: auto; }
 
-  /* Show mobile toolbar */
+  /* Show mobile toolbar — centered icons */
   .header-mobile-tools {
     display: flex;
     align-items: center;
-    gap: 15px;
+    justify-content: center;
+    gap: 22px;
     flex-shrink: 0;
   }
 
-  /* Mobile logo — simplified: icon + main text, hide tagline */
-  .header-logo {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .header-logo .logo-icon-img {
-    width: 28px;
-    height: 28px;
-  }
-  .header-logo .logo-text-group {
-    display: flex;
-    flex-direction: column;
-    line-height: 1.1;
-  }
-  .header-logo .logo-main-text {
-    font-size: 18px;
-    font-weight: 900;
-    color: #ffffff;
-  }
-  .header-logo .logo-tagline {
-    display: none;
+  /* Drawer divider */
+  .drawer-divider {
+    border: none;
+    border-top: 1px solid #e5e7eb;
+    margin: 8px 24px;
   }
 
   /* Mobile icon buttons (white, borderless) */
@@ -259,8 +244,8 @@
   #header { height: 54px; }
   #header .header-inner { padding: 0 16px; }
 
-  .header-logo .logo-icon-img { width: 24px; height: 24px; }
-  .header-logo .logo-main-text { font-size: 16px; }
+  /* logo hidden on mobile */
+  /* logo hidden on mobile */
   .header-mobile-tools { gap: 8px; }
   .mob-icon { width: 36px; height: 36px; font-size: 18px; }
   .mob-icon-menu { font-size: 22px; }
@@ -282,8 +267,8 @@
  * ========================================================================== */
 @media screen and (max-width: 480px) {
 
-  .header-logo .logo-icon-img { width: 22px; height: 22px; }
-  .header-logo .logo-main-text { font-size: 14px; }
+  /* logo hidden on mobile */
+  /* logo hidden on mobile */
   .header-mobile-tools { gap: 4px; }
   .mob-icon { width: 32px; height: 32px; font-size: 16px; }
   .mob-icon-menu { font-size: 20px; }
