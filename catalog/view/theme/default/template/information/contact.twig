@@ -1,139 +1,209 @@
 {{ header }}
-<div id="information-contact" class="container">
-  {{ include(helper.template('_partial/breadcrumb')) }}
-  <div class="row">{{ column_left }}
-    {% if column_left and column_right %}
-    {% set class = 'col-sm-6' %}
-    {% elseif column_left or column_right %}
-    {% set class = 'col-sm-9' %}
-    {% else %}
-    {% set class = 'col-sm-12' %}
-    {% endif %}
-    <div id="content" class="{{ class }}">{{ content_top }}
-      <h3>{{ text_location }}</h3>
-      <div class="panel panel-default">
-        <div class="panel-body">
-          <div class="row">
-            {% if image %}
-            <div class="col-sm-3"><img src="{{ image }}" alt="{{ store }}" title="{{ store }}" class="img-thumbnail" /></div>
-            {% endif %}
-            <div class="col-sm-3"><strong>{{ store }}</strong><br />
-              <address>
-              {{ address }}
-              </address>
-              {% if geocode %}
-              <a href="https://maps.google.com/maps?q={{ geocode|url_encode }}&hl={{ geocode_hl }}&t=m&z=15" target="_blank" class="btn btn-info"><i class="fa fa-map-marker"></i> {{ button_map }}</a>
-              {% endif %}
-            </div>
-            <div class="col-sm-3"><strong>{{ text_telephone }}</strong><br>
-              {{ telephone }}<br />
-              <br />
-              {% if fax %}
-              <strong>{{ text_fax }}</strong><br>
-              {{ fax }}
-              {% endif %}
-            </div>
-            <div class="col-sm-3">
-              {% if open %}
-              <strong>{{ text_open }}</strong><br />
-              {{ open }}<br />
-              <br />
-              {% endif %}
-              {% if comment %}
-              <strong>{{ text_comment }}</strong><br />
-              {{ comment }}
-              {% endif %}
-            </div>
-          </div>
-        </div>
+<!-- ==========================================================================
+ *  GenScript — Contact Us Page (Full-Width, 2 Blocks)
+ *  Block 1: Hero with grid + green glow
+ *  Block 2: Left (contact info) + Right (contact form) split layout
+ *  Brand: Deep Navy #000B47 | Accent Green #00a651
+ * ========================================================================== -->
+<style>
+/* ═══════ Page ═══════ */
+.contact-page { width: 100%; overflow-x: hidden; }
+.contact-wrap { max-width: 1200px; margin: 0 auto; padding: 0 32px; }
+
+/* ═══════ BLOCK 1: Hero with grid + green glow ═══════ */
+.contact-hero {
+  background-color: #ffffff;
+  background-image:
+    linear-gradient(rgba(0,11,71,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,11,71,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  padding: 80px 0; text-align: center;
+  position: relative;
+}
+.contact-hero::before {
+  content: ""; position: absolute; top: -100px; left: 50%; transform: translateX(-50%);
+  width: 500px; height: 250px;
+  background: radial-gradient(ellipse at center, rgba(0,166,81,0.07) 0%, transparent 70%);
+  pointer-events: none;
+}
+.contact-tag {
+  font-size: 12px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 2px; color: #00a651; margin: 0 0 14px;
+}
+.contact-hero-title {
+  font-family: "Figtree",sans-serif; font-weight: 900; font-size: 56px;
+  color: #000B47; text-transform: uppercase; line-height: 1.12;
+  margin: 0 0 16px;
+}
+.contact-hero-sub {
+  font-size: 16px; color: #666; margin: 0; max-width: 520px; margin: 0 auto;
+}
+
+/* ═══════ Success Alert ═══════ */
+.contact-success {
+  max-width: 600px; margin: 20px auto; padding: 16px 20px;
+  background: #e6f7ee; color: #166534; border: 1px solid #bbf7d0;
+  border-radius: 8px; font-size: 14px; font-weight: 600; text-align: center;
+}
+
+/* ═══════ BLOCK 2: Split layout ═══════ */
+.contact-main {
+  max-width: 1200px; margin: 0 auto; padding: 60px 32px;
+  display: grid; grid-template-columns: 4fr 6fr; gap: 80px;
+  align-items: start;
+}
+
+/* --- Left: Contact Info --- */
+.contact-info { }
+.contact-info-block { margin-bottom: 36px; }
+.contact-info-label {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1.5px; color: #aaa; margin: 0 0 6px;
+}
+.contact-info-value {
+  font-size: 15px; color: #000B47; font-weight: 500; margin: 0; line-height: 1.5;
+}
+.contact-info-value a { color: #000B47; text-decoration: none; }
+
+/* --- Right: Form --- */
+.contact-form { }
+.contact-field { margin-bottom: 22px; }
+.contact-field-label {
+  display: block; font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1.5px; color: #aaa; margin: 0 0 6px;
+}
+.contact-input {
+  display: block; width: 100%; padding: 12px 16px;
+  border: 1px solid #e0e0e0; border-radius: 4px;
+  font-family: "Figtree",sans-serif; font-size: 14px; color: #333;
+  background: #fff; outline: none; box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+.contact-input::placeholder { color: #bbb; font-size: 13px; }
+.contact-input:focus { border-color: #00a651; }
+.contact-textarea {
+  min-height: 160px; resize: vertical;
+}
+.contact-error {
+  display: block; font-size: 12px; color: #dc2626; margin-top: 4px;
+}
+
+/* Submit button */
+.contact-btn-submit {
+  display: inline-block; padding: 14px 36px;
+  background: #00a651; color: #ffffff;
+  border: none; border-radius: 4px;
+  font-family: "Figtree",sans-serif; font-size: 15px; font-weight: 700;
+  cursor: pointer; letter-spacing: 0.5px;
+  transition: background 0.2s;
+}
+.contact-btn-submit:hover { background: #008c44; }
+
+/* Captcha */
+.contact-field fieldset { border: none; padding: 0; margin: 0; }
+.contact-field .form-group { margin-bottom: 0; }
+
+/* ═══════ Responsive ═══════ */
+@media (max-width: 900px) {
+  .contact-main { grid-template-columns: 1fr; gap: 40px; }
+  .contact-hero-title { font-size: 34px; }
+}
+@media (max-width: 640px) {
+  .contact-hero-title { font-size: 26px; }
+  .contact-wrap, .contact-main { padding: 0 18px; }
+  .contact-main { padding-top: 40px; padding-bottom: 40px; }
+}
+</style>
+
+<div class="contact-page">
+
+  <!-- ═══════ BLOCK 1: Hero ═══════ -->
+  <section class="contact-hero">
+    <div class="contact-wrap">
+      <p class="contact-tag">// CONTACT</p>
+      <h1 class="contact-hero-title">GET IN TOUCH</h1>
+      <p class="contact-hero-sub">Reach out about products, COAs, partnerships, or anything else.</p>
+    </div>
+  </section>
+
+  <!-- ═══════ Success Message (if any) ═══════ -->
+  {% if success %}
+  <div class="contact-success">{{ success }}</div>
+  {% endif %}
+
+  <!-- ═══════ BLOCK 2: Split Layout ═══════ -->
+  <div class="contact-main">
+
+    <!-- Left: Contact Info -->
+    <div class="contact-info">
+      <div class="contact-info-block">
+        <p class="contact-info-label">EMAIL</p>
+        <p class="contact-info-value"><a href="mailto:info@spartalabs.net">info@spartalabs.net</a></p>
       </div>
-      {% if locations %}
-      <h3>{{ text_store }}</h3>
-      <div class="panel-group" id="accordion">
-        {% for location in locations %}
-        <div class="panel panel-default">
-          <div class="panel-heading">
-            <h4 class="panel-title"><a href="#collapse-location{{ location.location_id }}" class="accordion-toggle" data-toggle="collapse" data-parent="#accordion">{{ location.name }} <i class="fa fa-caret-down"></i></a></h4>
-          </div>
-          <div class="panel-collapse collapse" id="collapse-location{{ location.location_id }}">
-            <div class="panel-body">
-              <div class="row">
-                {% if location.image %}
-                <div class="col-sm-3"><img src="{{ location.image }}" alt="{{ location.name }}" title="{{ location.name }}" class="img-thumbnail" /></div>
-                {% endif %}
-                <div class="col-sm-3"><strong>{{ location.name }}</strong><br />
-                  <address>
-                  {{ location.address }}
-                  </address>
-                  {% if location.geocode %}
-                  <a href="https://maps.google.com/maps?q={{ location.geocode|url_encode }}&hl={{ geocode_hl }}&t=m&z=15" target="_blank" class="btn btn-info"><i class="fa fa-map-marker"></i> {{ button_map }}</a>
-                  {% endif %}
-                </div>
-                <div class="col-sm-3"> <strong>{{ text_telephone }}</strong><br>
-                  {{ location.telephone }}<br />
-                  <br />
-                  {% if location.fax %}
-                  <strong>{{ text_fax }}</strong><br>
-                  {{ location.fax }}
-                  {% endif %}
-                </div>
-                <div class="col-sm-3">
-                  {% if location.open %}
-                  <strong>{{ text_open }}</strong><br />
-                  {{ location.open }}<br />
-                  <br />
-                  {% endif %}
-                  {% if location.comment %}
-                  <strong>{{ text_comment }}</strong><br />
-                  {{ location.comment }}
-                  {% endif %}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        {% endfor %}
+      <div class="contact-info-block">
+        <p class="contact-info-label">HOURS</p>
+        <p class="contact-info-value">9AM – 9PM EST, 7 days a week</p>
       </div>
+      <div class="contact-info-block">
+        <p class="contact-info-label">LOCATION</p>
+        <p class="contact-info-value">3812 W Montague Ave, North Charleston, SC 29418</p>
+      </div>
+    </div>
+
+    <!-- Right: Contact Form (OpenCart bindings intact) -->
+    <div class="contact-form">
+
+      {% if error_warning %}
+      <div class="contact-success" style="background:#fef2f2;border-color:#fecaca;color:#991b1b;">{{ error_warning }}</div>
       {% endif %}
-      <form action="{{ action }}" method="post" enctype="multipart/form-data" class="form-horizontal">
-        <fieldset>
-          <legend>{{ text_contact }}</legend>
-          <div class="form-group required">
-            <label class="col-sm-2 control-label" for="input-name">{{ entry_name }}</label>
-            <div class="col-sm-10">
-              <input type="text" name="name" value="{{ name }}" id="input-name" class="form-control" />
-              {% if error_name %}
-              <div class="text-danger">{{ error_name }}</div>
-              {% endif %}
-            </div>
-          </div>
-          <div class="form-group required">
-            <label class="col-sm-2 control-label" for="input-email">{{ entry_email }}</label>
-            <div class="col-sm-10">
-              <input type="text" name="email" value="{{ email }}" id="input-email" class="form-control" />
-              {% if error_email %}
-              <div class="text-danger">{{ error_email }}</div>
-              {% endif %}
-            </div>
-          </div>
-          <div class="form-group required">
-            <label class="col-sm-2 control-label" for="input-enquiry">{{ entry_enquiry }}</label>
-            <div class="col-sm-10">
-              <textarea name="enquiry" rows="10" id="input-enquiry" class="form-control">{{ enquiry }}</textarea>
-              {% if error_enquiry %}
-              <div class="text-danger">{{ error_enquiry }}</div>
-              {% endif %}
-            </div>
-          </div>
-          {{ captcha }}
-        </fieldset>
-        <div class="buttons">
-          <div class="pull-right">
-            <input class="btn btn-primary" type="submit" value="{{ button_submit }}" />
-          </div>
+
+      <form action="{{ action }}" method="post" enctype="multipart/form-data">
+
+        <!-- Row 1: Name -->
+        <div class="contact-field">
+          <label class="contact-field-label" for="input-name">NAME</label>
+          <input type="text" name="name" value="{{ name }}" id="input-name"
+                 class="contact-input" placeholder="Full name" autocomplete="name">
+          {% if error_name %}<span class="contact-error">{{ error_name }}</span>{% endif %}
         </div>
+
+        <!-- Row 2: Email -->
+        <div class="contact-field">
+          <label class="contact-field-label" for="input-email">EMAIL</label>
+          <input type="text" name="email" value="{{ email }}" id="input-email"
+                 class="contact-input" placeholder="you@example.com" autocomplete="email">
+          {% if error_email %}<span class="contact-error">{{ error_email }}</span>{% endif %}
+        </div>
+
+        <!-- Row 3: Subject (custom field, not OpenCart-native — optional) -->
+        <div class="contact-field">
+          <label class="contact-field-label" for="input-subject">SUBJECT</label>
+          <input type="text" name="subject" id="input-subject"
+                 class="contact-input" placeholder="What's this about?">
+        </div>
+
+        <!-- Row 4: Message / Enquiry -->
+        <div class="contact-field">
+          <label class="contact-field-label" for="input-enquiry">MESSAGE</label>
+          <textarea name="enquiry" id="input-enquiry"
+                    class="contact-input contact-textarea"
+                    placeholder="Tell us what you need.">{{ enquiry }}</textarea>
+          {% if error_enquiry %}<span class="contact-error">{{ error_enquiry }}</span>{% endif %}
+        </div>
+
+        <!-- CAPTCHA -->
+        <div class="contact-field">
+          {{ captcha }}
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="contact-btn-submit">SEND MESSAGE →</button>
+
       </form>
-      {{ content_bottom }}</div>
-    {{ column_right }}</div>
+    </div>
+
+  </div>
+
 </div>
+
 {{ footer }}
