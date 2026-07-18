@@ -1,186 +1,343 @@
 {{ header }}
+<!-- ==========================================================================
+ *  GenScript Homepage — Modern Science-Backed Landing Page
+ *  10 Blocks: Hero → Stats → Bestsellers → Categories → Feature Compare
+ *  → Reviews → Why Us Table → Education → FAQ → Money-Back Guarantee
+ *  Brand Colors: Deep Navy #000B47 | Accent Green #00a651
+ * ========================================================================== -->
 
-<!-- ========================================================================= -->
-<!--  HERO BANNER  (Swiper.js — 6 slides)                                       -->
-<!-- ========================================================================= -->
-<section class="homeBanner">
-  <div class="banner-container swiper-container">
-    <div class="swiper-wrapper">
+<style>
+/* ═══════ Homepage Block System ═══════ */
+.home-block { width: 100%; padding: 80px 0; box-sizing: border-box; }
+.home-block--dark  { background: #000B47; color: #ffffff; }
+.home-block--light { background: #ffffff; color: #1a1a2e; }
+.home-block--gray  { background: #f4f6f9; color: #1a1a2e; }
+.home-block--green { background: #00a651; color: #ffffff; }
+.home-wrap { max-width: 1260px; margin: 0 auto; padding: 0 32px; }
 
-      <div class="swiper-slide">
-        <div class="pcBanner" style="background:linear-gradient(135deg,#000a47,#0a1e6b,#1a3f9e);height:600px;"></div>
-        <div class="banner-txt">
-          <h1>Scripting Possibilities</h1>
-          <p>Reliable and professional platforms for life science<br>development. Industry-leading scale.<br>Commitment to high-impact innovations.</p>
-          <a href="https://www.genscript.com/our-business.html?src=banner">Learn More</a>
+/* ═══════ BLOCK 1: Hero ═══════ */
+.hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+.hero-title { font-family: "Figtree",sans-serif; font-weight: 900; font-size: 56px; line-height: 1.08; color: #000B47; margin: 0 0 18px; }
+.hero-sub { font-size: 17px; color: #555; line-height: 1.6; margin: 0 0 28px; max-width: 480px; }
+.hero-cta { display: inline-flex; align-items: center; gap: 8px; padding: 14px 32px; background: #00a651; color: #fff; font-weight: 700; font-size: 15px; border-radius: 6px; text-decoration: none; transition: background 0.2s; }
+.hero-cta:hover { background: #008c44; color: #fff; text-decoration: none; }
+.hero-payments { display: flex; gap: 12px; margin-top: 20px; }
+.hero-payments span { padding: 4px 10px; background: #f0f2f5; border-radius: 4px; font-size: 12px; color: #666; }
+.hero-right { display: flex; gap: 20px; align-items: center; justify-content: center; }
+.hero-card { background: #000B47; border-radius: 16px; padding: 28px 22px; color: #fff; box-shadow: 0 20px 50px rgba(0,11,71,0.25); }
+.hero-card h3 { font-size: 16px; margin: 0 0 8px; }
+.hero-card .card-vial { width: 100px; height: 140px; margin: 10px auto; background: linear-gradient(180deg, #1a3a8a 0%, #0d1f5c 100%); border-radius: 12px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 10px; }
+
+/* ═══════ BLOCK 2: Stats Bar ═══════ */
+.stats-flex { display: flex; gap: 0; }
+.stats-item { flex: 1; text-align: center; padding: 48px 20px; border-right: 1px solid rgba(255,255,255,0.12); }
+.stats-item:last-child { border-right: none; }
+.stats-num { font-family: "Figtree",sans-serif; font-weight: 900; font-size: 42px; margin: 0 0 4px; }
+.stats-label { font-size: 13px; text-transform: uppercase; letter-spacing: 2px; opacity: 0.7; margin: 0; }
+
+/* ═══════ BLOCK 3: Best Sellers Grid ═══════ */
+.section-title { font-family: "Figtree",sans-serif; font-weight: 800; font-size: 32px; margin: 0 0 40px; }
+.products-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.product-card { background: #fff; border-radius: 12px; overflow: hidden; border: 1px solid #eee; transition: box-shadow 0.2s; }
+.product-card:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.08); }
+.product-card-img { height: 200px; background: #f4f6f9; display: flex; align-items: center; justify-content: center; font-size: 60px; }
+.product-card-body { padding: 18px; }
+.product-card-body h3 { font-family: "Figtree",sans-serif; font-size: 15px; font-weight: 700; margin: 0 0 6px; }
+.product-card-body .purity { display: inline-block; background: #e6f7ee; color: #00a651; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px; margin-bottom: 8px; }
+.product-card-body .price { font-size: 20px; font-weight: 800; color: #000B47; margin: 0 0 12px; }
+.btn-add-cart { display: block; width: 100%; padding: 10px 0; background: #00a651; color: #fff; border: none; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer; text-align: center; }
+.btn-view-all { display: block; width: 100%; max-width: 360px; margin: 40px auto 0; padding: 14px 0; background: #00a651; color: #fff; border: none; border-radius: 6px; font-weight: 700; font-size: 15px; cursor: pointer; text-align: center; text-decoration: none; }
+.trust-strip { display: flex; justify-content: center; gap: 60px; margin-top: 28px; }
+.trust-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #666; }
+.trust-item i { font-size: 20px; color: #00a651; }
+
+/* ═══════ BLOCK 4: Category Cards ═══════ */
+.cat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.cat-card { background: #f4f6f9; border-radius: 10px; padding: 28px 22px; display: flex; align-items: center; justify-content: space-between; transition: transform 0.2s; text-decoration: none; color: #000B47; }
+.cat-card:hover { transform: translateY(-3px); }
+.cat-card span { font-weight: 700; font-size: 14px; }
+.cat-card i { color: #00a651; font-size: 18px; }
+
+/* ═══════ BLOCK 5: Proof Before Potency ═══════ */
+.proof-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+.proof-title { font-family: "Figtree",sans-serif; font-weight: 900; font-size: 38px; line-height: 1.15; margin: 0 0 22px; }
+.proof-list { list-style: none; padding: 0; margin: 0 0 24px; }
+.proof-list li { padding: 10px 0; font-size: 15px; display: flex; align-items: center; gap: 10px; }
+.proof-list li i { color: #00a651; font-size: 18px; }
+.proof-card { background: #fff; border-radius: 14px; padding: 28px; box-shadow: 0 12px 40px rgba(0,0,0,0.1); text-align: center; max-width: 340px; }
+.proof-card .sku { font-size: 12px; color: #999; margin: 0 0 4px; }
+.proof-card .price-lg { font-size: 28px; font-weight: 900; color: #000B47; margin: 10px 0; }
+.proof-card .btn-green { display: block; width: 100%; padding: 12px; background: #00a651; color: #fff; border: none; border-radius: 6px; font-weight: 700; font-size: 14px; cursor: pointer; }
+
+/* ═══════ BLOCK 6: Reviews ═══════ */
+.review-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.review-card { background: #fff; border: 1px solid #eee; border-radius: 12px; padding: 28px; }
+.review-stars { color: #f5a623; font-size: 14px; margin-bottom: 10px; }
+.review-card h4 { font-family: "Figtree",sans-serif; font-weight: 700; font-size: 15px; margin: 0 0 8px; }
+.review-card p { font-size: 13.5px; color: #555; line-height: 1.5; margin: 0 0 14px; }
+.review-author { display: flex; align-items: center; gap: 10px; }
+.review-author .avatar { width: 36px; height: 36px; border-radius: 50%; background: #ddd; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #666; }
+.review-author .name { font-size: 13px; font-weight: 600; }
+
+/* ═══════ BLOCK 7: Why Researchers Choose Us ═══════ */
+.why-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; margin-bottom: 40px; }
+.why-grid p { font-size: 14px; line-height: 1.7; color: #555; }
+.compare-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+.compare-table th { background: #000B47; color: #fff; padding: 12px 16px; text-align: left; font-size: 13px; font-weight: 700; text-transform: uppercase; }
+.compare-table td { padding: 12px 16px; border-bottom: 1px solid #eee; font-size: 13px; }
+.compare-table td:nth-child(2) { color: #00a651; font-weight: 700; }
+.compare-table td:nth-child(3) { color: #999; }
+
+/* ═══════ BLOCK 8: Education ═══════ */
+.edu-text { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+.edu-text p { font-size: 14px; line-height: 1.75; color: #555; }
+
+/* ═══════ BLOCK 9: FAQ ═══════ */
+.faq-list details { border-bottom: 1px solid #e5e7eb; padding: 16px 0; }
+.faq-list summary { font-family: "Figtree",sans-serif; font-weight: 700; font-size: 15px; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+.faq-list summary::after { content: "+"; font-size: 22px; color: #00a651; }
+.faq-list details[open] summary::after { content: "−"; }
+.faq-list .faq-answer { padding-top: 10px; font-size: 14px; color: #555; line-height: 1.6; }
+
+/* ═══════ BLOCK 10: Money-Back ═══════ */
+.mb-flex { display: flex; align-items: center; justify-content: space-between; gap: 30px; }
+.mb-title { font-family: "Figtree",sans-serif; font-weight: 900; font-size: 30px; line-height: 1.2; margin: 0; }
+.mb-badge { background: #fff; color: #000B47; padding: 16px 28px; border-radius: 8px; font-weight: 800; font-size: 16px; white-space: nowrap; }
+
+/* ═══════ Responsive ═══════ */
+@media (max-width: 1024px) {
+  .hero-grid, .proof-grid, .why-grid { grid-template-columns: 1fr; }
+  .products-grid, .cat-grid, .review-grid { grid-template-columns: repeat(2, 1fr); }
+  .stats-flex, .mb-flex { flex-direction: column; }
+  .stats-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.12); }
+  .hero-title { font-size: 38px; }
+  .edu-text { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .products-grid, .cat-grid, .review-grid { grid-template-columns: 1fr; }
+  .home-block { padding: 48px 0; }
+  .hero-title { font-size: 30px; }
+  .mb-title { font-size: 22px; }
+}
+</style>
+
+<!-- ════════════════════════════════════════════════════════════
+  BLOCK 1: Hero Area
+  ════════════════════════════════════════════════════════════ -->
+<section class="home-block home-block--light">
+  <div class="home-wrap">
+    <div class="hero-grid">
+      <div>
+        <h1 class="hero-title">PRECISION.<br>TRANSPARENCY.<br>SCIENCE.</h1>
+        <p class="hero-sub">Lab-verified research compounds with 99.4% purity. Trusted by over 1,000 laboratories worldwide for reproducible results.</p>
+        <a href="#" class="hero-cta">SHOP PREMIUM COMPOUNDS <i class="fa-solid fa-arrow-right"></i></a>
+        <div class="hero-payments">
+          <span>VISA</span><span>Mastercard</span><span>AMEX</span><span>BTC</span>
         </div>
       </div>
-
-      <div class="swiper-slide">
-        <div class="pcBanner" style="background:linear-gradient(135deg,#001a33,#003d6b,#006994);height:600px;"></div>
-        <div class="banner-txt">
-          <h1>Infinite Possibilities<br>Made Possible</h1>
-          <p>The validation engine for AI discovery in <strong>4 days</strong>.</p>
-          <a href="https://www.genscript.com/ai-drug-discovery-solutions.html?src=banner">Start Validation</a>
+      <div class="hero-right">
+        <div class="hero-card">
+          <h3>Peptide Bundle</h3>
+          <div class="card-vial" style="background:linear-gradient(180deg,#1a3a8a,#0d1f5c);">99.4%</div>
+          <p style="font-size:13px;color:#a3e635;margin:0;">3-Pack Special</p>
+        </div>
+        <div class="hero-card" style="transform:rotate(3deg);">
+          <h3>Research Grade</h3>
+          <div class="card-vial" style="background:linear-gradient(180deg,#162d6e,#0a1845);">HPLC</div>
+          <p style="font-size:13px;color:#a3e635;margin:0;">Certified Pure</p>
         </div>
       </div>
-
-      <div class="swiper-slide">
-        <div class="pcBanner" style="background:linear-gradient(135deg,#1a0a2e,#3d1a6e,#6b3fa0);height:600px;"></div>
-        <div class="banner-txt">
-          <h1>IGNITE YOUR SCIENTIFIC<br>POSSIBILITIES</h1>
-          <p>Up to <strong>$1.5M Funding Pool</strong> • Technical Expertise • Global Ecosystem</p>
-          <a href="https://www.genscript.com/lsrg-program.html?src=banner">Apply Now</a>
-        </div>
-      </div>
-
-      <div class="swiper-slide">
-        <div class="pcBanner" style="background:linear-gradient(135deg,#0a2e0a,#1a5e1a,#2d8f2d);height:600px;"></div>
-        <div class="banner-txt">
-          <h1>A launchpad in<br>every kit.</h1>
-          <p>TurboCHO™ Protein Expression Kit</p>
-          <a href="https://www.genscript.com/turbocho-protein-expression-kit.html?src=banner">Learn More</a>
-        </div>
-      </div>
-
-      <div class="swiper-slide">
-        <div class="pcBanner" style="background:linear-gradient(135deg,#2e0a1a,#5e1a3d,#8f2d6b);height:600px;"></div>
-        <div class="banner-txt">
-          <h1>Publication<br>Spotlight</h1>
-          <p>Accelerate In-House Antibody Production<br>and Purification from Days to Hours</p>
-          <a href="https://www.genscript.com/quatro-publication-spotlight.html?src=banner">Learn More</a>
-        </div>
-      </div>
-
-      <div class="swiper-slide">
-        <div class="pcBanner" style="background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);height:600px;"></div>
-        <div class="banner-txt">
-          <h1>Cut. Through. Limits.<br>OmniGuide RNA</h1>
-          <p>For any gene editing system, up to 266 nt</p>
-          <a href="https://www.genscript.com/omniguide-rna.html?src=banner">Learn More</a>
-        </div>
-      </div>
-
     </div>
-    <div class="swiper-pagination"></div>
-    <div class="swiper-button-prev"></div>
-    <div class="swiper-button-next"></div>
   </div>
 </section>
 
-<!-- ========================================================================= -->
-<!--  PRODUCTS & SERVICES  (4×2 CSS Grid + dynamic data from backend)           -->
-<!-- ========================================================================= -->
-<section class="products-services">
-  <h1 class="section-title">Products &amp; Services</h1>
-  <p class="section-desc">
-    GenScript offers highly customizable and tailor-made solutions for your research needs.
-    Learn more about our full service portfolios by clicking on the icons below.
-    Reach out to our Ph.D. level customer support personnel for more information today!
-  </p>
+<!-- ════════════════════════════════════════════════════════════
+  BLOCK 2: Stats Bar
+  ════════════════════════════════════════════════════════════ -->
+<section class="home-block home-block--dark" style="padding:0;">
+  <div class="stats-flex">
+    <div class="stats-item"><p class="stats-num">99.4%</p><p class="stats-label">PURITY</p></div>
+    <div class="stats-item"><p class="stats-num">USA</p><p class="stats-label">MADE</p></div>
+    <div class="stats-item"><p class="stats-num">5.0+</p><p class="stats-label">REVIEWS</p></div>
+    <div class="stats-item"><p class="stats-num">1,000+</p><p class="stats-label">ORDERS</p></div>
+  </div>
+</section>
 
-  <div class="service-cards">
-    {% if products is defined and products is not empty %}
-      {# --- Dynamic: render cards from OpenCart backend data --- #}
-      {% set cardClasses = ['card-gene','card-protein','card-mrna','card-crispr','card-peptide','card-oligo','card-antibody','card-catalog'] %}
-      {% for product in products %}
-        {% set idx = loop.index0 % 8 %}
-        <a href="{{ product.href }}" class="service-card {{ cardClasses[idx] }}">
-          <h2 class="card-title">{{ product.name }}</h2>
-          <p class="card-desc">{{ product.description|striptags|e }}</p>
-          <div class="card-footer">
-            <span class="card-btn">Learn More</span>
-            <span class="card-arrow">↗</span>
-          </div>
-        </a>
+<!-- ════════════════════════════════════════════════════════════
+  BLOCK 3: Best Sellers Grid
+  ════════════════════════════════════════════════════════════ -->
+<section class="home-block home-block--light">
+  <div class="home-wrap">
+    <h2 class="section-title">BEST SELLERS — LAB VERIFIED THIS MONTH</h2>
+    <div class="products-grid">
+      {% set productNames = ['BPC-157','TB-500','CJC-1295','Ipamorelin','Semaglutide','Tirzepatide'] %}
+      {% set productPrices = ['59.99','74.99','89.99','64.99','129.99','149.99'] %}
+      {% for name in productNames %}
+      <div class="product-card">
+        <div class="product-card-img">🧪</div>
+        <div class="product-card-body">
+          <h3>Research Compound {{ name }}</h3>
+          <span class="purity">99.4% Purity</span>
+          <p class="price">${{ productPrices[loop.index0] }}</p>
+          <button class="btn-add-cart">Add to Cart</button>
+        </div>
+      </div>
       {% endfor %}
-    {% else %}
-      {# --- Fallback: static cards (visible until you add products in admin) --- #}
-
-      <a href="https://www.genscript.com/gene_synthesis.html" class="service-card card-gene">
-        <h2 class="card-title">Gene Services</h2>
-        <p class="card-desc">100% sequence-verified clonal gene<br>99.99% delivery rate<br>Largest gene provider in the US since 2008</p>
-        <div class="card-footer">
-          <span class="card-btn">Learn More</span>
-          <span class="card-arrow">↗</span>
-        </div>
-      </a>
-
-      <a href="https://www.genscript.com/recombinant-protein-services.html?src=home" class="service-card card-protein">
-        <h2 class="card-title">Protein Services</h2>
-        <p class="card-desc">5 BDs for HT gene-to-antibody<br>10 BDs for gram-level expression<br>70+ BsAb formats produced</p>
-        <div class="card-footer">
-          <span class="card-btn">Learn More</span>
-          <span class="card-arrow">↗</span>
-        </div>
-      </a>
-
-      <a href="https://www.genscript.com/ivt-rna.html?=home" class="service-card card-mrna">
-        <h2 class="card-title">mRNA Services</h2>
-        <p class="card-desc">From Design to Delivery: mRNA, saRNA, circRNA &amp; LNP Formulation</p>
-        <div class="card-footer">
-          <span class="card-btn">Learn More</span>
-          <span class="card-arrow">↗</span>
-        </div>
-      </a>
-
-      <a href="https://www.genscript.com/crispr-services.html?src=home" class="service-card card-crispr">
-        <h2 class="card-title">CRISPR Services</h2>
-        <p class="card-desc">To achieve the best genome editing efficiency in any cell!</p>
-        <div class="card-footer">
-          <span class="card-btn">Learn More</span>
-          <span class="card-arrow">↗</span>
-        </div>
-      </a>
-
-      <a href="https://www.genscript.com/peptide-services.html?=home" class="service-card card-peptide">
-        <h2 class="card-title">Peptide Services</h2>
-        <p class="card-desc">Quantity from mg to kg, &gt;300 available modifications, Deliver as fast as 5 days</p>
-        <div class="card-footer">
-          <span class="card-btn">Learn More</span>
-          <span class="card-arrow">↗</span>
-        </div>
-      </a>
-
-      <a href="https://www.genscript.com/oligo-synthesis-applications.html?=home" class="service-card card-oligo">
-        <h2 class="card-title">Oligo Services</h2>
-        <p class="card-desc">Up to 218nt DNA oligo and 266nt RNA oligo<br>Up to kg level • ISO 13485 available<br>High quality &amp; consistency</p>
-        <div class="card-footer">
-          <span class="card-btn">Learn More</span>
-          <span class="card-arrow">↗</span>
-        </div>
-      </a>
-
-      <a href="https://www.genscript.com/custom-antibody-production-services.html?src=home" class="service-card card-antibody">
-        <h2 class="card-title">Reagent Antibody Services</h2>
-        <p class="card-desc">Comprehensive and Custom Antibody Development for Research and Diagnostics</p>
-        <div class="card-footer">
-          <span class="card-btn">Learn More</span>
-          <span class="card-arrow">↗</span>
-        </div>
-      </a>
-
-      <a href="https://www.genscript.com/products.html?src=home" class="service-card card-catalog">
-        <h2 class="card-title">Catalog Products</h2>
-        <p class="card-desc">Reliable reagents &amp; optimized kits with next-day shipping</p>
-        <div class="card-footer">
-          <span class="card-btn">Learn More</span>
-          <span class="card-arrow">↗</span>
-        </div>
-      </a>
-
-    {% endif %}
+    </div>
+    <a href="#" class="btn-view-all">View all products</a>
+    <div class="trust-strip">
+      <div class="trust-item"><i class="fa-solid fa-truck-fast"></i> Fast Shipping</div>
+      <div class="trust-item"><i class="fa-solid fa-lock"></i> Secure Checkout</div>
+      <div class="trust-item"><i class="fa-solid fa-flask"></i> Lab Tested</div>
+    </div>
   </div>
 </section>
 
-<!-- ========================================================================= -->
-<!--  NEWS & BLOGS  (AJAX from data/learncenter.json)                           -->
-<!-- ========================================================================= -->
-<section class="news-blogs">
-  <div class="container">
-    <h1 class="text-center mb-4" style="font-family:Figtree,sans-serif;font-weight:800;">News &amp; Blogs</h1>
-    <div class="learncenter-container">
-      <p class="text-center" style="color:rgba(255,255,255,0.4);">Loading content…</p>
+<!-- ════════════════════════════════════════════════════════════
+  BLOCK 4: Shop By Research Focus
+  ════════════════════════════════════════════════════════════ -->
+<section class="home-block home-block--gray">
+  <div class="home-wrap">
+    <h2 class="section-title">SHOP BY RESEARCH FOCUS</h2>
+    <div class="cat-grid">
+      {% set cats = ['Muscle & Strength','Fat Loss','Cognitive Function','Anti-Aging','Immune Support','Sleep & Recovery'] %}
+      {% for cat in cats %}
+      <a href="#" class="cat-card"><span>{{ cat }}</span><i class="fa-solid fa-arrow-right"></i></a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+  BLOCK 5: Proof Before Potency
+  ════════════════════════════════════════════════════════════ -->
+<section class="home-block home-block--dark">
+  <div class="home-wrap">
+    <div class="proof-grid">
+      <div>
+        <h2 class="proof-title">PROOF BEFORE POTENCY</h2>
+        <ul class="proof-list">
+          <li><i class="fa-solid fa-circle-check"></i> HPLC Tested — Every batch verified</li>
+          <li><i class="fa-solid fa-circle-check"></i> 99% Purity — Industry-leading standards</li>
+          <li><i class="fa-solid fa-circle-check"></i> COA Included — Certificate of Analysis</li>
+          <li><i class="fa-solid fa-circle-check"></i> USA Manufactured — Domestic quality control</li>
+        </ul>
+      </div>
+      <div style="display:flex;justify-content:center;">
+        <div class="proof-card">
+          <p class="sku">SKU: BPC-157-5MG</p>
+          <div style="width:160px;height:160px;background:#f4f6f9;border-radius:12px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:70px;">🧪</div>
+          <p class="price-lg">$59.99</p>
+          <button class="btn-green">Add to Cart</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+  BLOCK 6: Customer Reviews
+  ════════════════════════════════════════════════════════════ -->
+<section class="home-block home-block--light">
+  <div class="home-wrap">
+    <h2 class="section-title">WHAT RESEARCHERS SAY</h2>
+    <div class="review-grid">
+      {% set reviews = [
+        {'stars':5,'title':'Exceptional Purity','body':'The HPLC results were spot on. Best quality we have sourced in 3 years of lab work.','author':'Dr. Michael R.','title2':'Stanford University'},
+        {'stars':5,'title':'Fast Shipping','body':'Ordered Tuesday, received Thursday. Cold-chain packaging was intact. Will reorder.','author':'Sarah K.','title2':'Johns Hopkins'},
+        {'stars':5,'title':'Reproducible Results','body':'Used in our peptide study. Results were 100% reproducible across all three trials.','author':'James L.','title2':'MIT Lab'}
+      ] %}
+      {% for r in reviews %}
+      <div class="review-card">
+        <div class="review-stars">★★★★★</div>
+        <h4>{{ r.title }}</h4>
+        <p>{{ r.body }}</p>
+        <div class="review-author">
+          <div class="avatar">{{ r.author|slice(0,1) }}</div>
+          <div><div class="name">{{ r.author }}</div><div style="font-size:11px;color:#999;">{{ r.title2 }}</div></div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+  BLOCK 7: Why Researchers Choose Us
+  ════════════════════════════════════════════════════════════ -->
+<section class="home-block home-block--gray">
+  <div class="home-wrap">
+    <h2 class="section-title">WHY RESEARCHERS CHOOSE US</h2>
+    <div class="why-grid">
+      <p>Our compounds undergo rigorous third-party HPLC testing to ensure every batch meets the 99% purity standard. Unlike overseas suppliers, we manufacture domestically under strict quality control protocols, providing full traceability from synthesis to shipment.</p>
+      <p>We believe transparency is non-negotiable. Every order includes a Certificate of Analysis (COA) with batch-specific data. Our peer-reviewed approach has made us the trusted supplier for over 1,000 independent research laboratories worldwide.</p>
+    </div>
+    <table class="compare-table">
+      <thead><tr><th>FEATURE</th><th>OUR BRAND</th><th>COMPETITORS</th></tr></thead>
+      <tbody>
+        <tr><td>HPLC Testing</td><td>Every Batch</td><td>Intermittent</td></tr>
+        <tr><td>Purity Standard</td><td>&ge; 99%</td><td>95-98%</td></tr>
+        <tr><td>COA Included</td><td>Yes</td><td>On Request</td></tr>
+        <tr><td>USA Manufactured</td><td>Yes</td><td>Often Overseas</td></tr>
+        <tr><td>Shipping Speed</td><td>2-3 Days</td><td>1-3 Weeks</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+  BLOCK 8: Education
+  ════════════════════════════════════════════════════════════ -->
+<section class="home-block home-block--light">
+  <div class="home-wrap">
+    <h2 class="section-title">UNDERSTANDING PEPTIDE PURITY &amp; TESTING</h2>
+    <div class="edu-text">
+      <div>
+        <p>Peptide purity is determined through High-Performance Liquid Chromatography (HPLC), the gold standard in analytical chemistry. This method separates compounds based on their molecular properties, allowing precise quantification of the target peptide versus impurities. A purity level of 99% means that out of every 100 molecules, 99 are the intended compound — a standard that exceeds typical industry benchmarks.</p>
+      </div>
+      <div>
+        <p>Mass spectrometry (MS) complements HPLC by confirming molecular weight and structural integrity. Together, HPLC and MS form a complete analytical framework that ensures researchers receive exactly what they ordered. At GenScript, every batch is independently verified and documented before release.</p>
+        <p>Proper storage conditions — typically lyophilized powder at -20°C — preserve peptide integrity for long-term stability. Always consult the included COA for batch-specific handling recommendations.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+  BLOCK 9: FAQ
+  ════════════════════════════════════════════════════════════ -->
+<section class="home-block home-block--gray">
+  <div class="home-wrap">
+    <h2 class="section-title">FREQUENTLY ASKED QUESTIONS</h2>
+    <div class="faq-list">
+      <details>
+        <summary>How do you verify product purity?</summary>
+        <div class="faq-answer">Every batch undergoes independent third-party HPLC analysis. The Certificate of Analysis (COA) is included with every order and available for download on our website. We publish batch-specific purity data — never averages.</div>
+      </details>
+      <details>
+        <summary>What is your shipping and return policy?</summary>
+        <div class="faq-answer">Orders ship within 24 hours via express courier with cold-chain packaging where required. Domestic delivery takes 2-3 business days. If a product does not meet the stated purity specification, we offer a full refund within 90 days of purchase.</div>
+      </details>
+      <details>
+        <summary>Are your products for human consumption?</summary>
+        <div class="faq-answer">No. All products sold by GenScript are strictly for laboratory research and analytical purposes only. They are not intended for human or veterinary use. By purchasing, you certify that you are a qualified researcher affiliated with an accredited institution.</div>
+      </details>
+      <details>
+        <summary>Do you ship internationally?</summary>
+        <div class="faq-answer">Yes, we ship to over 40 countries. International orders typically arrive within 5-10 business days depending on customs clearance. All international shipments include proper documentation for customs purposes.</div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+  BLOCK 10: Money-Back Guarantee
+  ════════════════════════════════════════════════════════════ -->
+<section class="home-block home-block--green" style="padding:50px 0;">
+  <div class="home-wrap">
+    <div class="mb-flex">
+      <h2 class="mb-title">LAB-VERIFIED OR YOUR MONEY BACK<br>— 90 DAYS</h2>
+      <div class="mb-badge">100% Satisfaction Guarantee</div>
     </div>
   </div>
 </section>
