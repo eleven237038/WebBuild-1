@@ -39,6 +39,12 @@
 /* Badges */
 .pcard-badge-pop { position: absolute; top: 12px; left: 12px; z-index: 2; background: var(--primary-green); color: #fff; font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 4px; letter-spacing: 0.5px; }
 .pcard-badge-coa { position: absolute; top: 12px; right: 12px; z-index: 2; background: #e6f7ee; color: var(--primary-green); font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 4px; }
+/* Dynamic tag badges — stack horizontally at top-left */
+.pcard-badge-dynamic { position: absolute; top: 12px; z-index: 2; background: var(--primary-green); color: #fff; font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 4px; letter-spacing: 0.5px; display: inline-block; }
+.pcard-badge-dynamic:first-of-type { left: 12px; }
+.pcard-badge-dynamic:nth-of-type(2) { left: 12px; top: 34px; }
+.pcard-badge-dynamic:nth-of-type(3) { left: 12px; top: 56px; }
+.pcard-badge-dynamic:nth-of-type(n+4) { display: none; }
 
 /* Image area — also works as <a> tag for clickable card */
 .pcard-img-wrap { position: relative; background: var(--bg-navy); height: 200px; display: flex; align-items: center; justify-content: center; text-decoration: none; cursor: pointer; }

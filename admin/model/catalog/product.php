@@ -126,6 +126,12 @@ class ModelCatalogProduct extends Model {
 
 		$this->cache->delete('product');
 
+		// Save custom tags
+		$this->load->model('catalog/custom_tag');
+		if (isset($data['product_custom_tag'])) {
+			$this->model_catalog_custom_tag->setProductTags($product_id, $data['product_custom_tag']);
+		}
+
 		return $product_id;
 	}
 
@@ -278,6 +284,11 @@ class ModelCatalogProduct extends Model {
 		}
 
 		$this->cache->delete('product');
+		// Save custom tags
+		$this->load->model('catalog/custom_tag');
+		if (isset($data['product_custom_tag'])) {
+			$this->model_catalog_custom_tag->setProductTags($product_id, $data['product_custom_tag']);
+		}
 	}
 
 	public function copyProduct($product_id) {
@@ -736,5 +747,10 @@ class ModelCatalogProduct extends Model {
 
 	public function editProductStatus($product_id, $status) {
 	  $this->db->query("UPDATE " . DB_PREFIX . "product SET status = '" . (int)$status . "' WHERE product_id = '" . (int)$product_id . "'");
+	}
+
+	public function getProductCustomTags($product_id) {
+		$query = $this->db->query("SELECT tag_id FROM " . DB_PREFIX . "product_to_custom_tag WHERE product_id = '" . (int)$product_id . "'");
+		return array_column($query->rows, 'tag_id');
 	}
 }

@@ -1,0 +1,42 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="submit" form="form-tag" data-toggle="tooltip" title="保存" class="btn btn-primary"><i class="fa fa-save"></i></button>
+        <a href="{{ cancel }}" data-toggle="tooltip" title="取消" class="btn btn-default"><i class="fa fa-reply"></i></a>
+      </div>
+      <h1>{{ 'tag_id' in app.request.get ? '编辑标签' : '添加标签' }}</h1>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}<div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}</div>{% endif %}
+    <div class="panel panel-default">
+      <div class="panel-body">
+        <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-tag" class="form-horizontal">
+          <div class="form-group required">
+            <label class="col-sm-2 control-label" for="input-name">标签名称</label>
+            <div class="col-sm-10">
+              <input type="text" name="name" value="{{ name }}" id="input-name" class="form-control"/>
+              {% if error_name %}<div class="text-danger">{{ error_name }}</div>{% endif %}
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-sort-order">排序</label>
+            <div class="col-sm-10"><input type="text" name="sort_order" value="{{ sort_order }}" id="input-sort-order" class="form-control"/></div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-status">状态</label>
+            <div class="col-sm-10">
+              <select name="status" id="input-status" class="form-control">
+                <option value="1" {{ status == 1 ? 'selected' }}>启用</option>
+                <option value="0" {{ status == 0 ? 'selected' }}>禁用</option>
+              </select>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{{ footer }}

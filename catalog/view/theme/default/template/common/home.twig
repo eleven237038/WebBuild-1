@@ -170,21 +170,19 @@
   <div class="home-wrap">
     <h2 class="section-title">BEST SELLERS — LAB VERIFIED THIS MONTH</h2>
     <div class="products-grid">
-      {% set productNames = ['BPC-157','TB-500','CJC-1295','Ipamorelin','Semaglutide','Tirzepatide'] %}
-      {% set productPrices = ['59.99','74.99','89.99','64.99','129.99','149.99'] %}
-      {% for name in productNames %}
-      <div class="product-card">
-        <div class="product-card-img">🧪</div>
-        <div class="product-card-body">
-          <h3>Research Compound {{ name }}</h3>
-          <span class="purity">99.4% Purity</span>
-          <p class="price">${{ productPrices[loop.index0] }}</p>
-          <button class="btn-add-cart">Add to Cart</button>
-        </div>
-      </div>
+      {% set homeProducts = [
+        {'product_id':'1','name':'BPC-157','price':'$59.99','emoji':'💊','href':'index.php?route=product/product&product_id=58','thumb':'','description':'Third-party tested — 99% purity by HPLC'},
+        {'product_id':'2','name':'TB-500','price':'$74.99','emoji':'🧬','href':'#','thumb':'','description':'Tissue healing research peptide. HPLC verified'},
+        {'product_id':'3','name':'CJC-1295','price':'$89.99','emoji':'🔬','href':'#','thumb':'','description':'Growth hormone secretagogue for metabolic research'},
+        {'product_id':'4','name':'Ipamorelin','price':'$64.99','emoji':'⚗️','href':'#','thumb':'','description':'Selective GH secretagogue. Lab-verified'},
+        {'product_id':'5','name':'Semaglutide','price':'$129.99','emoji':'🧪','href':'#','thumb':'','description':'GLP-1 receptor agonist for metabolic studies'},
+        {'product_id':'6','name':'Tirzepatide','price':'$149.99','emoji':'💉','href':'#','thumb':'','description':'Dual GIP/GLP-1 agonist. Premium research grade'}
+      ] %}
+      {% for product in homeProducts %}
+        {% include 'default/template/product/product_card.twig' with {'product': product} %}
       {% endfor %}
     </div>
-    <a href="#" class="btn-view-all">View all products</a>
+    <a href="index.php?route=product/category&path=59" class="btn-view-all">View all products</a>
     <div class="trust-strip">
       <div class="trust-item"><i class="fa-solid fa-truck-fast"></i> Fast Shipping</div>
       <div class="trust-item"><i class="fa-solid fa-lock"></i> Secure Checkout</div>
@@ -224,12 +222,8 @@
         </ul>
       </div>
       <div style="display:flex;justify-content:center;">
-        <div class="proof-card">
-          <p class="sku">SKU: BPC-157-5MG</p>
-          <div style="width:160px;height:160px;background:#f4f6f9;border-radius:12px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:70px;">🧪</div>
-          <p class="price-lg">$59.99</p>
-          <button class="btn-green">Add to Cart</button>
-        </div>
+        {% set featured_product = {'product_id':'58','name':'BPC-157','price':'$59.99','emoji':'🧪','href':'index.php?route=product/product&product_id=58','thumb':'','description':'SKU: BPC-157-5MG — HPLC verified 99.4% purity'} %}
+        {% include 'default/template/product/product_card.twig' with {'product': featured_product} %}
       </div>
     </div>
   </div>

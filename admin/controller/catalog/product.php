@@ -872,6 +872,17 @@ class ControllerCatalogProduct extends Controller {
 		}
 
 
+		// Custom Tags
+		$this->load->model('catalog/custom_tag');
+		$data['all_custom_tags'] = $this->model_catalog_custom_tag->getTags();
+		if (isset($this->request->post['product_custom_tag'])) {
+			$data['product_custom_tag'] = $this->request->post['product_custom_tag'];
+		} elseif (!empty($product_info)) {
+			$data['product_custom_tag'] = $this->model_catalog_product->getProductCustomTags($product_info['product_id']);
+		} else {
+			$data['product_custom_tag'] = array();
+		}
+
 		if (isset($this->request->post['weight'])) {
 			$data['weight'] = $this->request->post['weight'];
 		} elseif (!empty($product_info)) {

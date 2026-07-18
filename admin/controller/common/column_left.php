@@ -16,23 +16,36 @@ class ControllerCommonColumnLeft extends Controller {
 				'children' => array()
 			);
 
-		// Catalog — single top-level entry for white-label
+				// 商品管理 — 精简至两个核心入口
 		$catalog = array();
-		$catalog[] = array(
-			'name'	   => 'All Content',
-			'href'     => $this->url->link('catalog/product', 'user_token=' . $this->session->data['user_token']),
-			'children' => array()
-		);
-		$data['menus'][] = array(
-			'id'       => 'menu-catalog',
-			'icon'	   => 'fa-tags',
-			'name'	   => $this->language->get('text_catalog'),
-			'href'     => '',
-			'children' => $catalog
-		);
 
+		if ($this->user->hasPermission('access', 'catalog/product')) {
+			$catalog[] = array(
+				'name'     => '商品管理',
+				'href'     => $this->url->link('catalog/product', 'user_token=' . $this->session->data['user_token']),
+				'children' => array()
+			);
+		}
 
-			// Extension
+		if ($this->user->hasPermission('access', 'catalog/option')) {
+			$catalog[] = array(
+				'name'     => '标签管理',
+				'href'     => $this->url->link('catalog/custom_tag', 'user_token=' . $this->session->data['user_token']),
+				'children' => array()
+			);
+		}
+
+		if ($catalog) {
+			$data['menus'][] = array(
+				'id'       => 'menu-catalog',
+				'icon'     => 'fa-tags',
+				'name'     => '商品目录',
+				'href'     => '',
+				'children' => $catalog
+			);
+		}
+
+// Extension
 			$marketplace = array();
 			if ($this->user->hasPermission('access', 'marketplace/installer')) {
 				$marketplace[] = array(
@@ -97,23 +110,26 @@ class ControllerCommonColumnLeft extends Controller {
 				);
 			}
 
-		// Design — page content editor for white-label
+				// 页面设计 — 内容编辑器
 		$design = array();
-		$design[] = array(
-			'name'     => 'Page Editor',
-			'href'     => $this->url->link('catalog/information', 'user_token=' . $this->session->data['user_token']),
-			'children' => array()
-		);
-		$data['menus'][] = array(
-			'id'       => 'menu-design',
-			'icon'     => 'fa-pencil',
-			'name'     => 'Design',
-			'href'     => '',
-			'children' => $design
-		);
+		if ($this->user->hasPermission('access', 'catalog/information')) {
+			$design[] = array(
+				'name'     => '页面编辑器',
+				'href'     => $this->url->link('catalog/information', 'user_token=' . $this->session->data['user_token']),
+				'children' => array()
+			);
+		}
+		if ($design) {
+			$data['menus'][] = array(
+				'id'       => 'menu-design',
+				'icon'     => 'fa-pencil',
+				'name'     => '页面设计',
+				'href'     => '',
+				'children' => $design
+			);
+		}
 
-
-			// Sales
+// Sales
 			$sale = array();
 
 			if ($this->user->hasPermission('access', 'sale/order')) {

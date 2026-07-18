@@ -1,0 +1,50 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <a href="{{ add }}" data-toggle="tooltip" title="添加" class="btn btn-primary"><i class="fa fa-plus"></i></a>
+        <button type="button" form="form-tag" formaction="{{ delete }}" data-toggle="tooltip" title="删除" class="btn btn-danger" onclick="return confirm('确认删除?') && $('#form-tag').submit();"><i class="fa fa-trash-o"></i></button>
+      </div>
+      <h1>标签管理</h1>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}<div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}</div>{% endif %}
+    {% if success %}<div class="alert alert-success"><i class="fa fa-check-circle"></i> {{ success }}</div>{% endif %}
+    <div class="panel panel-default">
+      <div class="panel-body">
+        <form action="{{ delete }}" method="post" enctype="multipart/form-data" id="form-tag">
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+              <thead>
+                <tr>
+                  <td style="width:1px;"><input type="checkbox" onclick="$('input[name*=\'selected\']').prop('checked', this.checked);"/></td>
+                  <td>标签名称</td>
+                  <td>排序</td>
+                  <td>状态</td>
+                  <td>操作</td>
+                </tr>
+              </thead>
+              <tbody>
+                {% for tag in tags %}
+                <tr>
+                  <td><input type="checkbox" name="selected[]" value="{{ tag.tag_id }}"/></td>
+                  <td>{{ tag.name }}</td>
+                  <td>{{ tag.sort_order }}</td>
+                  <td>{{ tag.status ? '启用' : '禁用' }}</td>
+                  <td><a href="index.php?route=catalog/custom_tag/edit&user_token={{ user_token }}&tag_id={{ tag.tag_id }}" class="btn btn-primary btn-xs"><i class="fa fa-pencil"></i> 编辑</a></td>
+                </tr>
+                {% endfor %}
+                {% if not tags %}
+                <tr><td colspan="5" class="text-center">暂无标签数据</td></tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{{ footer }}

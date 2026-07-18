@@ -386,6 +386,18 @@
                     {% endif %} </label>
                 </div>
               </div>
+              <div class="form-group">
+                <label class="col-md-2 control-label">商品标签</label>
+                <div class="col-md-10">
+                  <div style="max-height:160px;overflow-y:auto;padding:8px;border:1px solid #e5e7eb;border-radius:4px;">
+                  {% for tag in all_custom_tags %}
+                    <label class="checkbox-inline" style="margin-right:12px;margin-bottom:6px;">
+                      <input type="checkbox" name="product_custom_tag[]" value="{{ tag.tag_id }}" {{ tag.tag_id in product_custom_tag ? 'checked' }}> {{ tag.name }}
+                    </label>
+                  {% endfor %}
+                  </div>
+                </div>
+              </div>
             </div>
             <div class="tab-pane" id="tab-links">
               <div class="form-group">

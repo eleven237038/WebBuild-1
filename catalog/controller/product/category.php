@@ -170,7 +170,7 @@ class ControllerProductCategory extends Controller {
 
 			foreach ($results as $result) {
 				$href = $this->url->link('product/product', 'path=' . $this->request->get['path'] . '&product_id=' . $result['product_id'] . $url);
-				$data['products'][] = $this->model_catalog_product->handleSingleProduct($result, $this->config->get('theme_' . $this->config->get('config_theme') . '_image_product_width'), $this->config->get('theme_' . $this->config->get('config_theme') . '_image_product_height'), $href);
+				$data['products'][] = $this->model_catalog_product->handleSingleProduct($result, $this->config->get('theme_' . $this->config->get('config_theme') . '_image_product_width'), $this->config->get('theme_' . $this->config->get('config_theme') . '_image_product_height'), $href) + array('custom_tags' => $this->model_catalog_product->getProductCustomTags($result['product_id']));
 			}
 
 			$url = '';

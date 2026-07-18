@@ -603,4 +603,9 @@ class ModelCatalogProduct extends Model {
 
 		return $results;
 	}
+
+	public function getProductCustomTags($product_id) {
+		$query = $this->db->query("SELECT t.tag_id, t.name FROM " . DB_PREFIX . "custom_tag t INNER JOIN " . DB_PREFIX . "product_to_custom_tag pt ON t.tag_id = pt.tag_id WHERE pt.product_id = '" . (int)$product_id . "' AND t.status = 1 ORDER BY t.sort_order ASC");
+		return $query->rows;
+	}
 }
