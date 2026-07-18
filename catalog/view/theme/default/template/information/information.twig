@@ -1,17 +1,458 @@
 {{ header }}
-<div id="information-information" class="container">
-  {{ include(helper.template('_partial/breadcrumb')) }}
-  <div class="row">{{ column_left }}
-    {% if column_left and column_right %}
-    {% set class = 'col-sm-6' %}
-    {% elseif column_left or column_right %}
-    {% set class = 'col-sm-9' %}
-    {% else %}
-    {% set class = 'col-sm-12' %}
-    {% endif %}
-    <div id="content" class="{{ class }}">{{ content_top }}
-      <h1>{{ heading_title }}</h1>
-      {{ description }}{{ content_bottom }}</div>
-    {{ column_right }}</div>
+<!-- ==========================================================================
+ *  GenScript — Information Pages (Conditional by information_id)
+ *  4 → ABOUT page    7 → LAB RESULTS page    8 → ARTICLES page
+ * ========================================================================== -->
+{% if information_id == 4 %}
+{# ═══════════════════════════════════════════════════ ABOUT PAGE ═══════════ #}
+<style>
+.about-page { width: 100%; overflow-x: hidden; }
+.about-wrap { max-width: 1200px; margin: 0 auto; padding: 0 32px; }
+.about-section { width: 100%; box-sizing: border-box; }
+
+/* ═══════ BLOCK 1: Hero with grid + green glow ═══════ */
+.about-hero {
+  background-color: #ffffff;
+  background-image:
+    linear-gradient(rgba(0,11,71,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,11,71,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  padding: 100px 0; text-align: center;
+  position: relative;
+}
+.about-hero::before {
+  content: "";
+  position: absolute; top: -120px; left: 50%; transform: translateX(-50%);
+  width: 500px; height: 300px;
+  background: radial-gradient(ellipse at center, rgba(0,166,81,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+.about-tag { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #00a651; margin: 0 0 14px; }
+.about-hero-title { font-family: "Figtree",sans-serif; font-weight: 900; font-size: 56px; color: #1a1a2e; text-transform: uppercase; line-height: 1.12; margin: 0 0 18px; letter-spacing: -1px; }
+.about-hero-sub { font-size: 17px; color: #666; margin: 0 auto; max-width: 620px; line-height: 1.55; }
+
+/* ═══════ BLOCK 2: Dark split layout ═══════ */
+.about-dark { background: #000B47; color: #ffffff; padding: 80px 0; }
+.about-split { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: start; }
+.about-tag--dark { color: #00a651; }
+.about-dark-title { font-family: "Figtree",sans-serif; font-weight: 900; font-size: 36px; text-transform: uppercase; line-height: 1.15; margin: 0 0 22px; color: #ffffff; }
+.about-dark-text { font-size: 14.5px; color: rgba(255,255,255,0.72); line-height: 1.65; margin: 0 0 18px; }
+.about-quote { border-left: 3px solid #00a651; padding-left: 15px; font-style: italic; color: #ffffff; font-size: 13.5px; line-height: 1.55; margin: 22px 0 0; }
+
+/* ═══════ 2×2 Cards ═══════ */
+.about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: rgba(255,255,255,0.08); border-radius: 8px; overflow: hidden; }
+.about-card { background: rgba(255,255,255,0.05); padding: 36px 32px; }
+.about-card-num { font-family: "Figtree",sans-serif; font-weight: 900; font-size: 36px; color: #00a651; margin: 0 0 2px; line-height: 1; }
+.about-card-label { font-size: 10.5px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1.5px; margin: 0 0 8px; }
+.about-card-text { font-size: 13px; color: rgba(255,255,255,0.6); line-height: 1.5; margin: 0; }
+
+/* ═══════ Responsive ═══════ */
+@media (max-width: 1024px) { .about-split { grid-template-columns: 1fr; } .about-hero-title { font-size: 38px; } .about-dark-title { font-size: 28px; } }
+@media (max-width: 640px) { .about-hero-title { font-size: 28px; } .about-dark-title { font-size: 22px; } .about-wrap { padding: 0 18px; } .about-grid { grid-template-columns: 1fr; } }
+</style>
+
+<div class="about-page">
+  <!-- BLOCK 1: Hero -->
+  <section class="about-section about-hero">
+    <div class="about-wrap">
+      <p class="about-tag">// ABOUT</p>
+      <h1 class="about-hero-title">BUILT ON STANDARDS,<br>NOT SHORTCUTS</h1>
+      <p class="about-hero-sub">Sparta Labs delivers premium, lab-tested research peptides for those who demand the highest standards.</p>
+    </div>
+  </section>
+
+  <!-- BLOCK 2: Dark Split -->
+  <section class="about-section about-dark">
+    <div class="about-wrap">
+      <div class="about-split">
+        <!-- Left: Text -->
+        <div>
+          <p class="about-tag about-tag--dark">// ABOUT</p>
+          <h2 class="about-dark-title">BUILT ON STANDARDS,<br>NOT SHORTCUTS</h2>
+          <p class="about-dark-text">Sparta Labs delivers premium, lab-tested research peptides for those who demand the highest standards. Every product is third-party tested and backed by a Certificate of Analysis to verify purity, identity, and authenticity.</p>
+          <p class="about-dark-text">We believe researchers deserve full transparency into what they're working with. That's why every batch is independently verified, every COA is publicly available, and every product meets or exceeds 99% purity standards.</p>
+          <p class="about-quote">All Sparta Labs products are for research use only and are not intended for human or veterinary use.</p>
+        </div>
+        <!-- Right: 2×2 Cards -->
+        <div class="about-grid">
+          <div class="about-card"><p class="about-card-num">01</p><p class="about-card-label">THIRD-PARTY TESTED</p><p class="about-card-text">Every batch independently verified by accredited laboratories for purity and identity.</p></div>
+          <div class="about-card"><p class="about-card-num">02</p><p class="about-card-label">FULL TRANSPARENCY</p><p class="about-card-text">Full Certificates of Analysis available for every product, every batch — no exceptions.</p></div>
+          <div class="about-card"><p class="about-card-num">03</p><p class="about-card-label">99% PURITY</p><p class="about-card-text">Rigorous quality control ensuring research-grade compounds that meet the highest standards.</p></div>
+          <div class="about-card"><p class="about-card-num">04</p><p class="about-card-label">FAST SHIPPING</p><p class="about-card-text">Temperature-controlled packaging with discreet, fast shipping across the United States.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
 </div>
+
+{% elseif information_id == 8 %}
+{# ═══════════════════════════════════════════════ ARTICLES PAGE ═══════════ #}
+<style>
+.articles-page { width: 100%; overflow-x: hidden; background: #f8f9fa; }
+.articles-wrap { max-width: 1400px; margin: 0 auto; padding: 0 24px; }
+
+/* ═══════ BLOCK 1: Hero with grid + green glow ═══════ */
+.articles-hero {
+  background-color: #ffffff;
+  background-image:
+    linear-gradient(rgba(0,11,71,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,11,71,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  padding: 60px 0; text-align: center;
+  position: relative;
+}
+.articles-hero::before {
+  content: ""; position: absolute; top: -80px; left: 50%; transform: translateX(-50%);
+  width: 400px; height: 200px;
+  background: radial-gradient(ellipse at center, rgba(0,166,81,0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+.articles-tag { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #00a651; margin: 0 0 12px; }
+.articles-hero-title { font-family: "Figtree",sans-serif; font-weight: 900; font-size: 48px; color: #000B47; text-transform: uppercase; line-height: 1.12; margin: 0 0 14px; }
+.articles-hero-sub { font-size: 16px; color: #666; margin: 0; }
+
+/* ═══════ BLOCK 2: Sidebar + Grid ═══════ */
+.articles-main { display: flex; gap: 40px; max-width: 1400px; margin: 40px auto; padding: 0 24px; }
+
+/* --- Sidebar --- */
+.articles-sidebar { width: 260px; flex-shrink: 0; }
+.articles-sidebar-inner { position: sticky; top: 100px; }
+.articles-search { position: relative; margin-bottom: 24px; }
+.articles-search input { width: 100%; height: 42px; padding: 0 14px 0 38px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 13px; color: #333; outline: none; box-sizing: border-box; }
+.articles-search input:focus { border-color: #00a651; }
+.articles-search i { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: #bbb; font-size: 13px; }
+.articles-sidebar h4 { font-family: "Figtree",sans-serif; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #999; margin: 0 0 12px; }
+.articles-cat-list { list-style: none; padding: 0; margin: 0 0 24px; }
+.articles-cat-list li { margin-bottom: 6px; }
+.articles-cat-list label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #555; cursor: pointer; }
+.articles-cat-list input[type="checkbox"] { accent-color: #00a651; width: 16px; height: 16px; }
+.articles-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.articles-tag-pill { display: inline-block; padding: 5px 12px; background: #f0f2f5; border-radius: 16px; font-size: 11px; color: #666; text-decoration: none; transition: background 0.15s, color 0.15s; }
+.articles-tag-pill:hover { background: #00a651; color: #fff; }
+
+/* --- Article Grid --- */
+.articles-grid-wrap { flex: 1; min-width: 0; }
+.articles-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 32px; }
+
+/* --- Article Card --- */
+.article-card { display: flex; flex-direction: column; background: #fff; border-radius: 8px; overflow: hidden; transition: box-shadow 0.2s; }
+.article-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
+.article-card-img-wrap { position: relative; overflow: hidden; border-radius: 8px 8px 0 0; height: 200px; background: #000B47; display: flex; align-items: center; justify-content: center; }
+.article-card-img-wrap .article-emoji { font-size: 60px; }
+.article-card-badge { position: absolute; bottom: 0; left: 0; background: #00a651; color: #fff; font-size: 10px; font-weight: 700; padding: 5px 14px; letter-spacing: 1px; text-transform: uppercase; }
+.article-card-body { padding: 18px; flex-grow: 1; display: flex; flex-direction: column; }
+.article-card-body h3 { font-family: "Figtree",sans-serif; font-weight: 700; font-size: 17px; color: #000B47; margin: 0 0 8px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.article-card-body p { font-size: 13.5px; color: #666; line-height: 1.55; margin: 0 0 16px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.article-card-meta { display: flex; justify-content: space-between; align-items: center; margin-top: auto; border-top: 1px solid #eee; padding-top: 12px; }
+.article-card-date { font-size: 11px; color: #aaa; }
+.article-card-readmore { font-size: 12px; font-weight: 700; color: #00a651 !important; text-decoration: none; }
+.article-card-readmore:hover { text-decoration: underline; }
+
+/* --- Pagination --- */
+.articles-pagination { display: flex; justify-content: center; gap: 8px; margin: 48px 0 60px; }
+.articles-pagination a, .articles-pagination span { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 8px; font-size: 13px; font-weight: 600; text-decoration: none; border: 1px solid #e0e0e0; color: #666; background: #fff; transition: all 0.15s; }
+.articles-pagination a:hover { border-color: #00a651; color: #00a651; }
+.articles-pagination .active { border-color: #00a651; color: #00a651; background: #e6f7ee; font-weight: 800; }
+
+/* ═══════ Responsive ═══════ */
+@media (max-width: 1024px) { .articles-main { flex-direction: column; } .articles-sidebar { width: 100%; } .articles-sidebar-inner { position: static; } .articles-hero-title { font-size: 34px; } }
+@media (max-width: 640px) { .articles-grid { grid-template-columns: 1fr; } .articles-hero-title { font-size: 26px; } .articles-wrap { padding: 0 16px; } .articles-main { padding: 0 16px; } }
+</style>
+
+<div class="articles-page">
+  <!-- BLOCK 1: Hero -->
+  <section class="articles-hero">
+    <div class="articles-wrap">
+      <p class="articles-tag">// ARTICLES</p>
+      <h1 class="articles-hero-title">PEPTIDE RESEARCH LIBRARY</h1>
+      <p class="articles-hero-sub">Explore the latest findings and clinical data.</p>
+    </div>
+  </section>
+
+  <!-- BLOCK 2: Sidebar + Grid -->
+  <div class="articles-main">
+    <!-- Sidebar -->
+    <aside class="articles-sidebar">
+      <div class="articles-sidebar-inner">
+        <div class="articles-search">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" placeholder="Search...">
+        </div>
+        <h4>Categories</h4>
+        <ul class="articles-cat-list">
+          <li><label><input type="checkbox" checked> Peptide Research</label></li>
+          <li><label><input type="checkbox"> HPLC Analysis</label></li>
+          <li><label><input type="checkbox"> Mass Spectrometry</label></li>
+          <li><label><input type="checkbox"> Clinical Studies</label></li>
+          <li><label><input type="checkbox"> Lab Techniques</label></li>
+          <li><label><input type="checkbox"> Quality Standards</label></li>
+        </ul>
+        <h4>Popular Tags</h4>
+        <div class="articles-tags">
+          <a href="#" class="articles-tag-pill">BPC-157</a>
+          <a href="#" class="articles-tag-pill">TB-500</a>
+          <a href="#" class="articles-tag-pill">HPLC</a>
+          <a href="#" class="articles-tag-pill">COA</a>
+          <a href="#" class="articles-tag-pill">Purity</a>
+          <a href="#" class="articles-tag-pill">Semaglutide</a>
+          <a href="#" class="articles-tag-pill">Research</a>
+          <a href="#" class="articles-tag-pill">Peptides</a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Article Grid -->
+    <div class="articles-grid-wrap">
+      <div class="articles-grid">
+        {% set articles = [
+          {'badge':'LATEST','title':'The Complete Guide to HPLC Testing for Research Peptides','date':'Oct 24, 2025','summary':'High-Performance Liquid Chromatography remains the gold standard for verifying peptide purity in research settings. This guide covers methodology, interpretation of results, and how to use COA data effectively.','emoji':'🔬'},
+          {'badge':'RESEARCH','title':'BPC-157: Mechanisms of Action and Current Clinical Understanding','date':'Sep 18, 2025','summary':'An in-depth review of the pentadecapeptide BPC-157, examining its proposed mechanisms of action, preclinical data, and the current state of research literature.','emoji':'💊'},
+          {'badge':'GUIDE','title':'Understanding Mass Spectrometry for Peptide Verification','date':'Aug 05, 2025','summary':'Mass spectrometry provides molecular-level confirmation of peptide identity. Learn how MS data complements HPLC results to create a complete analytical profile of research compounds.','emoji':'⚗️'},
+          {'badge':'LATEST','title':'Cold-Chain Logistics: Best Practices for Peptide Storage and Shipping','date':'Jul 22, 2025','summary':'Temperature control during storage and transit is critical for maintaining peptide integrity. This article covers lyophilized powder stability, optimal storage temperatures, and shipping protocols.','emoji':'🧊'},
+          {'badge':'RESEARCH','title':'Semaglutide and Tirzepatide: Comparative Analysis for Metabolic Research','date':'Jun 14, 2025','summary':'A detailed comparison of the two leading GLP-1 receptor agonists for research applications, including purity standards, HPLC profiles, and batch-to-batch consistency data.','emoji':'🧪'},
+          {'badge':'GUIDE','title':'Endotoxin Testing in Peptide Research: Why It Matters','date':'May 30, 2025','summary':'Limulus Amebocyte Lysate (LAL) testing ensures peptide samples are free from bacterial endotoxin contamination. Essential reading for cell-based and in-vivo research applications.','emoji':'🛡️'}
+        ] %}
+        {% for article in articles %}
+        <article class="article-card">
+          <div class="article-card-img-wrap">
+            <span class="article-emoji">{{ article.emoji }}</span>
+            <span class="article-card-badge">{{ article.badge }}</span>
+          </div>
+          <div class="article-card-body">
+            <h3>{{ article.title }}</h3>
+            <p>{{ article.summary }}</p>
+            <div class="article-card-meta">
+              <span class="article-card-date">{{ article.date }}</span>
+              <a href="#" class="article-card-readmore">Read More →</a>
+            </div>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+
+      <!-- BLOCK 3: Pagination -->
+      <div class="articles-pagination">
+        <span>←</span>
+        <span class="active">1</span>
+        <a href="#">2</a>
+        <a href="#">3</a>
+        <a href="#">→</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% else %}
+<!-- ==========================================================================
+ *  GenScript — Lab Results / COA Landing Page (Full-Width)
+ *  4 Blocks: Hero Grid → Dark QA → 4-Col Standards → CTA
+ *  Brand: Deep Navy #000B47 | Accent Green #00a651
+ * ========================================================================== -->
+<style>
+/* ═══════ Page: full-width, no sidebars ═══════ */
+.lab-page { width: 100%; overflow-x: hidden; }
+.lab-wrap { max-width: 1200px; margin: 0 auto; padding: 0 32px; }
+
+/* ═══════ Section helpers ═══════ */
+.lab-section { width: 100%; box-sizing: border-box; }
+.lab-section--light { background: #fafbfc; }
+.lab-section--dark  { background: #000B47; color: #ffffff; }
+
+/* ═══════ BLOCK 1: Hero with subtle grid ═══════ */
+.lab-hero {
+  background-color: #ffffff;
+  background-image:
+    linear-gradient(rgba(0,11,71,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,11,71,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  padding: 80px 0;
+  text-align: center;
+}
+.lab-tag {
+  font-size: 12px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 2px; color: #00a651; margin: 0 0 14px;
+}
+.lab-hero-title {
+  font-family: "Figtree",sans-serif; font-weight: 900; font-size: 52px;
+  color: #1a1a2e; text-transform: uppercase; line-height: 1.12;
+  margin: 0 0 16px; letter-spacing: -1px;
+}
+.lab-hero-sub {
+  font-size: 17px; color: #666; margin: 0 auto; max-width: 580px; line-height: 1.55;
+}
+
+/* ═══════ BLOCK 2: Dark QA Section ═══════ */
+.lab-dark { padding: 80px 0; }
+.lab-qa-text { margin-bottom: 28px; }
+.lab-qa-text .lab-tag { margin-bottom: 10px; }
+.lab-qa-text h2 {
+  font-family: "Figtree",sans-serif; font-weight: 900; font-size: 38px;
+  text-transform: uppercase; margin: 0 0 14px; line-height: 1.15;
+}
+.lab-qa-text p {
+  font-size: 15px; color: rgba(255,255,255,0.75);
+  max-width: 600px; line-height: 1.6; margin: 0;
+}
+.lab-qa-card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(0,166,81,0.18);
+  border-radius: 12px;
+  padding: 32px 36px;
+  display: flex; align-items: flex-start;
+  gap: 20px;
+  max-width: 840px;
+}
+.lab-check-circle {
+  flex-shrink: 0;
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: rgba(0,166,81,0.15);
+  display: flex; align-items: center; justify-content: center;
+  color: #00a651; font-size: 22px;
+}
+.lab-qa-card h3 {
+  font-family: "Figtree",sans-serif; font-weight: 800;
+  font-size: 18px; margin: 0 0 8px;
+  text-transform: uppercase;
+}
+.lab-qa-card p {
+  font-size: 14px; color: rgba(255,255,255,0.7); margin: 0; line-height: 1.6;
+}
+
+/* ═══════ BLOCK 3: 4-Column Testing Standards ═══════ */
+.lab-white { background: #ffffff; padding: 80px 0; }
+.lab-standards-header { margin-bottom: 44px; }
+.lab-standards-header .lab-tag { margin-bottom: 8px; }
+.lab-standards-header h2 {
+  font-family: "Figtree",sans-serif; font-weight: 900; font-size: 36px;
+  color: #1a1a2e; text-transform: uppercase; margin: 0 0 10px;
+}
+.lab-standards-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 36px;
+}
+.lab-std-icon {
+  width: 56px; height: 56px; border: 1px solid rgba(0,11,71,0.12);
+  border-radius: 12px; display: flex; align-items: center; justify-content: center;
+  color: #00a651; font-size: 24px; margin-bottom: 16px;
+}
+.lab-std-card h4 {
+  font-family: "Figtree",sans-serif; font-weight: 700; font-size: 14px;
+  color: #1a1a2e; text-transform: uppercase; margin: 0 0 8px; letter-spacing: 0.5px;
+}
+.lab-std-card p {
+  font-size: 13px; color: #777; line-height: 1.55; margin: 0;
+}
+
+/* ═══════ BLOCK 4: CTA Section ═══════ */
+.lab-cta { padding: 80px 0; text-align: center; }
+.lab-cta h2 {
+  font-family: "Figtree",sans-serif; font-weight: 800; font-size: 30px;
+  color: #1a1a2e; margin: 0 0 12px;
+}
+.lab-cta p {
+  font-size: 15px; color: #666; max-width: 520px; margin: 0 auto 24px; line-height: 1.55;
+}
+.lab-cta-btn {
+  display: inline-block; padding: 14px 40px; background: #00a651; color: #fff;
+  border-radius: 6px; font-weight: 700; font-size: 15px; text-decoration: none;
+  letter-spacing: 0.5px; transition: background 0.2s;
+}
+.lab-cta-btn:hover { background: #008c44; color: #fff; text-decoration: none; }
+
+/* ═══════ Responsive ═══════ */
+@media (max-width: 1024px) {
+  .lab-standards-grid { grid-template-columns: repeat(2, 1fr); }
+  .lab-hero-title { font-size: 36px; }
+  .lab-qa-text h2 { font-size: 28px; }
+}
+@media (max-width: 640px) {
+  .lab-standards-grid { grid-template-columns: 1fr; }
+  .lab-hero-title { font-size: 26px; }
+  .lab-qa-text h2 { font-size: 22px; }
+  .lab-wrap { padding: 0 18px; }
+  .lab-qa-card { flex-direction: column; }
+}
+</style>
+
+<div class="lab-page">
+
+  <!-- ════════════════════════════════════════════════════════
+    BLOCK 1: Hero with Subtle Grid Pattern
+    ════════════════════════════════════════════════════════ -->
+  <section class="lab-section lab-hero">
+    <div class="lab-wrap">
+      <p class="lab-tag">// LAB RESULTS</p>
+      <h1 class="lab-hero-title">CERTIFICATES OF ANALYSIS</h1>
+      <p class="lab-hero-sub">Every batch independently verified. Every result publicly available.</p>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════════════
+    BLOCK 2: Dark QA Section
+    ════════════════════════════════════════════════════════ -->
+  <section class="lab-section lab-section--dark lab-dark">
+    <div class="lab-wrap">
+      <div class="lab-qa-text">
+        <p class="lab-tag">// QUALITY ASSURANCE</p>
+        <h2>CERTIFICATE OF ANALYSIS</h2>
+        <p>Transparency isn't optional — it's our foundation. Every product ships with independently verified lab results.</p>
+      </div>
+      <div class="lab-qa-card">
+        <div class="lab-check-circle"><i class="fa-solid fa-check"></i></div>
+        <div>
+          <h3>EVERY BATCH. EVERY PRODUCT. VERIFIED.</h3>
+          <p>We partner with ISO-accredited third-party laboratories to perform High-Performance Liquid Chromatography (HPLC), Mass Spectrometry (MS), and endotoxin testing on every production batch. You receive a Certificate of Analysis specific to your order — not a generic template. Traceability from synthesis to shipment is the standard, not the exception.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════════════
+    BLOCK 3: 4-Column Testing Standards
+    ════════════════════════════════════════════════════════ -->
+  <section class="lab-section lab-white">
+    <div class="lab-wrap">
+      <div class="lab-standards-header">
+        <p class="lab-tag">// OUR TESTING STANDARDS</p>
+        <h2>QUALITY YOU CAN VERIFY</h2>
+      </div>
+      <div class="lab-standards-grid">
+        <div class="lab-std-card">
+          <div class="lab-std-icon"><i class="fa-solid fa-flask"></i></div>
+          <h4>HPLC PURITY TESTING</h4>
+          <p>Every compound is analyzed by High-Performance Liquid Chromatography to quantify purity. We publish batch-specific data — never averages.</p>
+        </div>
+        <div class="lab-std-card">
+          <div class="lab-std-icon"><i class="fa-solid fa-atom"></i></div>
+          <h4>MASS SPECTROMETRY</h4>
+          <p>Mass Spec confirms molecular weight and structural integrity. Each batch undergoes independent MS verification.</p>
+        </div>
+        <div class="lab-std-card">
+          <div class="lab-std-icon"><i class="fa-solid fa-shield-virus"></i></div>
+          <h4>ENDOTOXIN TESTING</h4>
+          <p>Limulus Amebocyte Lysate (LAL) testing verifies endotoxin levels are below acceptable thresholds for research applications.</p>
+        </div>
+        <div class="lab-std-card">
+          <div class="lab-std-icon"><i class="fa-solid fa-check-double"></i></div>
+          <h4>STERILITY VERIFICATION</h4>
+          <p>Products designated as sterile undergo bioburden and sterility testing per USP standards with full methodology documentation.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════════════
+    BLOCK 4: CTA — Request COA
+    ════════════════════════════════════════════════════════ -->
+  <section class="lab-section lab-section--light lab-cta">
+    <div class="lab-wrap">
+      <h2>NEED A SPECIFIC COA?</h2>
+      <p>Send us your order number or product name and we'll forward the full Certificate of Analysis for that batch.</p>
+      <a href="index.php?route=information/contact" class="lab-cta-btn">REQUEST COA →</a>
+    </div>
+  </section>
+
+</div>
+
+{% endif %}
 {{ footer }}
