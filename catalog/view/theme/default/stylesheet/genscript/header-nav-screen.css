@@ -50,15 +50,14 @@
     max-width: 100%;
   }
 
-  /* Hide all desktop-only elements */
-  .header-top,
-  .header-bottom,
-  .header-tools,
+  /* Hide all desktop-only elements (preserve mobile toolbar + logo) */
+  .header-row .main-nav,
+  .header-row .header-actions-right,
   .header-search,
-  .header-actions-right,
   .btn-quick-order {
     display: none !important;
   }
+  .header-row { height: auto; }
 
   /* Show mobile toolbar */
   .header-mobile-tools {

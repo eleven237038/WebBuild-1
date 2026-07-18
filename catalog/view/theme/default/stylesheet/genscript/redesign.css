@@ -15,18 +15,17 @@ body {
 }
 
 /* ==========================================================================
- * PART 1: HEADER — Deep Navy Two-Row Navigation
- * Background: #000a46 | Text: white | Width: 100% with 5% side padding
+ * PART 1: HEADER — Single-Row Flat Modern Layout
+ * [Logo] —— [Main Nav] —— [🔍Icon] [👤Icon] [🌐] [🛒 Cart Button]
+ * Background: #000a46 | Text: white | Height: ~80px
  * ========================================================================== */
 
 /* -- Header Container (fixed, full-width) -- */
-/* !important is a defensive measure against competing rules in */
-/* header-nav.css (#header at L1209) and .scroll-header (L1245)  */
 #header,
 #header.scroll-header,
 header.scroll-header {
-  background: #000a46 !important;
-  padding: 15px 5%;
+  background: rgb(0, 10, 70) !important;
+  padding: 0 5%;
   position: fixed;
   top: 0;
   left: 0;
@@ -39,15 +38,13 @@ header.scroll-header {
   margin: 0 auto;
 }
 
-/* ==========================================================================
- * TOP ROW — justify-content: space-between; align-items: center
- * [Logo]  [Search Bar (flex:1)]  [User Tools]
- * ========================================================================== */
-.header-top {
+/* ---- Single-Row Flex Container ---- */
+.header-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 30px;
+  height: 80px;
+  gap: 24px;
 }
 
 /* ---- Logo — Flexbox: [DNA Icon] + [Main Text + Tagline] ---- */
@@ -70,115 +67,24 @@ header.scroll-header {
 .header-logo .logo-main-text {
   font-family: "Figtree", sans-serif;
   font-weight: 900;
-  font-size: 24px;
+  font-size: 22px;
   color: #ffffff;
   letter-spacing: 0.5px;
 }
 .header-logo .logo-tagline {
   font-family: "Figtree", sans-serif;
   font-weight: 600;
-  font-size: 10px;
+  font-size: 9.5px;
   color: #22c55e;
   letter-spacing: 0.3px;
   text-transform: uppercase;
 }
 
-/* ---- Search Bar (pill shape) ---- */
-.header-search {
-  flex: 1;
-  max-width: 680px;
-  min-width: 280px;
-  position: relative;
-}
-.header-search input {
-  width: 100%;
-  height: 44px;
-  background: transparent;
-  border: 1px solid rgba(255,255,255,0.3);
-  border-radius: 22px;
-  padding: 0 50px 0 22px;
-  color: #fff;
-  font-size: 14px;
-  font-family: "Figtree", sans-serif;
-  outline: none;
-  transition: border-color 0.25s, background 0.25s;
-}
-.header-search input::placeholder {
-  color: rgba(255,255,255,0.7);
-  font-size: 13px;
-}
-.header-search input:focus {
-  border-color: rgba(255,255,255,0.6);
-  background: rgba(255,255,255,0.05);
-}
-.header-search .search-btn {
-  position: absolute;
-  right: 6px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  color: #fff;
-  font-size: 16px;
-  cursor: pointer;
-  padding: 10px 12px;
-  line-height: 1;
-  transition: opacity 0.2s;
-}
-.header-search .search-btn:hover {
-  opacity: 0.7;
-}
-
-/* ---- User Tools (icon + text, gap 20px) ---- */
-.header-tools {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  flex-shrink: 0;
-  white-space: nowrap;
-}
-.header-tools .tool-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  color: #ffffff;
-  font-size: 13px;
-  font-weight: 500;
-  text-decoration: none;
-  transition: color 0.2s, opacity 0.2s;
-}
-.header-tools .tool-link:hover {
-  color: #a3e635;
-}
-.header-tools .tool-link i {
-  font-size: 16px;
-  color: #ffffff;
-  transition: color 0.2s;
-}
-.header-tools .tool-link:hover i {
-  color: #a3e635;
-}
-.tool-divider {
-  color: rgba(255,255,255,0.35);
-  margin: 0 2px;
-}
-
-/* ==========================================================================
- * BOTTOM ROW — justify-content: space-between; align-items: center
- * [Nav Links]  [Quick Order + Cart]
- * ========================================================================== */
-.header-bottom {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 16px;
-}
-
-/* ---- Main Navigation Links (all white text) ---- */
+/* ---- Main Navigation Links (center, horizontal, uppercase) ---- */
 .main-nav .nav-list {
   display: flex;
   align-items: center;
-  gap: 32px;
+  gap: 30px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -189,15 +95,17 @@ header.scroll-header {
 .main-nav .nav-item > a,
 .main-nav .nav-list .nav-item a {
   color: #ffffff !important;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   text-decoration: none;
   letter-spacing: 0.5px;
+  text-transform: uppercase;
   transition: color 0.2s;
+  white-space: nowrap;
 }
 .main-nav .nav-item > a:hover,
 .main-nav .nav-list .nav-item a:hover {
-  color: #a3e635 !important;
+  color: #00a651 !important;
 }
 
 /* ---- "Hot!" Badge — italic white text, no background, absolute positioned ---- */
@@ -220,49 +128,63 @@ header.scroll-header {
   pointer-events: none;
 }
 
-/* ---- Quick Actions (right side) ---- */
+/* ---- Right-Side Actions: Icon Buttons + Cart ---- */
 .header-actions-right {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 10px;
   flex-shrink: 0;
 }
 
-/* Quick Order — green-bordered pill button with bright green text */
-.btn-quick-order {
+/* Generic icon button (search, user, globe) — transparent, bordered square */
+.header-icon-btn {
+  width: 40px;
+  height: 40px;
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 8px 20px;
-  border: 1px solid #22c55e;
-  border-radius: 20px;
-  color: #22c55e;
-  font-size: 13px;
-  font-weight: 600;
-  text-decoration: none;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,0.35);
+  border-radius: 8px;
   background: transparent;
-  transition: background 0.2s, color 0.2s, border-color 0.2s;
-}
-.btn-quick-order:hover {
-  background: #22c55e;
-  color: #000a46;
+  color: #ffffff;
+  font-size: 16px;
   text-decoration: none;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+}
+.header-icon-btn:hover {
+  border-color: #a3e635;
+  color: #a3e635;
+  background: rgba(163, 230, 53, 0.08);
 }
 
-/* Cart icon */
-.header-actions-right .cart-icon {
-  color: #ffffff;
-  font-size: 20px;
-  text-decoration: none;
-  position: relative;
-  display: flex;
+/* Cart button — solid, rounded, prominent */
+.header-cart-btn {
+  display: inline-flex;
   align-items: center;
-  transition: color 0.2s;
+  gap: 8px;
+  padding: 0 18px;
+  height: 40px;
+  border-radius: 20px;
+  background: #22c55e;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.2s, transform 0.1s;
 }
-.header-actions-right .cart-icon:hover {
-  color: #a3e635;
+.header-cart-btn:hover {
+  background: #16a34a;
+  color: #ffffff;
+  text-decoration: none;
 }
-.header-actions-right .cart-icon .cart-number {
+.header-cart-btn:active {
+  transform: scale(0.97);
+}
+.header-cart-btn i {
+  font-size: 16px;
+}
+.header-actions-right .cart-number {
   position: absolute;
   top: -6px;
   right: -10px;

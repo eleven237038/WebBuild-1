@@ -8,18 +8,25 @@
   position: relative;
 }
 
+/* Each nav item is also a positioning context for precise submenu alignment */
+.nav-item {
+  position: relative;
+}
+
 /* Nav item hover state when mega panel is open */
 .nav-item.nav-hovered > a {
   color: #a3e635 !important;
 }
 
-/* ---- Mega panel — absolute floating card, dynamic width, no-wrap text ---- */
+/* ---- Mega panel — absolute, aligned to nav-tabs left edge, floating gap ---- */
 .mega-panel {
   position: absolute;
-  top: calc(100% + 28px);
+  top: 100%;
   left: 0;
+  right: auto;
   width: max-content;
   min-width: auto;
+  margin-top: 5px;
   background: #ffffff;
   color: #333;
   z-index: 9999;
@@ -53,12 +60,14 @@
  * LEFT COLUMN — category tabs
  * ========================================================================== */
 .mega-left {
+  position: relative;
   background: #f8f9fa;
   border-right: 1px solid #e5e7eb;
   padding: 14px 0;
   overflow-y: auto;
 }
 .mega-left-item {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -94,6 +103,7 @@
  * MIDDLE COLUMN — links with red italic badges
  * ========================================================================== */
 .mega-mid {
+  position: relative;
   background: #ffffff;
   padding: 18px 24px;
   overflow-y: auto;

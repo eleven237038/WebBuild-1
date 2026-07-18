@@ -73,34 +73,33 @@
 
 {% if not modal %}
 <!-- ========================================================================= -->
-<!--  HEADER — Deep Navy Two-Row Layout                                        -->
-<!--  Top Row:    [Logo] | [Search Bar] | [SIGN IN|REGISTER] [EN] [CONTACT]   -->
-<!--  Bottom Row: [REAGENT(Hot!) PRODUCTS APPLICATIONS RESOURCES ABOUT US]    -->
-<!--              [Quick Order ⚡] [🛒 Cart]                                   -->
+<!--  HEADER — Single-Row Flex Flat Layout (Modern)                            -->
+<!--  [Logo] —— [Main Nav Menu] —— [🔍Icon] [👤Icon] [🌐] [🛒Cart Button]    -->
+<!--  Mega Menu + responsive hamburger logic FULLY PRESERVED                   -->
 <!-- ========================================================================= -->
 <header id="header">
   <div class="header-inner">
 
     <!-- ===== Mobile Toolbar (hidden on desktop) ===== -->
     <div class="header-mobile-tools">
-      <button class="mob-icon mob-icon-search" aria-label="Search" title="Search">
+      <button class="mob-icon mob-icon-search" aria-label="Search">
         <i class="fa-solid fa-magnifying-glass"></i>
       </button>
-      <a href="{{ contact }}" class="mob-icon" aria-label="Contact Us" title="Contact">
+      <a href="{{ contact }}" class="mob-icon" aria-label="Contact Us">
         <i class="fa-solid fa-phone"></i>
       </a>
-      <a href="{{ shopping_cart }}" class="mob-icon" aria-label="Shopping Cart" title="Cart">
+      <a href="{{ shopping_cart }}" class="mob-icon" aria-label="Shopping Cart">
         <i class="fa-solid fa-cart-shopping"></i>
       </a>
-      <button class="mob-icon mob-icon-menu" id="menu-toggle" aria-label="Open Menu" title="Menu">
+      <button class="mob-icon mob-icon-menu" id="menu-toggle" aria-label="Open Menu">
         <i class="fa-solid fa-bars"></i>
       </button>
     </div>
 
-    <!-- ===== Top Row: Logo | Search | User Tools ===== -->
-    <div class="header-top">
+    <!-- ===== Single-Row Flex: Logo | Nav | Icons+Cart ===== -->
+    <div class="header-row">
 
-      <!-- Left: Logo — Flexbox: [DNA Icon] + [GenScript Text + Tagline] -->
+      <!-- Left: Logo -->
       <a href="{{ home }}" class="header-logo" aria-label="GenScript Home">
         <img src="catalog/view/theme/default/image/logo-icon.svg" alt="" class="logo-icon-img" width="40" height="40">
         <div class="logo-text-group">
@@ -109,49 +108,7 @@
         </div>
       </a>
 
-      <!-- Center: Wide Rounded Search Bar -->
-      <form class="header-search" action="{{ helper.url.link('product/search') }}" method="GET">
-        <input type="text" class="search-query" name="search" placeholder="FLASH Gene: 4 days delivery" autocomplete="off">
-        <button type="submit" class="search-btn" aria-label="Search">
-          <i class="fa-solid fa-magnifying-glass"></i>
-        </button>
-      </form>
-
-      <!-- Right: User Tools (icon + text pairs) -->
-      <div class="header-tools">
-        {% if logged %}
-        <a href="{{ account }}" class="tool-link">
-          <i class="fa-regular fa-user"></i>
-          <span>MY ACCOUNT</span>
-        </a>
-        <a href="{{ logout }}" class="tool-link">
-          <i class="fa-solid fa-right-from-bracket"></i>
-          <span>LOGOUT</span>
-        </a>
-        {% else %}
-        <a href="{{ login }}" class="tool-link">
-          <i class="fa-regular fa-user"></i>
-          <span>SIGN IN</span>
-        </a>
-        <a href="{{ register }}" class="tool-link">
-          <span>REGISTER</span>
-        </a>
-        {% endif %}
-        <a href="#" class="tool-link">
-          <i class="fa-solid fa-globe"></i>
-          <span>EN</span>
-        </a>
-        <a href="{{ contact }}" class="tool-link">
-          <i class="fa-solid fa-phone"></i>
-          <span>CONTACT US</span>
-        </a>
-      </div>
-
-    </div>
-
-    <!-- ===== Bottom Row: Main Nav | Quick Order + Cart ===== -->
-    <div class="header-bottom">
-
+      <!-- Center: Main Nav (Mega Menu anchor — structure FULLY PRESERVED) -->
       <nav class="main-nav">
         <div class="main-nav-tabs">
         <ul class="nav-list">
@@ -339,16 +296,35 @@
       </div>
       </nav>
 
+      <!-- Right: Icon buttons + Cart -->
       <div class="header-actions-right">
-        <a href="#" class="btn-quick-order">
-          Quick Order
+        <!-- Search icon button -->
+        <button class="header-icon-btn" id="btn-toggle-search" aria-label="Search">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+
+        {% if logged %}
+        <a href="{{ account }}" class="header-icon-btn" aria-label="My Account">
+          <i class="fa-regular fa-user"></i>
         </a>
-        <a href="{{ shopping_cart }}" class="cart-icon my-cart" id="get-box" aria-label="Shopping Cart">
+        {% else %}
+        <a href="{{ login }}" class="header-icon-btn" aria-label="Sign In">
+          <i class="fa-regular fa-user"></i>
+        </a>
+        {% endif %}
+
+        <a href="#" class="header-icon-btn" aria-label="Language">
+          <i class="fa-solid fa-globe"></i>
+        </a>
+
+        <!-- Cart button (solid, prominent) -->
+        <a href="{{ shopping_cart }}" class="header-cart-btn" id="get-box" aria-label="Shopping Cart">
           <i class="fa-solid fa-cart-shopping"></i>
+          <span>Cart</span>
         </a>
       </div>
 
-    </div>
+    </div><!-- /.header-row -->
 
   </div>
 </header>
