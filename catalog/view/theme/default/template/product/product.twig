@@ -1,227 +1,360 @@
 {{ header }}
-<div id="product-product" class="container">
-  {{ include(helper.template('_partial/breadcrumb')) }}
-  <div class="row">{{ column_left }}
-    {% if column_left and column_right %}
-    {% set class = 'col-sm-6' %}
-    {% elseif column_left or column_right %}
-    {% set class = 'col-sm-9' %}
-    {% else %}
-    {% set class = 'col-sm-12' %}
-    {% endif %}
-    <div id="content" class="{{ class }}">{{ content_top }}
-      <div class="row">
-        <div class="col-sm-5">
+<!-- ==========================================================================
+ *  GenScript — Product Detail Page (PDP) — Modern 3-Block Layout
+ *  Block 1: Buy Area (Gallery + Info + Options + Trust)
+ *  Block 2: Detail Tabs (Description / COA / Shipping)
+ *  Block 3: Related Products + Research Library
+ *  Brand: --bg-navy #0F172A | --primary-green #10B981
+ * ========================================================================== -->
+<style>
+/* ═══════ Page wrapper ═══════ */
+.pdp-page { background: #fff; }
+.pdp-wrap { max-width: 1260px; margin: 0 auto; padding: 0 32px; }
+
+/* ═══════ Breadcrumb ═══════ */
+.pdp-breadcrumb { font-size: 12px; color: #999; padding: 16px 0 0; }
+.pdp-breadcrumb a { color: var(--primary-green, #10B981); text-decoration: none; }
+
+/* ═══════ BLOCK 1: Buy Area (flex 2-column) ═══════ */
+.pdp-buy { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; padding: 32px 0 60px; }
+
+/* --- Left: Image Gallery --- */
+.pdp-gallery { }
+.pdp-main-img { position: relative; background: var(--bg-navy, #0F172A); border-radius: 12px; overflow: hidden; aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center; }
+.pdp-main-img img { max-width: 85%; max-height: 85%; object-fit: contain; }
+.pdp-main-img .pdp-badge { position: absolute; top: 16px; left: 16px; background: var(--primary-green, #10B981); color: #fff; font-size: 11px; font-weight: 700; padding: 6px 14px; border-radius: 4px; letter-spacing: 0.5px; }
+.pdp-thumbs { display: flex; gap: 10px; margin-top: 14px; }
+.pdp-thumb { width: 72px; height: 72px; border: 2px solid #eee; border-radius: 8px; cursor: pointer; overflow: hidden; transition: border-color 0.2s; }
+.pdp-thumb:hover, .pdp-thumb.active { border-color: var(--primary-green, #10B981); }
+.pdp-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+/* --- Right: Product Info & Buy Panel --- */
+.pdp-info { }
+.pdp-cat { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--primary-green, #10B981); margin: 0 0 8px; }
+.pdp-title { font-family: "Figtree",sans-serif; font-weight: 900; font-size: 38px; color: var(--bg-navy, #0F172A); margin: 0 0 14px; line-height: 1.15; }
+.pdp-tags { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+.pdp-tag { display: inline-block; padding: 5px 14px; background: #ecfdf5; color: var(--primary-green, #10B981); font-size: 11px; font-weight: 700; border-radius: 16px; letter-spacing: 0.5px; }
+.pdp-desc { font-size: 14.5px; color: #555; line-height: 1.65; margin: 0 0 22px; }
+
+/* --- Options (SKU blocks) --- */
+.pdp-options { margin-bottom: 22px; }
+.pdp-option-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #aaa; margin-bottom: 8px; }
+.pdp-option-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.pdp-sku { padding: 10px 22px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 13px; font-weight: 700; color: #333; cursor: pointer; background: #fff; transition: all 0.15s; }
+.pdp-sku:hover { border-color: var(--primary-green, #10B981); }
+.pdp-sku.active { border-color: var(--primary-green, #10B981); color: var(--primary-green, #10B981); background: #ecfdf5; }
+
+/* --- Price row --- */
+.pdp-price { font-family: "Figtree",sans-serif; font-size: 34px; font-weight: 900; color: var(--bg-navy, #0F172A); margin: 18px 0 10px; }
+.pdp-price span.old { font-size: 18px; color: #aaa; text-decoration: line-through; font-weight: 500; margin-left: 10px; }
+
+/* --- Quantity + Add to Cart --- */
+.pdp-qty-row { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+.pdp-qty { width: 52px; height: 48px; text-align: center; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 15px; font-weight: 700; outline: none; }
+.pdp-qty-btn { width: 40px; height: 48px; border: 1px solid #e0e0e0; border-radius: 8px; background: #fff; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #555; }
+.pdp-add-btn { flex: 1; height: 48px; background: var(--primary-green, #10B981); color: #fff; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; max-width: 280px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s; }
+.pdp-add-btn:hover { background: #059669; }
+
+/* --- Trust box --- */
+.pdp-trust { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px 20px; }
+.pdp-trust li { list-style: none; padding: 5px 0; font-size: 13px; color: #555; display: flex; align-items: center; gap: 8px; }
+.pdp-trust li i { color: var(--primary-green, #10B981); font-size: 15px; }
+
+/* ═══════ BLOCK 2: Detail Tabs ═══════ */
+.pdp-tabs-section { padding: 0; border-top: 1px solid #e5e7eb; }
+.pdp-tab-nav { display: flex; gap: 0; border-bottom: 1px solid #e5e7eb; }
+.pdp-tab-link { padding: 14px 24px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #999; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -1px; transition: all 0.15s; background: none; border-top: none; border-left: none; border-right: none; }
+.pdp-tab-link:hover { color: #333; }
+.pdp-tab-link.active { color: var(--bg-navy, #0F172A); border-bottom-color: var(--primary-green, #10B981); }
+.pdp-tab-panel { display: none; padding: 28px 0 48px; animation: pdpFadeIn 0.25s ease; }
+.pdp-tab-panel.active { display: block; }
+.pdp-tab-panel p { font-size: 14px; color: #555; line-height: 1.7; }
+
+/* Spec table */
+.pdp-spec-table { width: 100%; max-width: 500px; border-collapse: collapse; }
+.pdp-spec-table th { text-align: left; font-size: 12px; color: #999; font-weight: 500; padding: 8px 0; width: 40%; }
+.pdp-spec-table td { font-size: 13px; color: var(--bg-navy, #0F172A); font-weight: 700; padding: 8px 0; }
+
+@keyframes pdpFadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ═══════ BLOCK 3: Related + Research ═══════ */
+.pdp-section { padding: 50px 0; border-top: 1px solid #e5e7eb; }
+.pdp-section-tag { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--primary-green, #10B981); margin: 0 0 6px; }
+.pdp-section-title { font-family: "Figtree",sans-serif; font-weight: 900; font-size: 28px; color: var(--bg-navy, #0F172A); margin: 0 0 28px; text-transform: uppercase; }
+
+/* Related grid — 4 cols */
+.pdp-related-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+.pdp-related-card { background: #fff; border: 1px solid #f0f0f0; border-radius: 10px; overflow: hidden; transition: box-shadow 0.2s; }
+.pdp-related-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.06); }
+.pdp-related-card .img-wrap { background: var(--bg-navy, #0F172A); height: 160px; display: flex; align-items: center; justify-content: center; font-size: 48px; }
+.pdp-related-card .body { padding: 14px; }
+.pdp-related-card .body h3 { font-size: 14px; font-weight: 700; color: var(--bg-navy, #0F172A); margin: 0 0 4px; }
+.pdp-related-card .body .price { font-size: 18px; font-weight: 800; color: var(--bg-navy, #0F172A); }
+
+/* Research links */
+.pdp-research-list { }
+.pdp-research-item { display: block; padding: 12px 0; font-size: 15px; font-weight: 700; color: var(--bg-navy, #0F172A); text-decoration: none; border-bottom: 1px solid #f0f0f0; transition: color 0.15s; }
+.pdp-research-item:hover { color: var(--primary-green, #10B981); }
+
+/* ═══════ Responsive ═══════ */
+@media (max-width: 1024px) {
+  .pdp-buy { grid-template-columns: 1fr; gap: 32px; }
+  .pdp-title { font-size: 28px; }
+  .pdp-related-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+  .pdp-title { font-size: 22px; }
+  .pdp-price { font-size: 26px; }
+  .pdp-related-grid { grid-template-columns: 1fr; }
+  .pdp-tab-nav { overflow-x: auto; }
+  .pdp-tab-link { white-space: nowrap; padding: 12px 16px; font-size: 12px; }
+  .pdp-wrap { padding: 0 16px; }
+}
+</style>
+
+<div class="pdp-page">
+
+  <!-- ════════════════════════════════════════════════════════
+    BLOCK 1: Buy Area
+    ════════════════════════════════════════════════════════ -->
+  <div class="pdp-wrap">
+    <p class="pdp-breadcrumb">
+      <a href="{{ home }}">HOME</a> / <a href="index.php?route=product/category&path=59">SHOP</a> / <span>{{ heading_title }}</span>
+    </p>
+
+    <div class="pdp-buy">
+
+      <!-- Left: Image Gallery -->
+      <div class="pdp-gallery">
+        <div class="pdp-main-img">
+          <span class="pdp-badge">★ COA ON FILE</span>
           {% if images %}
-          {% set first = images|first %}
-          <div class="elevate-zoom-preview">
-            <a href="{{ first.popup }}">
-              <img id="elevate-zoom" src="{{ first.preview }}" data-zoom-image="{{ first.popup }}" class="img-responsive">
-            </a>
-          </div>
-          <ul class="thumbnails list-inline" id="product-thumbnail-gallery">
-            {% for image in images %}
-            <li class="image-additional"><a class="thumbnail elevatezoom-gallery" rel="group" data-image="{{ image.preview }}" data-zoom-image="{{ image.popup }}" href="{{ image.popup }}" title="{{ heading_title }}"> <img src="{{ image.thumb }}" title="{{ heading_title }}" alt="{{ heading_title }}" /></a></li>
-            {% endfor %}
-          </ul>
+            {% set first_img = images|first %}
+            <img src="{{ first_img.thumb }}" alt="{{ heading_title }}" id="pdp-main-image">
+          {% elseif thumb %}
+            <img src="{{ thumb }}" alt="{{ heading_title }}" id="pdp-main-image">
+          {% else %}
+            <span style="font-size:80px;">🧪</span>
           {% endif %}
         </div>
-        <div class="col-sm-7 product-description">
-          <h1>{{ heading_title }}</h1>
-          {% if review_status %}
-          <div class="stars-box">
-            <div class="rating">
-              {% for i in 1..5 %}
-              <span class="fa fa-stack"><i class="fa fa-star fa-stack-1x {{ rating < i ? 'off' }}"></i></span>
-              {% endfor %}
-            </div>
-            <div class="more-review">
-              <a href="javascript:void(0);">{{ reviews }}</a> / <a href="javascript:void(0);">{{ text_write }}</a>
-            </div>
+        {% if images and images|length > 1 %}
+        <div class="pdp-thumbs" id="pdp-thumbs">
+          {% for image in images %}
+          <div class="pdp-thumb {{ loop.first ? 'active' }}" data-src="{{ image.thumb }}">
+            <img src="{{ image.thumb }}" alt="{{ heading_title }}">
           </div>
-          {% endif %}
-          <div class="product-price-wrapper">
-            {% if not special %}
-              <h2>{{ price }}</h2>
-            {% else %}
-              <span class="price-new">{{ special }}</span>
-              <span class="price-old" style="text-decoration: line-through;">{{ price }}</span>
-            {% endif %}
-            {% if points %}
-              <span class="points">{{ text_points }} {{ points }}</span>
-            {% endif %}
-          </div>
-          <ul class="list-unstyled product-attribute">
-            {% if manufacturer %}
-            <li><span class="title">{{ text_manufacturer }}</span> <a href="{{ manufacturers }}"><span>{{ manufacturer }}</span></a></li>
-            {% endif %}
-            <li><span class="title">{{ text_model }}</span> <span>{{ model }}</span></li>
-            {% if reward %}
-            <li><span class="title">{{ text_reward }}</span> <span>{{ reward }}</span></li>
-            {% endif %}
-            <li><span class="title">{{ text_stock }}</span> <span>{{ stock }}</span></li>
-          </ul>
-          {% if price %}
-          <hr>
-          <ul class="tax-discounts-box">
-            {% if tax %}
-            <li>{{ text_tax }} {{ tax }}</li>
-            {% endif %}
-
-            {% if discounts %}
-            {% for discount in discounts %}
-            <li>{{ discount.quantity }}{{ text_discount }}{{ discount.price }}</li>
-            {% endfor %}
-            {% endif %}
-          </ul>
-          {% endif %}
-          <div id="product">
-            {% include(helper.template('_partial/product/options')) %}
-            <div class="form-group product-cart-action">
-              <div class="quantity-input-wrapper">
-                <a href="#" class="quantity-down">-</a>
-                <input type="text" name="quantity" value="{{ minimum }}" size="2" id="input-quantity" class="form-control" />
-                <a href="#" class="quantity-up">+</a>
-                <input type="hidden" name="product_id" value="{{ product_id }}" />
-              </div>
-
-              <button type="button" id="button-cart" data-loading-text="{{ text_loading }}" class="btn btn-primary">{{ button_cart }}</button>
-              <div class="wishlist-share">
-                <button type="button" data-toggle="tooltip" class="btn btn-default" title="{{ button_wishlist }}" onclick="wishlist.add('{{ product_id }}');"><i class="fa fa-heart"></i></button>
-                <button type="button" data-toggle="tooltip" class="btn btn-default" title="{{ button_compare }}" onclick="compare.add('{{ product_id }}');"><i class="fa fa-exchange"></i></button>
-              </div>
-            </div>
-
-            {% if minimum > 1 %}
-            <div class="alert alert-info"><i class="fa fa-info-circle"></i> {{ text_minimum }}</div>
-            {% endif %}</div>
-            {{ include(helper.template('_partial/share'), {share_url: share}) }}
-        </div>
-      </div>
-      <ul class="nav nav-tabs">
-        <li class="active"><a href="#tab-description" data-toggle="tab">{{ tab_description }}</a></li>
-        {% if attribute_groups %}
-        <li><a href="#tab-specification" data-toggle="tab">{{ tab_attribute }}</a></li>
-        {% endif %}
-        {% if review_status %}
-        <li><a href="#tab-review" data-toggle="tab">{{ tab_review }}</a></li>
-        {% endif %}
-      </ul>
-      <div class="tab-content">
-        <div class="tab-pane active" id="tab-description">{{ description }}</div>
-        {% if attribute_groups %}
-        <div class="tab-pane" id="tab-specification">
-          <table class="table table-bordered">
-            {% for attribute_group in attribute_groups %}
-            <thead>
-              <tr><td colspan="2"><strong>{{ attribute_group.name }}</strong></td></tr>
-            </thead>
-            <tbody>
-            {% for attribute in attribute_group.attribute %}
-            <tr><td>{{ attribute.name }}</td><td>{{ attribute.text }}</td></tr>
-            {% endfor %}
-              </tbody>
-            {% endfor %}
-          </table>
-        </div>
-        {% endif %}
-        {% if review_status %}
-        <div class="tab-pane" id="tab-review">
-          <form class="form-horizontal" id="form-review">
-            <div id="review"></div>
-            {{ include(helper.template('_partial/product/review_form')) }}
-          </form>
+          {% endfor %}
         </div>
         {% endif %}
       </div>
-      {% if products %}
-      <h3 class="widget-title"><span>{{ text_related }}</span></h3>
-      <div class="row"> {% set i = 0 %}
-        {% for product in products %}
-        {% if column_left and column_right %}
-        {% set class = 'col-xs-8 col-sm-6' %}
-        {% elseif column_left or column_right %}
-        {% set class = 'col-xs-6 col-md-4' %}
+
+      <!-- Right: Product Info & Purchase -->
+      <div class="pdp-info">
+        <p class="pdp-cat">// PEPTIDES</p>
+        <h1 class="pdp-title">{{ heading_title }}</h1>
+
+        <div class="pdp-tags">
+          <span class="pdp-tag">BATCH-VERIFIED</span>
+          <span class="pdp-tag">{{ stock is defined ? stock : 'IN STOCK' }}</span>
+          {% if manufacturer %}
+          <span class="pdp-tag">{{ manufacturer }}</span>
+          {% endif %}
+        </div>
+
+        {% if description %}
+        <p class="pdp-desc">{{ description|striptags|slice(0, 200) ~ '...' }}</p>
+        {% endif %}
+
+        <!-- Options / SKU variants -->
+        {% if options is defined and options is not empty %}
+        <div class="pdp-options">
+          {% for option in options %}
+          <p class="pdp-option-label">{{ option.name }}</p>
+          <div class="pdp-option-row">
+            {% for option_value in option.product_option_value %}
+            <span class="pdp-sku {{ loop.first ? 'active' }}" data-option-id="{{ option.product_option_id }}" data-value-id="{{ option_value.product_option_value_id }}">{{ option_value.name }}</span>
+            {% endfor %}
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Price -->
+        <div class="pdp-price">
+          {% if special %}
+          <span class="old">{{ price }}</span> {{ special }}
+          {% else %}
+          {{ price }}
+          {% endif %}
+        </div>
+
+        <!-- Qty + Add to Cart -->
+        <div class="pdp-qty-row">
+          <button class="pdp-qty-btn" onclick="var e=document.getElementById('input-quantity'); e.value=Math.max({{ minimum is defined ? minimum : 1 }}, parseInt(e.value)-1);">−</button>
+          <input type="text" name="quantity" value="{{ minimum is defined ? minimum : 1 }}" id="input-quantity" class="pdp-qty" readonly>
+          <button class="pdp-qty-btn" onclick="var e=document.getElementById('input-quantity'); e.value=parseInt(e.value)+1;">+</button>
+          <input type="hidden" name="product_id" value="{{ product_id }}">
+          <button type="button" id="button-cart" class="pdp-add-btn"><i class="fa-solid fa-cart-shopping"></i> {{ button_cart }}</button>
+        </div>
+
+        <!-- Trust Box -->
+        <ul class="pdp-trust">
+          <li><i class="fa-solid fa-circle-check"></i> 30-day lab-verified guarantee</li>
+          <li><i class="fa-solid fa-circle-check"></i> Free shipping over $150</li>
+          <li><i class="fa-solid fa-circle-check"></i> Certificate of Analysis included</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════
+    BLOCK 2: Detail Tabs
+    ════════════════════════════════════════════════════════ -->
+  <div class="pdp-tabs-section">
+    <div class="pdp-wrap">
+      <nav class="pdp-tab-nav" id="pdp-tab-nav">
+        <button class="pdp-tab-link active" data-tab="tab-details">DETAILS</button>
+        <button class="pdp-tab-link" data-tab="tab-coa">CERTIFICATE OF ANALYSIS</button>
+        <button class="pdp-tab-link" data-tab="tab-shipping">SHIPPING &amp; RETURNS</button>
+      </nav>
+
+      <div class="pdp-tab-panel active" id="tab-details">
+        {% if description %}
+        <div>{{ description }}</div>
         {% else %}
-        {% set class = 'col-xs-6 col-sm-3' %}
+        <p>Premium research-grade compound. Third-party HPLC tested with batch-specific Certificate of Analysis. Each order includes full documentation for complete traceability.</p>
         {% endif %}
-        <div class="{{ class }}">
-          {{ include(helper.template('_partial/product/product_single')) }}
-        </div>
-        {% if column_left and column_right and (i + 1) % 2 == 0 %}
-        <div class="clearfix visible-md visible-sm"></div>
-        {% elseif column_left or column_right and (i + 1) % 3 == 0 %}
-        <div class="clearfix visible-md"></div>
-        {% elseif (i + 1) % 4 == 0 %}
-        <div class="clearfix visible-md"></div>
+
+        {% if attribute_groups is defined and attribute_groups is not empty %}
+        <table class="pdp-spec-table" style="margin-top:20px;">
+          {% for attribute_group in attribute_groups %}
+          {% for attribute in attribute_group.attribute %}
+          <tr><th>{{ attribute.name }}</th><td>{{ attribute.text }}</td></tr>
+          {% endfor %}
+          {% endfor %}
+        </table>
+        {% else %}
+        <table class="pdp-spec-table" style="margin-top:20px;">
+          <tr><th>CAS Number</th><td>137525-51-0</td></tr>
+          <tr><th>Molecular Formula</th><td>C<sub>62</sub>H<sub>98</sub>N<sub>16</sub>O<sub>22</sub></td></tr>
+          <tr><th>Molecular Weight</th><td>1419.6 g/mol</td></tr>
+          <tr><th>Purity</th><td>≥99% (HPLC)</td></tr>
+          <tr><th>Storage</th><td>-20°C, lyophilized</td></tr>
+        </table>
         {% endif %}
-        {% set i = i + 1 %}
-        {% endfor %} </div>
-        {% endif %}
-        {% if tags %}
-        <p>{{ text_tags }}
-        {% for i in 0..tags|length %}
-        {% if i < (tags|length - 1) %} <a href="{{ tags[i].href }}">{{ tags[i].tag }}</a>,
-        {% else %} <a href="{{ tags[i].href }}">{{ tags[i].tag }}</a> {% endif %}
-        {% endfor %} </p>
-        {% endif %}
-      {{ content_bottom }}</div>
-    {{ column_right }}</div>
+      </div>
+
+      <div class="pdp-tab-panel" id="tab-coa">
+        <p>Every batch of this compound undergoes independent third-party High-Performance Liquid Chromatography (HPLC) and Mass Spectrometry (MS) verification. A Certificate of Analysis (COA) is included with every order, documenting batch-specific purity data, molecular weight confirmation, and analytical methodology.</p>
+        <p style="margin-top:12px;">To request a specific batch COA, <a href="index.php?route=information/contact" style="color:var(--primary-green, #10B981);">contact our support team</a> with your order number.</p>
+      </div>
+
+      <div class="pdp-tab-panel" id="tab-shipping">
+        <p>Orders placed before 2 PM EST ship same business day via express courier with temperature-controlled packaging. Domestic delivery typically arrives within 2-3 business days. International orders ship within 24 hours and arrive in 5-10 business days depending on customs clearance.</p>
+        <p style="margin-top:12px;">Returns accepted within 30 days for unopened products. If a product does not meet stated purity specifications, a full refund is issued upon verification.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════
+    BLOCK 3: Related Products + Research Library
+    ════════════════════════════════════════════════════════ -->
+  {% if products is defined and products is not empty %}
+  <div class="pdp-section">
+    <div class="pdp-wrap">
+      <p class="pdp-section-tag">// RELATED</p>
+      <h2 class="pdp-section-title">MORE COMPOUNDS</h2>
+      <div class="pdp-related-grid">
+        {% for product in products %}
+        <a href="{{ product.href }}" class="pdp-related-card">
+          <div class="img-wrap">
+            {% if product.thumb %}<img src="{{ product.thumb }}" alt="{{ product.name }}" style="max-width:80%;max-height:80%;">{% else %}<span>🧪</span>{% endif %}
+          </div>
+          <div class="body">
+            <h3>{{ product.name }}</h3>
+            <p class="price">{{ product.price is defined ? product.price : '' }}</p>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="pdp-section" style="border-top:1px solid #e5e7eb;">
+    <div class="pdp-wrap">
+      <p class="pdp-section-tag">// RESEARCH</p>
+      <h2 class="pdp-section-title">RESEARCH LIBRARY</h2>
+      <div class="pdp-research-list">
+        <a href="#" class="pdp-research-item">The Complete Guide to HPLC Testing for Research Peptides</a>
+        <a href="#" class="pdp-research-item">Understanding Mass Spectrometry for Peptide Verification</a>
+        <a href="#" class="pdp-research-item">Cold-Chain Logistics: Best Practices for Peptide Storage</a>
+        <a href="#" class="pdp-research-item">Endotoxin Testing in Peptide Research: Why It Matters</a>
+      </div>
+    </div>
+  </div>
+
 </div>
-<script type="text/javascript"><!--
-  jQuery(document).ready(function($) {
-    $('.quantity-input-wrapper a').click(function(e) {
-      e.preventDefault();
-      if( $(this).hasClass('quantity-up')) {
-        $('#input-quantity').val( parseInt($('#input-quantity').val()) + 1 );
+
+<!-- ═══════ PDP JS: Tab switching + Thumbnail swap + SKU selection + Cart ═══════ -->
+<script>
+(function() {
+  /* --- Tab switching --- */
+  document.querySelectorAll('.pdp-tab-link').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.pdp-tab-link').forEach(function(b) { b.classList.remove('active'); });
+      document.querySelectorAll('.pdp-tab-panel').forEach(function(p) { p.classList.remove('active'); });
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  /* --- Thumbnail swap --- */
+  document.querySelectorAll('.pdp-thumb').forEach(function(thumb) {
+    thumb.addEventListener('click', function() {
+      var mainImg = document.getElementById('pdp-main-image');
+      if (mainImg) mainImg.src = thumb.dataset.src;
+      document.querySelectorAll('.pdp-thumb').forEach(function(b) { b.classList.remove('active'); });
+      thumb.classList.add('active');
+    });
+  });
+
+  /* --- SKU selection --- */
+  document.querySelectorAll('.pdp-sku').forEach(function(sku) {
+    sku.addEventListener('click', function() {
+      var parent = sku.parentElement;
+      parent.querySelectorAll('.pdp-sku').forEach(function(s) { s.classList.remove('active'); });
+      sku.classList.add('active');
+    });
+  });
+
+  /* --- Add to Cart (preserve OpenCart binding) --- */
+  var cartBtn = document.getElementById('button-cart');
+  if (cartBtn) {
+    cartBtn.addEventListener('click', function() {
+      var qty = document.getElementById('input-quantity').value;
+      var pid = document.querySelector('input[name="product_id"]').value;
+
+      // Collect selected options
+      var options = [];
+      document.querySelectorAll('.pdp-sku.active').forEach(function(sku) {
+        options.push(parseInt(sku.dataset.valueId));
+      });
+
+      // Simple redirect-based add-to-cart
+      var url = 'index.php?route=checkout/cart/add&product_id=' + pid + '&quantity=' + qty;
+      options.forEach(function(oid, i) { url += '&option[' + i + ']=' + oid; });
+
+      // OpenCart default method — trigger native cart.add
+      if (typeof cart !== 'undefined' && cart.add) {
+        cart.add(pid, qty);
       } else {
-        if( parseInt($('#input-quantity').val())  > {{ minimum }} ) {
-          $('#input-quantity').val( parseInt($('#input-quantity').val()) - 1 );
-        }
+        window.location.href = url;
       }
     });
+  }
+})();
+</script>
 
-    $('#button-cart').productInfoToCart({
-      data: [
-        '#product input[type=\'text\']',
-        '#product input[type=\'hidden\']',
-        '#product input[type=\'radio\']:checked',
-        '#product input[type=\'checkbox\']:checked',
-        '#product select, #product textarea'
-      ],
-    });
-
-    if ($(window).width() >= 768) {
-      $('#elevate-zoom').elevateZoom({
-        lensShape: 'basic',
-        lensSize: 150,
-        zoomWindowOffetx: 10,
-        zoomWindowWidth: 450,
-        zoomWindowHeight: 450,
-        borderSize: 1,
-        borderColour: '#eaeaea',
-        gallery: 'product-thumbnail-gallery',
-        galleryActiveClass: 'active',
-        cursor:'pointer',
-      });
-
-      $('#elevate-zoom').bind('click', function(e) {
-        var ez = $('#elevate-zoom').data('elevateZoom');
-        $.fancybox(ez.getGalleryList());
-        return false;
-      });
-    } else {
-      $('.elevatezoom-gallery').fancybox({
-        openEffect : 'none',
-        helpers : {
-          title : null
-        }
-      });
-      $('.elevate-zoom-preview a').bind('click', function(e) {
-        $('.elevatezoom-gallery').eq(0).trigger('click');
-        return false;
-      });
-    }
-  });
-//--></script>
 {{ footer }}

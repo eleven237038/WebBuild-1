@@ -27,22 +27,22 @@
   background: radial-gradient(ellipse at center, rgba(0,166,81,0.08) 0%, transparent 70%);
   pointer-events: none;
 }
-.about-tag { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #00a651; margin: 0 0 14px; }
+.about-tag { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--primary-green); margin: 0 0 14px; }
 .about-hero-title { font-family: "Figtree",sans-serif; font-weight: 900; font-size: 56px; color: #1a1a2e; text-transform: uppercase; line-height: 1.12; margin: 0 0 18px; letter-spacing: -1px; }
 .about-hero-sub { font-size: 17px; color: #666; margin: 0 auto; max-width: 620px; line-height: 1.55; }
 
 /* ═══════ BLOCK 2: Dark split layout ═══════ */
-.about-dark { background: #000B47; color: #ffffff; padding: 80px 0; }
+.about-dark { background: var(--bg-navy); color: #ffffff; padding: 80px 0; }
 .about-split { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: start; }
-.about-tag--dark { color: #00a651; }
+.about-tag--dark { color: var(--primary-green); }
 .about-dark-title { font-family: "Figtree",sans-serif; font-weight: 900; font-size: 36px; text-transform: uppercase; line-height: 1.15; margin: 0 0 22px; color: #ffffff; }
 .about-dark-text { font-size: 14.5px; color: rgba(255,255,255,0.72); line-height: 1.65; margin: 0 0 18px; }
-.about-quote { border-left: 3px solid #00a651; padding-left: 15px; font-style: italic; color: #ffffff; font-size: 13.5px; line-height: 1.55; margin: 22px 0 0; }
+.about-quote { border-left: 3px solid var(--primary-green); padding-left: 15px; font-style: italic; color: #ffffff; font-size: 13.5px; line-height: 1.55; margin: 22px 0 0; }
 
 /* ═══════ 2×2 Cards ═══════ */
 .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: rgba(255,255,255,0.08); border-radius: 8px; overflow: hidden; }
 .about-card { background: rgba(255,255,255,0.05); padding: 36px 32px; }
-.about-card-num { font-family: "Figtree",sans-serif; font-weight: 900; font-size: 36px; color: #00a651; margin: 0 0 2px; line-height: 1; }
+.about-card-num { font-family: "Figtree",sans-serif; font-weight: 900; font-size: 36px; color: var(--primary-green); margin: 0 0 2px; line-height: 1; }
 .about-card-label { font-size: 10.5px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1.5px; margin: 0 0 8px; }
 .about-card-text { font-size: 13px; color: rgba(255,255,255,0.6); line-height: 1.5; margin: 0; }
 
@@ -107,8 +107,8 @@
   background: radial-gradient(ellipse at center, rgba(0,166,81,0.06) 0%, transparent 70%);
   pointer-events: none;
 }
-.articles-tag { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #00a651; margin: 0 0 12px; }
-.articles-hero-title { font-family: "Figtree",sans-serif; font-weight: 900; font-size: 48px; color: #000B47; text-transform: uppercase; line-height: 1.12; margin: 0 0 14px; }
+.articles-tag { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--primary-green); margin: 0 0 12px; }
+.articles-hero-title { font-family: "Figtree",sans-serif; font-weight: 900; font-size: 48px; color: var(--bg-navy); text-transform: uppercase; line-height: 1.12; margin: 0 0 14px; }
 .articles-hero-sub { font-size: 16px; color: #666; margin: 0; }
 
 /* ═══════ BLOCK 2: Sidebar + Grid ═══════ */
@@ -119,16 +119,16 @@
 .articles-sidebar-inner { position: sticky; top: 100px; }
 .articles-search { position: relative; margin-bottom: 24px; }
 .articles-search input { width: 100%; height: 42px; padding: 0 14px 0 38px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 13px; color: #333; outline: none; box-sizing: border-box; }
-.articles-search input:focus { border-color: #00a651; }
+.articles-search input:focus { border-color: var(--primary-green); }
 .articles-search i { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: #bbb; font-size: 13px; }
 .articles-sidebar h4 { font-family: "Figtree",sans-serif; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #999; margin: 0 0 12px; }
 .articles-cat-list { list-style: none; padding: 0; margin: 0 0 24px; }
 .articles-cat-list li { margin-bottom: 6px; }
 .articles-cat-list label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #555; cursor: pointer; }
-.articles-cat-list input[type="checkbox"] { accent-color: #00a651; width: 16px; height: 16px; }
+.articles-cat-list input[type="checkbox"] { accent-color: var(--primary-green); width: 16px; height: 16px; }
 .articles-tags { display: flex; flex-wrap: wrap; gap: 8px; }
 .articles-tag-pill { display: inline-block; padding: 5px 12px; background: #f0f2f5; border-radius: 16px; font-size: 11px; color: #666; text-decoration: none; transition: background 0.15s, color 0.15s; }
-.articles-tag-pill:hover { background: #00a651; color: #fff; }
+.articles-tag-pill:hover { background: var(--primary-green); color: #fff; }
 
 /* --- Article Grid --- */
 .articles-grid-wrap { flex: 1; min-width: 0; }
@@ -137,22 +137,22 @@
 /* --- Article Card --- */
 .article-card { display: flex; flex-direction: column; background: #fff; border-radius: 8px; overflow: hidden; transition: box-shadow 0.2s; }
 .article-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
-.article-card-img-wrap { position: relative; overflow: hidden; border-radius: 8px 8px 0 0; height: 200px; background: #000B47; display: flex; align-items: center; justify-content: center; }
+.article-card-img-wrap { position: relative; overflow: hidden; border-radius: 8px 8px 0 0; height: 200px; background: var(--bg-navy); display: flex; align-items: center; justify-content: center; }
 .article-card-img-wrap .article-emoji { font-size: 60px; }
-.article-card-badge { position: absolute; bottom: 0; left: 0; background: #00a651; color: #fff; font-size: 10px; font-weight: 700; padding: 5px 14px; letter-spacing: 1px; text-transform: uppercase; }
+.article-card-badge { position: absolute; bottom: 0; left: 0; background: var(--primary-green); color: #fff; font-size: 10px; font-weight: 700; padding: 5px 14px; letter-spacing: 1px; text-transform: uppercase; }
 .article-card-body { padding: 18px; flex-grow: 1; display: flex; flex-direction: column; }
-.article-card-body h3 { font-family: "Figtree",sans-serif; font-weight: 700; font-size: 17px; color: #000B47; margin: 0 0 8px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.article-card-body h3 { font-family: "Figtree",sans-serif; font-weight: 700; font-size: 17px; color: var(--bg-navy); margin: 0 0 8px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .article-card-body p { font-size: 13.5px; color: #666; line-height: 1.55; margin: 0 0 16px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .article-card-meta { display: flex; justify-content: space-between; align-items: center; margin-top: auto; border-top: 1px solid #eee; padding-top: 12px; }
 .article-card-date { font-size: 11px; color: #aaa; }
-.article-card-readmore { font-size: 12px; font-weight: 700; color: #00a651 !important; text-decoration: none; }
+.article-card-readmore { font-size: 12px; font-weight: 700; color: var(--primary-green) !important; text-decoration: none; }
 .article-card-readmore:hover { text-decoration: underline; }
 
 /* --- Pagination --- */
 .articles-pagination { display: flex; justify-content: center; gap: 8px; margin: 48px 0 60px; }
 .articles-pagination a, .articles-pagination span { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 8px; font-size: 13px; font-weight: 600; text-decoration: none; border: 1px solid #e0e0e0; color: #666; background: #fff; transition: all 0.15s; }
-.articles-pagination a:hover { border-color: #00a651; color: #00a651; }
-.articles-pagination .active { border-color: #00a651; color: #00a651; background: #e6f7ee; font-weight: 800; }
+.articles-pagination a:hover { border-color: var(--primary-green); color: var(--primary-green); }
+.articles-pagination .active { border-color: var(--primary-green); color: var(--primary-green); background: #e6f7ee; font-weight: 800; }
 
 /* ═══════ Responsive ═══════ */
 @media (max-width: 1024px) { .articles-main { flex-direction: column; } .articles-sidebar { width: 100%; } .articles-sidebar-inner { position: static; } .articles-hero-title { font-size: 34px; } }
@@ -246,7 +246,7 @@
 <!-- ==========================================================================
  *  GenScript — Lab Results / COA Landing Page (Full-Width)
  *  4 Blocks: Hero Grid → Dark QA → 4-Col Standards → CTA
- *  Brand: Deep Navy #000B47 | Accent Green #00a651
+ *  Brand: Deep Navy var(--bg-navy) | Accent Green var(--primary-green)
  * ========================================================================== -->
 <style>
 /* ═══════ Page: full-width, no sidebars ═══════ */
@@ -256,7 +256,7 @@
 /* ═══════ Section helpers ═══════ */
 .lab-section { width: 100%; box-sizing: border-box; }
 .lab-section--light { background: #fafbfc; }
-.lab-section--dark  { background: #000B47; color: #ffffff; }
+.lab-section--dark  { background: var(--bg-navy); color: #ffffff; }
 
 /* ═══════ BLOCK 1: Hero with subtle grid ═══════ */
 .lab-hero {
@@ -270,7 +270,7 @@
 }
 .lab-tag {
   font-size: 12px; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 2px; color: #00a651; margin: 0 0 14px;
+  letter-spacing: 2px; color: var(--primary-green); margin: 0 0 14px;
 }
 .lab-hero-title {
   font-family: "Figtree",sans-serif; font-weight: 900; font-size: 52px;
@@ -308,7 +308,7 @@
   border-radius: 50%;
   background: rgba(0,166,81,0.15);
   display: flex; align-items: center; justify-content: center;
-  color: #00a651; font-size: 22px;
+  color: var(--primary-green); font-size: 22px;
 }
 .lab-qa-card h3 {
   font-family: "Figtree",sans-serif; font-weight: 800;
@@ -333,7 +333,7 @@
 .lab-std-icon {
   width: 56px; height: 56px; border: 1px solid rgba(0,11,71,0.12);
   border-radius: 12px; display: flex; align-items: center; justify-content: center;
-  color: #00a651; font-size: 24px; margin-bottom: 16px;
+  color: var(--primary-green); font-size: 24px; margin-bottom: 16px;
 }
 .lab-std-card h4 {
   font-family: "Figtree",sans-serif; font-weight: 700; font-size: 14px;
@@ -353,7 +353,7 @@
   font-size: 15px; color: #666; max-width: 520px; margin: 0 auto 24px; line-height: 1.55;
 }
 .lab-cta-btn {
-  display: inline-block; padding: 14px 40px; background: #00a651; color: #fff;
+  display: inline-block; padding: 14px 40px; background: var(--primary-green); color: #fff;
   border-radius: 6px; font-weight: 700; font-size: 15px; text-decoration: none;
   letter-spacing: 0.5px; transition: background 0.2s;
 }

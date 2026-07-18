@@ -1,0 +1,47 @@
+{# ==========================================================================
+ *  GenScript — Shared Product Card Component
+ *  Usage: {% include 'default/template/product/_partial_product_card.twig' with {'product': product} %}
+ *  Entire image area is clickable → product.href
+ * ========================================================================== #}
+<div class="product-card">
+  <!-- Badges -->
+  <span class="pcard-badge-pop">★ POPULAR</span>
+  <span class="pcard-badge-coa">✓ COA</span>
+
+  <!-- Image — full clickable area -->
+  <a href="{{ product.href }}" class="pcard-img-wrap" style="text-decoration:none;display:flex;align-items:center;justify-content:center;">
+    <button class="pcard-wishlist" aria-label="Wishlist" onclick="event.preventDefault();event.stopPropagation();">
+      <i class="fa-regular fa-heart"></i>
+    </button>
+    {% if product.thumb %}
+    <img src="{{ product.thumb }}" alt="{{ product.name }}" loading="lazy">
+    {% else %}
+    <span style="font-size:60px;">🧪</span>
+    {% endif %}
+  </a>
+
+  <!-- Card body -->
+  <div class="pcard-body">
+    <a href="{{ product.href }}" style="text-decoration:none;color:inherit;"><h3 class="pcard-name">{{ product.name }}</h3></a>
+    <p class="pcard-desc">{{ product.description is defined ? product.description|striptags|slice(0, 100) ~ '...' : 'Third-party tested — 99% by HPLC analysis with full COA documentation.' }}</p>
+
+    <!-- Variants -->
+    <div class="pcard-variants">
+      <span class="pcard-var active">5MG</span>
+      <span class="pcard-var">10MG</span>
+      <span class="pcard-var">25MG</span>
+    </div>
+
+    <!-- Price + Add -->
+    <div class="pcard-bottom">
+      <div>
+        <span class="pcard-price-label">STARTING FROM</span>
+        <p class="pcard-price">{{ product.price is defined ? product.price : '$50.00' }}</p>
+      </div>
+      <button class="pcard-add" onclick="cart.add('{{ product.product_id }}', '1');"><i class="fa-solid fa-plus"></i> Add</button>
+    </div>
+
+    <!-- Shipping -->
+    <p class="pcard-shipping">ships in &lt;24h</p>
+  </div>
+</div>

@@ -6,6 +6,18 @@
  */
 
 /* ==========================================================================
+ * CSS CUSTOM PROPERTIES — Modern Slate Navy + Emerald Green palette
+ * ========================================================================== */
+:root {
+  --bg-navy:       #0F172A;   /* Modern slate navy (replaces var(--bg-navy)) */
+  --primary-green: #10B981;   /* Emerald green (replaces var(--primary-green)) */
+  --bg-light:      #F8FAFC;   /* Soft light grey background */
+  --text-dark:     #1e293b;   /* Slate-800 for headings */
+  --text-muted:    #64748b;   /* Slate-500 for body text */
+  --border-light:  #e2e8f0;   /* Slate-200 for borders */
+}
+
+/* ==========================================================================
  * GLOBAL DARK THEME
  * ========================================================================== */
 body {
@@ -24,13 +36,13 @@ body {
 #header,
 #header.scroll-header,
 header.scroll-header {
-  background: rgb(0, 10, 70) !important;
+  background: var(--bg-navy) !important;
   padding: 0 40px;
-  position: fixed;
+  position: sticky;
   top: 0;
   left: 0;
   width: 100%;
-  z-index: 1000;
+  z-index: 9999;
   border-bottom: 1px solid rgba(255,255,255,0.06);
   box-sizing: border-box;
 }
@@ -107,7 +119,7 @@ header.scroll-header {
   white-space: nowrap;
 }
 .nav-link-item:hover {
-  color: #00a651 !important;
+  color: var(--primary-green) !important;
 }
 
 /* ---- "Hot!" Badge (legacy, kept for drawer menu) ---- */

@@ -3,7 +3,7 @@
  *  GenScript — Contact Us Page (Full-Width, 2 Blocks)
  *  Block 1: Hero with grid + green glow
  *  Block 2: Left (contact info) + Right (contact form) split layout
- *  Brand: Deep Navy #000B47 | Accent Green #00a651
+ *  Brand: Deep Navy var(--bg-navy) | Accent Green var(--primary-green)
  * ========================================================================== -->
 <style>
 /* ═══════ Page ═══════ */
@@ -28,11 +28,11 @@
 }
 .contact-tag {
   font-size: 12px; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 2px; color: #00a651; margin: 0 0 14px;
+  letter-spacing: 2px; color: var(--primary-green); margin: 0 0 14px;
 }
 .contact-hero-title {
   font-family: "Figtree",sans-serif; font-weight: 900; font-size: 56px;
-  color: #000B47; text-transform: uppercase; line-height: 1.12;
+  color: var(--bg-navy); text-transform: uppercase; line-height: 1.12;
   margin: 0 0 16px;
 }
 .contact-hero-sub {
@@ -61,9 +61,9 @@
   letter-spacing: 1.5px; color: #aaa; margin: 0 0 6px;
 }
 .contact-info-value {
-  font-size: 15px; color: #000B47; font-weight: 500; margin: 0; line-height: 1.5;
+  font-size: 15px; color: var(--bg-navy); font-weight: 500; margin: 0; line-height: 1.5;
 }
-.contact-info-value a { color: #000B47; text-decoration: none; }
+.contact-info-value a { color: var(--bg-navy); text-decoration: none; }
 
 /* --- Right: Form --- */
 .contact-form { }
@@ -80,7 +80,7 @@
   transition: border-color 0.2s;
 }
 .contact-input::placeholder { color: #bbb; font-size: 13px; }
-.contact-input:focus { border-color: #00a651; }
+.contact-input:focus { border-color: var(--primary-green); }
 .contact-textarea {
   min-height: 160px; resize: vertical;
 }
@@ -91,7 +91,7 @@
 /* Submit button */
 .contact-btn-submit {
   display: inline-block; padding: 14px 36px;
-  background: #00a651; color: #ffffff;
+  background: var(--primary-green); color: #ffffff;
   border: none; border-radius: 4px;
   font-family: "Figtree",sans-serif; font-size: 15px; font-weight: 700;
   cursor: pointer; letter-spacing: 0.5px;

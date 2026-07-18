@@ -367,14 +367,7 @@ class ControllerCommonColumnLeft extends Controller {
 				);
 			}
 
-			if ($this->user->hasPermission('access', 'marketing/contact')) {
-				$marketing[] = array(
-					'name'	   => $this->language->get('text_contact'),
-					'href'     => $this->url->link('marketing/contact', 'user_token=' . $this->session->data['user_token']),
-					'children' => array()
-				);
-			}
-
+			
 			if ($marketing) {
 				$data['menus'][] = array(
 					'id'       => 'menu-marketing',
@@ -385,16 +378,43 @@ class ControllerCommonColumnLeft extends Controller {
 				);
 			}
 
-			// System
-			$system = array();
+				// Email Management
+				$email_mgmt = array();
 
-			if ($this->user->hasPermission('access', 'setting/setting')) {
-				$system[] = array(
-					'name'	   => $this->language->get('text_setting'),
-					'href'     => $this->url->link('setting/store', 'user_token=' . $this->session->data['user_token']),
+				$mail_blast = array();
+				$mail_blast[] = array(
+					'name'     => 'Schedule Sending',
+					'href'     => $this->url->link('marketing/mail_schedule', 'user_token=' . $this->session->data['user_token']),
 					'children' => array()
 				);
-			}
+				$mail_blast[] = array(
+					'name'     => 'One-Time Blast',
+					'href'     => $this->url->link('marketing/contact', 'user_token=' . $this->session->data['user_token']),
+					'children' => array()
+				);
+
+				$email_mgmt[] = array(
+					'name'     => 'Email Blast',
+					'href'     => '',
+					'children' => $mail_blast
+				);
+
+				$email_mgmt[] = array(
+					'name'     => 'Triggered Emails',
+					'href'     => $this->url->link('marketing/mail_trigger', 'user_token=' . $this->session->data['user_token']),
+					'children' => array()
+				);
+
+				$data['menus'][] = array(
+					'id'       => 'menu-email',
+					'icon'     => 'fa-envelope',
+					'name'     => 'Email Management',
+					'href'     => '',
+					'children' => $email_mgmt
+				);
+
+			// System
+			$system = array();
 
 			// Users
 			$user = array();
