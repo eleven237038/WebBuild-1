@@ -141,6 +141,18 @@ header.scroll-header {
   color: #a3e635;
   background: rgba(163, 230, 53, 0.08);
 }
+/* Normalize <button> to match <a> — same font family, no browser defaults */
+button.header-icon-btn {
+  font-family: inherit;
+  line-height: 1;
+}
+/* Override global link blue: all icon buttons must use white */
+.header-icon-btn,
+.header-icon-btn i,
+.header-icon-btn:visited,
+.header-icon-btn:link {
+  color: #ffffff !important;
+}
 
 /* Cart button — solid, rounded, prominent */
 .header-cart-btn {
