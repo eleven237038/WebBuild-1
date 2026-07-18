@@ -605,7 +605,7 @@ class ModelCatalogProduct extends Model {
 	}
 
 	public function getProductCustomTags($product_id) {
-		$query = $this->db->query("SELECT t.tag_id, t.name FROM " . DB_PREFIX . "custom_tag t INNER JOIN " . DB_PREFIX . "product_to_custom_tag pt ON t.tag_id = pt.tag_id WHERE pt.product_id = '" . (int)$product_id . "' AND t.status = 1 ORDER BY t.sort_order ASC");
+		$query = $this->db->query("SELECT t.tag_id, t.name, t.parent_id, IFNULL(p.name, '') AS parent_name FROM " . DB_PREFIX . "custom_tag t INNER JOIN " . DB_PREFIX . "product_to_custom_tag pt ON t.tag_id = pt.tag_id LEFT JOIN " . DB_PREFIX . "custom_tag p ON t.parent_id = p.tag_id WHERE pt.product_id = '" . (int)$product_id . "' AND t.status = 1 ORDER BY t.parent_id ASC, t.sort_order ASC");
 		return $query->rows;
 	}
 }

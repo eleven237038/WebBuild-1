@@ -267,15 +267,7 @@
       <h2 class="pdp-section-title">MORE COMPOUNDS</h2>
       <div class="pdp-related-grid">
         {% for product in products %}
-        <a href="{{ product.href }}" class="pdp-related-card">
-          <div class="img-wrap">
-            {% if product.thumb %}<img src="{{ product.thumb }}" alt="{{ product.name }}" style="max-width:80%;max-height:80%;">{% else %}<span>🧪</span>{% endif %}
-          </div>
-          <div class="body">
-            <h3>{{ product.name }}</h3>
-            <p class="price">{{ product.price is defined ? product.price : '' }}</p>
-          </div>
-        </a>
+          {% include 'default/template/product/product_card.twig' with {'product': product} %}
         {% endfor %}
       </div>
     </div>

@@ -3,7 +3,7 @@
   <div class="product-wrapper">
     {% for product in products %}
     <div class="product-layout col-lg-3 col-md-3 col-sm-4 col-xs-6">
-      {{ include(helper.template('_partial/product/product_single')) }}
+      {% include 'default/template/product/product_card.twig' with {'product': product} %}
     </div>
     {% endfor %}
   </div>

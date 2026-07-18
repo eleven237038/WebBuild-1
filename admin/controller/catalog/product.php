@@ -20,7 +20,16 @@ class ControllerCatalogProduct extends Controller {
 		$this->load->model('catalog/product');
 
 		if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validateForm()) {
-			$this->model_catalog_product->addProduct($this->request->post);
+			// Defensive defaults for removed UI tabs
+		if (!isset($this->request->post['product_seo_url'])) { $this->request->post['product_seo_url'] = array(); }
+		if (!isset($this->request->post['product_option'])) { $this->request->post['product_option'] = array(); }
+		if (!isset($this->request->post['product_discount'])) { $this->request->post['product_discount'] = array(); }
+		if (!isset($this->request->post['product_special'])) { $this->request->post['product_special'] = array(); }
+		if (!isset($this->request->post['product_reward'])) { $this->request->post['product_reward'] = array(); }
+		if (!isset($this->request->post['product_download'])) { $this->request->post['product_download'] = array(); }
+		if (!isset($this->request->post['product_filter'])) { $this->request->post['product_filter'] = array(); }
+		if (!isset($this->request->post['product_layout'])) { $this->request->post['product_layout'] = array(); }
+		$this->model_catalog_product->addProduct($this->request->post);
 
 			$this->session->data['success'] = $this->language->get('text_success');
 
@@ -72,7 +81,16 @@ class ControllerCatalogProduct extends Controller {
 		$this->load->model('catalog/product');
 
 		if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validateForm()) {
-			$this->model_catalog_product->editProduct($this->request->get['product_id'], $this->request->post);
+			// Defensive defaults for removed UI tabs
+		if (!isset($this->request->post['product_seo_url'])) { $this->request->post['product_seo_url'] = array(); }
+		if (!isset($this->request->post['product_option'])) { $this->request->post['product_option'] = array(); }
+		if (!isset($this->request->post['product_discount'])) { $this->request->post['product_discount'] = array(); }
+		if (!isset($this->request->post['product_special'])) { $this->request->post['product_special'] = array(); }
+		if (!isset($this->request->post['product_reward'])) { $this->request->post['product_reward'] = array(); }
+		if (!isset($this->request->post['product_download'])) { $this->request->post['product_download'] = array(); }
+		if (!isset($this->request->post['product_filter'])) { $this->request->post['product_filter'] = array(); }
+		if (!isset($this->request->post['product_layout'])) { $this->request->post['product_layout'] = array(); }
+		$this->model_catalog_product->editProduct($this->request->get['product_id'], $this->request->post);
 
 			$this->session->data['success'] = $this->language->get('text_success');
 
@@ -872,9 +890,9 @@ class ControllerCatalogProduct extends Controller {
 		}
 
 
-		// Custom Tags
+		// Custom Tags — hierarchical tree
 		$this->load->model('catalog/custom_tag');
-		$data['all_custom_tags'] = $this->model_catalog_custom_tag->getTags();
+		$data['tag_tree'] = $this->model_catalog_custom_tag->getCustomTagTree();
 		if (isset($this->request->post['product_custom_tag'])) {
 			$data['product_custom_tag'] = $this->request->post['product_custom_tag'];
 		} elseif (!empty($product_info)) {

@@ -14,7 +14,7 @@ class ControllerCatalogCustomTag extends Controller {
 	}
 
 	protected function getList() {
-		$data['tags'] = $this->model_catalog_custom_tag->getTags();
+		$data['tags'] = $this->model_catalog_custom_tag->getTagsFlatTree();
 		$data['user_token'] = $this->session->data['user_token'];
 
 		if (isset($this->error['warning'])) { $data['error_warning'] = $this->error['warning']; } else { $data['error_warning'] = ''; }
@@ -77,6 +77,9 @@ class ControllerCatalogCustomTag extends Controller {
 		if (isset($this->request->post['name']))       { $data['name']       = $this->request->post['name'];       } elseif (!empty($tag_info)) { $data['name']       = $tag_info['name'];       } else { $data['name'] = ''; }
 		if (isset($this->request->post['sort_order'])) { $data['sort_order'] = $this->request->post['sort_order']; } elseif (!empty($tag_info)) { $data['sort_order'] = $tag_info['sort_order']; } else { $data['sort_order'] = 0; }
 		if (isset($this->request->post['status']))     { $data['status']     = $this->request->post['status'];     } elseif (!empty($tag_info)) { $data['status']     = $tag_info['status'];     } else { $data['status'] = 1; }
+
+		$data['all_tags']  = $this->model_catalog_custom_tag->getTags();
+		$data['parent_id'] = isset($this->request->post['parent_id']) ? (int)$this->request->post['parent_id'] : (!empty($tag_info) ? (int)$tag_info['parent_id'] : 0);
 
 		$data['cancel'] = $this->url->link('catalog/custom_tag', 'user_token=' . $this->session->data['user_token']);
 		$data['header'] = $this->load->controller('common/header');

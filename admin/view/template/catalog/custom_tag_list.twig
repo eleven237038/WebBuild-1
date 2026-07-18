@@ -21,7 +21,7 @@
                 <tr>
                   <td style="width:1px;"><input type="checkbox" onclick="$('input[name*=\'selected\']').prop('checked', this.checked);"/></td>
                   <td>标签名称</td>
-                  <td>排序</td>
+                  <td>上级ID</td><td>排序</td>
                   <td>状态</td>
                   <td>操作</td>
                 </tr>
@@ -31,7 +31,7 @@
                 <tr>
                   <td><input type="checkbox" name="selected[]" value="{{ tag.tag_id }}"/></td>
                   <td>{{ tag.name }}</td>
-                  <td>{{ tag.sort_order }}</td>
+                  <td>{{ tag.parent_id }}</td><td>{{ tag.sort_order }}</td>
                   <td>{{ tag.status ? '启用' : '禁用' }}</td>
                   <td><a href="index.php?route=catalog/custom_tag/edit&user_token={{ user_token }}&tag_id={{ tag.tag_id }}" class="btn btn-primary btn-xs"><i class="fa fa-pencil"></i> 编辑</a></td>
                 </tr>

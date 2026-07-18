@@ -1,12 +1,12 @@
 <?php
 class ModelCatalogCustomTag extends Model {
 	public function addTag($data) {
-		$this->db->query("INSERT INTO " . DB_PREFIX . "custom_tag SET name = '" . $this->db->escape($data['name']) . "', sort_order = '" . (int)$data['sort_order'] . "', status = '" . (int)$data['status'] . "', date_added = NOW(), date_modified = NOW()");
+		$this->db->query("INSERT INTO " . DB_PREFIX . "custom_tag SET parent_id = '" . (int)($data['parent_id'] ?? 0) . "', name = '" . $this->db->escape($data['name']) . "', sort_order = '" . (int)$data['sort_order'] . "', status = '" . (int)$data['status'] . "', date_added = NOW(), date_modified = NOW()");
 		return $this->db->getLastId();
 	}
 
 	public function editTag($tag_id, $data) {
-		$this->db->query("UPDATE " . DB_PREFIX . "custom_tag SET name = '" . $this->db->escape($data['name']) . "', sort_order = '" . (int)$data['sort_order'] . "', status = '" . (int)$data['status'] . "', date_modified = NOW() WHERE tag_id = '" . (int)$tag_id . "'");
+		$this->db->query("UPDATE " . DB_PREFIX . "custom_tag SET parent_id = '" . (int)($data['parent_id'] ?? 0) . "', name = '" . $this->db->escape($data['name']) . "', sort_order = '" . (int)$data['sort_order'] . "', status = '" . (int)$data['status'] . "', date_modified = NOW() WHERE tag_id = '" . (int)$tag_id . "'");
 	}
 
 	public function deleteTag($tag_id) {
@@ -48,5 +48,67 @@ class ModelCatalogCustomTag extends Model {
 				$this->db->query("INSERT INTO " . DB_PREFIX . "product_to_custom_tag SET product_id = '" . (int)$product_id . "', tag_id = '" . (int)$tag_id . "'");
 			}
 		}
+	}
+
+	// Hierarchical tree with full recursion (supports infinite levels)
+	public function getCustomTagTree() {
+		$all = $this->getTags();
+		return $this->_buildTree($all, 0);
+	}
+	private function _buildTree(&$all, $parent_id) {
+		$branch = array();
+		foreach ($all as $key => $tag) {
+			if ((int)$tag['parent_id'] == $parent_id) {
+				$children = $this->_buildTree($all, (int)$tag['tag_id']);
+				if ($children) { $tag['children'] = $children; }
+				$branch[] = $tag;
+			}
+		}
+		return $branch;
+	}
+
+	public function getTagsTree() {
+		$tags = $this->getTags();
+		$tree = array();
+		foreach ($tags as $tag) {
+			if ($tag['parent_id'] == 0) {
+				$tree[$tag['tag_id']] = array('tag' => $tag, 'children' => array());
+			}
+		}
+		foreach ($tags as $tag) {
+			if ($tag['parent_id'] > 0 && isset($tree[$tag['parent_id']])) {
+				$tree[$tag['parent_id']]['children'][] = $tag;
+			}
+		}
+		return $tree;
+	}
+	// Legacy: kept for backward compat
+	public function getTagsTree_old() {
+		$tags = $this->getTags();
+		$tree = array();
+		foreach ($tags as $tag) {
+			if ($tag['parent_id'] == 0) {
+				$tree[$tag['tag_id']] = array('tag' => $tag, 'children' => array());
+			}
+		}
+		foreach ($tags as $tag) {
+			if ($tag['parent_id'] > 0 && isset($tree[$tag['parent_id']])) {
+				$tree[$tag['parent_id']]['children'][] = $tag;
+			}
+		}
+		return $tree;
+	}
+
+	public function getTagsFlatTree() {
+		$tree = $this->getTagsTree();
+		$flat = array();
+		foreach ($tree as $parent) {
+			$flat[] = $parent['tag'];
+			foreach ($parent['children'] as $child) {
+				$child['name'] = '--- ' . $child['name'];
+				$flat[] = $child;
+			}
+		}
+		return $flat;
 	}
 }
