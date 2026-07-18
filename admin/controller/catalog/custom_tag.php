@@ -82,6 +82,9 @@ class ControllerCatalogCustomTag extends Controller {
 		if (isset($this->request->post['name']))       { $data['name']       = $this->request->post['name'];       } elseif (!empty($tag_info)) { $data['name']       = $tag_info['name'];       } else { $data['name'] = ''; }
 		if (isset($this->request->post['sort_order'])) { $data['sort_order'] = $this->request->post['sort_order']; } elseif (!empty($tag_info)) { $data['sort_order'] = $tag_info['sort_order']; } else { $data['sort_order'] = 0; }
 		if (isset($this->request->post['status']))     { $data['status']     = $this->request->post['status'];     } elseif (!empty($tag_info)) { $data['status']     = $tag_info['status'];     } else { $data['status'] = 1; }
+		if (isset($this->request->post['field_type']))    { $data['field_type']    = $this->request->post['field_type'];    } elseif (!empty($tag_info)) { $data['field_type']    = $tag_info['field_type'];    } else { $data['field_type'] = 'tag'; }
+		if (isset($this->request->post['display_label'])) { $data['display_label'] = $this->request->post['display_label']; } elseif (!empty($tag_info)) { $data['display_label'] = $tag_info['display_label']; } else { $data['display_label'] = ''; }
+		if (isset($this->request->post['is_core']))       { $data['is_core']       = $this->request->post['is_core'];       } elseif (!empty($tag_info)) { $data['is_core']       = $tag_info['is_core'];       } else { $data['is_core'] = 0; }
 
 		$data['all_tags']  = $this->model_catalog_custom_tag->getTags();
 		$data['parent_id'] = isset($this->request->post['parent_id']) ? (int)$this->request->post['parent_id'] : (!empty($tag_info) ? (int)$tag_info['parent_id'] : 0);
@@ -102,6 +105,8 @@ class ControllerCatalogCustomTag extends Controller {
 		$this->load->model('catalog/custom_tag');
 		if (isset($this->request->post['selected'])) {
 			foreach ($this->request->post['selected'] as $tag_id) {
+				$tag = $this->model_catalog_custom_tag->getTag($tag_id);
+				if (!empty($tag['is_core'])) continue; // protect core fields
 				$this->model_catalog_custom_tag->deleteTag($tag_id);
 			}
 			$this->session->data['success'] = '标签已删除';

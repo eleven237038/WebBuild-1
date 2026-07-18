@@ -27,6 +27,7 @@
   <div class="page-header">
     <div class="container-fluid">
       <div class="pull-right">
+        <button onclick="saveTree()" class="btn btn-success btn-lg" id="btn-save-tree" style="margin-right:8px;"><i class="fa fa-save"></i> 保存菜单结构</button>
         <button type="button" onclick="deleteSelected()" class="btn btn-danger"><i class="fa fa-trash-o"></i> 批量删除</button>
       </div>
       <h1>标签管理 (拖拽排序)</h1>
@@ -68,7 +69,6 @@
         <div class="tree-toolbar">
           <button onclick="expandAll()" class="btn btn-default btn-xs">展开全部</button>
           <button onclick="collapseAll()" class="btn btn-default btn-xs">折叠全部</button>
-          <button onclick="saveTree()" class="btn btn-success btn-sm" id="btn-save-tree"><i class="fa fa-save"></i> 保存树形结构</button>
           <span id="save-status"></span>
         </div>
 

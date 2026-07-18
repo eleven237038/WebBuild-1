@@ -268,29 +268,29 @@ class ControllerCommonColumnLeft extends Controller {
 				);
 			}
 
-				// Email Management
+				// 邮件管理
 				$email_mgmt = array();
 
 				$mail_blast = array();
 				$mail_blast[] = array(
-					'name'     => 'Schedule Sending',
+					'name'     => '定时群发',
 					'href'     => $this->url->link('marketing/mail_schedule', 'user_token=' . $this->session->data['user_token']),
 					'children' => array()
 				);
 				$mail_blast[] = array(
-					'name'     => 'One-Time Blast',
+					'name'     => '单次群发',
 					'href'     => $this->url->link('marketing/contact', 'user_token=' . $this->session->data['user_token']),
 					'children' => array()
 				);
 
 				$email_mgmt[] = array(
-					'name'     => 'Email Blast',
+					'name'     => '邮件群发',
 					'href'     => '',
 					'children' => $mail_blast
 				);
 
 				$email_mgmt[] = array(
-					'name'     => 'Triggered Emails',
+					'name'     => '触发邮件',
 					'href'     => $this->url->link('marketing/mail_trigger', 'user_token=' . $this->session->data['user_token']),
 					'children' => array()
 				);
@@ -298,7 +298,7 @@ class ControllerCommonColumnLeft extends Controller {
 				$data['menus'][] = array(
 					'id'       => 'menu-email',
 					'icon'     => 'fa-envelope',
-					'name'     => 'Email Management',
+					'name'     => '邮件管理',
 					'href'     => '',
 					'children' => $email_mgmt
 				);

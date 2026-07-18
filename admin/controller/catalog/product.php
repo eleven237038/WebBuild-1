@@ -890,9 +890,22 @@ class ControllerCatalogProduct extends Controller {
 		}
 
 
-		// Custom Tags — hierarchical tree
+		// Custom Tags — hierarchical tree + core field config
 		$this->load->model('catalog/custom_tag');
 		$data['tag_tree'] = $this->model_catalog_custom_tag->getCustomTagTree();
+		// Build core_fields lookup: name => display_label for is_core=1 records
+		$all_tags = $this->model_catalog_custom_tag->getTags();
+		// Core field labels for General tab + system fields for dynamic Data tab
+		$data['core_fields']   = array();
+		$data['system_fields'] = array();
+		foreach ($all_tags as $t) {
+			if ($t['is_core']) {
+				if (!empty($t['system_column'])) {
+					$data['system_fields'][] = $t;
+				}
+				$data['core_fields'][$t['name']] = $t['display_label'] ?: $t['name'];
+			}
+		}
 		if (isset($this->request->post['product_custom_tag'])) {
 			$data['product_custom_tag'] = $this->request->post['product_custom_tag'];
 		} elseif (!empty($product_info)) {

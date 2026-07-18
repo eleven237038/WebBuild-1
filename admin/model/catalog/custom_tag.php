@@ -1,12 +1,22 @@
 <?php
 class ModelCatalogCustomTag extends Model {
 	public function addTag($data) {
-		$this->db->query("INSERT INTO " . DB_PREFIX . "custom_tag SET parent_id = '" . (int)($data['parent_id'] ?? 0) . "', name = '" . $this->db->escape($data['name']) . "', sort_order = '" . (int)$data['sort_order'] . "', status = '" . (int)$data['status'] . "', date_added = NOW(), date_modified = NOW()");
+		$ft  = $this->db->escape((string)($data['field_type'] ?? 'tag'));
+		$sc  = $this->db->escape((string)($data['system_column'] ?? ''));
+		$it  = $this->db->escape((string)($data['input_type'] ?? ''));
+		$dl  = $this->db->escape((string)($data['display_label'] ?? ''));
+		$ic  = (int)($data['is_core'] ?? 0);
+		$this->db->query("INSERT INTO " . DB_PREFIX . "custom_tag SET parent_id = '" . (int)($data['parent_id'] ?? 0) . "', name = '" . $this->db->escape($data['name']) . "', field_type = '" . $ft . "', system_column = '" . $sc . "', input_type = '" . $it . "', display_label = '" . $dl . "', is_core = '" . $ic . "', sort_order = '" . (int)$data['sort_order'] . "', status = '" . (int)$data['status'] . "', date_added = NOW(), date_modified = NOW()");
 		return $this->db->getLastId();
 	}
 
 	public function editTag($tag_id, $data) {
-		$this->db->query("UPDATE " . DB_PREFIX . "custom_tag SET parent_id = '" . (int)($data['parent_id'] ?? 0) . "', name = '" . $this->db->escape($data['name']) . "', sort_order = '" . (int)$data['sort_order'] . "', status = '" . (int)$data['status'] . "', date_modified = NOW() WHERE tag_id = '" . (int)$tag_id . "'");
+		$ft  = $this->db->escape((string)($data['field_type'] ?? 'tag'));
+		$sc  = $this->db->escape((string)($data['system_column'] ?? ''));
+		$it  = $this->db->escape((string)($data['input_type'] ?? ''));
+		$dl  = $this->db->escape((string)($data['display_label'] ?? ''));
+		$ic  = (int)($data['is_core'] ?? 0);
+		$this->db->query("UPDATE " . DB_PREFIX . "custom_tag SET parent_id = '" . (int)($data['parent_id'] ?? 0) . "', name = '" . $this->db->escape($data['name']) . "', field_type = '" . $ft . "', system_column = '" . $sc . "', input_type = '" . $it . "', display_label = '" . $dl . "', is_core = '" . $ic . "', sort_order = '" . (int)$data['sort_order'] . "', status = '" . (int)$data['status'] . "', date_modified = NOW() WHERE tag_id = '" . (int)$tag_id . "'");
 	}
 
 	public function deleteTag($tag_id) {
