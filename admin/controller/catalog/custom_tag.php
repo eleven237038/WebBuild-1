@@ -127,8 +127,6 @@ class ControllerCatalogCustomTag extends Controller {
 		$this->load->model('catalog/custom_tag');
 		if (isset($this->request->post['selected'])) {
 			foreach ($this->request->post['selected'] as $tag_id) {
-				$tag = $this->model_catalog_custom_tag->getTag($tag_id);
-				if (!empty($tag['is_core'])) continue; // protect core fields
 				$this->model_catalog_custom_tag->deleteTag($tag_id);
 			}
 			$this->session->data['success'] = '字段已删除';

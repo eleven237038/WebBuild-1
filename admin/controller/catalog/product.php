@@ -922,24 +922,22 @@ class ControllerCatalogProduct extends Controller {
 		// Custom Tags — hierarchical tree + core field config
 		$this->load->model('catalog/custom_tag');
 		$data['tag_tree'] = $this->model_catalog_custom_tag->getCustomTagTree();
-		// Build core_fields lookup: name => display_label for is_core=1 records
+		// Build core_fields lookup: name => display_label for system_column records
 		$all_tags = $this->model_catalog_custom_tag->getTags();
 		// Core field labels for General tab + system fields for dynamic Data tab + custom (non-core) fields
 		$data['core_fields']   = array();
 		$data['system_fields'] = array();
 		$data['custom_fields'] = array();
 		foreach ($all_tags as $t) {
-			if (!empty($t['is_core'])) {
-				if (!empty($t['system_column'])) {
-					// Attach picker options for known system select columns
-					if ($t['system_column'] == 'stock_status_id' && !empty($data['stock_statuses'])) {
-						$t['options'] = array();
-						foreach ($data['stock_statuses'] as $ss) {
-							$t['options'][] = array('value' => $ss['stock_status_id'], 'text' => $ss['name']);
-						}
+			if (!empty($t['system_column'])) {
+				// Attach picker options for known system select columns
+				if ($t['system_column'] == 'stock_status_id' && !empty($data['stock_statuses'])) {
+					$t['options'] = array();
+					foreach ($data['stock_statuses'] as $ss) {
+						$t['options'][] = array('value' => $ss['stock_status_id'], 'text' => $ss['name']);
 					}
-					$data['system_fields'][] = $t;
 				}
+				$data['system_fields'][] = $t;
 				$data['core_fields'][$t['name']] = !empty($t['display_label']) ? $t['display_label'] : $t['name'];
 			} else {
 				$data['custom_fields'][] = $t;

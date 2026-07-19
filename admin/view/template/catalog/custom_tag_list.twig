@@ -51,7 +51,6 @@
 .field-meta { display: flex; gap: 4px; align-items: center; }
 .badge-type { font-size: 10px; background: #64748b; color: #fff; padding: 1px 6px; border-radius: 3px; }
 .badge-required { font-size: 10px; background: #ef4444; color: #fff; padding: 1px 6px; border-radius: 3px; }
-.badge-core { font-size: 10px; background: #0ea5e9; color: #fff; padding: 1px 6px; border-radius: 3px; }
 .field-id { font-size: 10px; color: #aaa; }
 .field-actions { display: flex; gap: 6px; white-space: nowrap; align-items: center; }
 .field-actions .btn { font-size: 11px; padding: 2px 8px; }
@@ -129,15 +128,10 @@
                         <span class="field-meta">
                           <span class="badge-type" data-type="{{ field.tag_type }}">{{ field.tag_type }}</span>
                           {% if field.is_required == 1 %}<span class="badge-required">必填</span>{% endif %}
-                          {% if field.is_core == 1 %}<span class="badge-core">核心</span>{% endif %}
                         </span>
                         <span class="field-id tag-nodrag">ID:{{ field.tag_id }}</span>
                         <a href="index.php?route=catalog/custom_tag/edit&user_token={{ user_token }}&tag_id={{ field.tag_id }}" class="btn btn-default btn-xs tag-nodrag" data-toggle="tooltip" title="编辑"><i class="fa fa-pencil"></i></a>
-                        {% if field.is_core != 1 %}
                         <button type="button" class="btn btn-danger btn-xs tag-nodrag" data-toggle="tooltip" title="删除" onclick="deleteField({{ field.tag_id }})"><i class="fa fa-trash"></i></button>
-                        {% else %}
-                        <button type="button" class="btn btn-default btn-xs tag-nodrag" disabled title="核心字段不可删除"><i class="fa fa-lock"></i></button>
-                        {% endif %}
                       </span>
                     </div>
                     <div class="tag-transport"></div>
@@ -247,7 +241,7 @@ var wpTagNav = (function($) {
     api.refreshToggles();
   };
 
-  // ── 核心: sortable 引擎 (对应 WP initSortables) ──
+  // ── sortable 引擎 (对应 WP initSortables) ──
   api.initSortables = function() {
     var currentDepth = 0, originalDepth, minDepth, maxDepth,
         prev, next, prevBottom, nextThreshold, helperHeight, transport,

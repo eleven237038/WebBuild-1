@@ -74,13 +74,12 @@
             </div>
           </div>
 
-          {% if is_core or system_column %}
+          {% if system_column %}
           <div class="form-group">
             <label class="col-sm-2 control-label">系统信息</label>
             <div class="col-sm-10">
               <p class="form-control-static" style="font-size:12px;color:#999;">
-                核心字段:{{ is_core ? '是' : '否' }}
-                {% if field_type %} | 字段类型:{{ field_type }}{% endif %}
+                {% if field_type %}字段类型:{{ field_type }}{% endif %}
                 {% if system_column %} | 系统列:{{ system_column }}{% endif %}
                 <span class="help-block" style="margin-top:4px;">系统管理字段,不可在此修改。</span>
               </p>

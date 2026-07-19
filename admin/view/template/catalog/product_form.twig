@@ -39,14 +39,14 @@
           } %}
           {# 整个表单内容完全由 custom_tag (自定义字段) 驱动, 按 sort_order 顺序渲染;
              添加商品 / 编辑商品 共用同一 getForm(), 已统一。原 General / Image 硬编码标签页已删除,
-             其字段 (商品描述 / Meta / 标签 / 主图) 迁移为 is_core=1 的 custom_tag 记录, 可拖拽排序。 #}
+             其字段 (商品描述 / Meta / 标签 / 主图) 迁移为带 system_column 的 custom_tag 记录, 可拖拽排序。 #}
           {% if system_fields is not empty %}
             <fieldset>
               <legend>系统字段</legend>
               {% set image_row = 0 %}
               {% for field in system_fields %}
                 {% if field.field_type == 'core_text_ml' %}
-                  {# 多语言核心字段 (商品名称/描述/Meta标题/Meta描述/Meta关键字/商品标签):
+                  {# 多语言系统字段 (商品名称/描述/Meta标题/Meta描述/Meta关键字/商品标签):
                      修复"中英重复输入两次"bug: 详情页仅保留中文(zh-cn)输入框, 不再堆叠 en-gb。
                      保存时控制器 mirrorChineseToAllLanguages() 把中文值镜像写入 en-gb 等其他语言行,
                      避免 editProduct 的 DELETE+重插 丢失英文行 (否则 en-gb 前台商品名为空)。
