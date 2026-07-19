@@ -43,7 +43,6 @@ $_['entry_bad']					= 'Mauvais';
 
 // Tabs
 $_['tab_description']			= 'Description';
-$_['tab_attribute']				= 'Spécificités';
 $_['tab_review']				= 'Avis (%s)';
 
 // Error

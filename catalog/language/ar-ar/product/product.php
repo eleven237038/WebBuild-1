@@ -42,7 +42,6 @@ $_['entry_bad']           = 'رديء';
 
 // Tabs
 $_['tab_description']     = 'تفاصيل';
-$_['tab_attribute']       = 'المواصفات';
 $_['tab_review']          = 'التقييمات (%s)';
 
 // Error

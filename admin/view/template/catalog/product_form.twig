@@ -85,34 +85,33 @@
               </div>
             </div>
             <div class="tab-pane" id="tab-data">
-              {% for field in system_fields %}
-              <div class="form-group">
-                <label class="col-md-2 control-label" for="input-{{ field.system_column }}">{{ field.display_label ?: field.name }}</label>
-                <div class="col-md-6">
-                  {% if field.input_type == 'number' %}
-                    <input type="number" name="{{ field.system_column }}" value="{{ _context[field.system_column] is defined ? _context[field.system_column] : '' }}" id="input-{{ field.system_column }}" class="form-control"/>
-                  {% elseif field.input_type == 'text' %}
-                    <input type="text" name="{{ field.system_column }}" value="{{ _context[field.system_column] is defined ? _context[field.system_column] : '' }}" id="input-{{ field.system_column }}" class="form-control"/>
-                  {% elseif field.input_type == 'date' %}
-                    <div class="input-group date">
-                      <input type="text" name="{{ field.system_column }}" value="{{ _context[field.system_column] is defined ? _context[field.system_column] : '' }}" data-date-format="YYYY-MM-DD" id="input-{{ field.system_column }}" class="form-control"/>
-                      <div class="input-group-btn"><button class="btn btn-default" type="button"><i class="fa fa-calendar"></i></button></div>
-                    </div>
-                  {% elseif field.input_type == 'radio_boolean' %}
-                    <label class="radio-inline"><input type="radio" name="{{ field.system_column }}" value="1" {{ _context[field.system_column] is defined and _context[field.system_column] == 1 ? 'checked' }}> {{ text_yes }}</label>
-                    <label class="radio-inline"><input type="radio" name="{{ field.system_column }}" value="0" {{ _context[field.system_column] is defined and _context[field.system_column] != 1 ? 'checked' }}> {{ text_no }}</label>
-                  {% elseif field.input_type == 'select_stock_status' %}
-                    <select name="{{ field.system_column }}" id="input-{{ field.system_column }}" class="form-control">
-                      {% for ss in stock_statuses %}
-                        <option value="{{ ss.stock_status_id }}" {{ _context[field.system_column] is defined and _context[field.system_column] == ss.stock_status_id ? 'selected' }}>{{ ss.name }}</option>
-                      {% endfor %}
-                    </select>
-                  {% else %}
-                    <input type="text" name="{{ field.system_column }}" value="{{ _context[field.system_column] is defined ? _context[field.system_column] : '' }}" id="input-{{ field.system_column }}" class="form-control"/>
-                  {% endif %}
-                </div>
-              </div>
-              {% endfor %}
+              {% import "catalog/_eav_field_render.twig" as eav %}
+              {% set eav_ui = {
+                placeholder: placeholder|default(''),
+                yes: text_yes|default('是'),
+                no: text_no|default('否'),
+                select: text_select|default('-- 请选择 --'),
+                summernote: summernote|default('en-gb'),
+                entry_additional_image: entry_additional_image|default('附加图片'),
+                entry_sort_order: entry_sort_order|default('排序')
+              } %}
+              {% if system_fields is not empty %}
+                <fieldset>
+                  <legend>系统字段</legend>
+                  {% for field in system_fields %}
+                    {{ eav.renderField(field, _context[field.system_column] is defined ? _context[field.system_column] : '', field.system_column, product_images, field.system_column, eav_ui) }}
+                  {% endfor %}
+                </fieldset>
+              {% endif %}
+              {% if custom_fields is not empty %}
+                <fieldset>
+                  <legend>自定义字段</legend>
+                  {% for field in custom_fields %}
+                    {% set pcv = product_custom_tag[field.tag_id] is defined ? product_custom_tag[field.tag_id].value : '' %}
+                    {{ eav.renderField(field, pcv, 'product_custom_tag[' ~ field.tag_id ~ '][value]', [], 'cf_' ~ field.tag_id, eav_ui) }}
+                  {% endfor %}
+                </fieldset>
+              {% endif %}
             </div>
             <div class="tab-pane" id="tab-image">
               <div class="table-responsive">
@@ -312,55 +311,6 @@ $('input[name=\'related\']').autocomplete({
 
 $('#product-related').delegate('.fa-minus-circle', 'click', function() {
 	$(this).parent().remove();
-});
-//--></script>
-<script type="text/javascript"><!--
-var attribute_row = {{ attribute_row }};
-
-function addAttribute() {
-	html = '<tr id="attribute-row' + attribute_row + '">';
-	html += '  <td class="text-left" style="width: 20%;"><input type="text" name="product_attribute[' + attribute_row + '][name]" value="" placeholder="{{ entry_attribute }}" class="form-control" /><input type="hidden" name="product_attribute[' + attribute_row + '][attribute_id]" value="" /></td>';
-	html += '  <td class="text-left">';
-  {% for language in languages %}
-	html += '<div class="input-group"><span class="input-group-addon"><img src="language/{{ language.code }}/{{ language.code }}.png" title="{{ language.name }}" /></span><textarea name="product_attribute[' + attribute_row + '][product_attribute_description][{{ language.language_id }}][text]" rows="5" placeholder="{{ entry_text }}" class="form-control"></textarea></div>';
-  {% endfor %}
-	html += '  </td>';
-	html += '  <td class="text-left"><button type="button" onclick="$(\'#attribute-row' + attribute_row + '\').remove();" data-toggle="tooltip" title="{{ button_remove }}" class="btn btn-danger"><i class="fa fa-minus-circle"></i></button></td>';
-	html += '</tr>';
-
-	$('#attribute tbody').append(html);
-
-	attributeautocomplete(attribute_row);
-
-	attribute_row++;
-}
-
-function attributeautocomplete(attribute_row) {
-	$('input[name=\'product_attribute[' + attribute_row + '][name]\']').autocomplete({
-		'source': function(request, response) {
-			$.ajax({
-				url: 'index.php?route=catalog/attribute/autocomplete&user_token={{ user_token }}&filter_name=' + encodeURIComponent(request),
-				dataType: 'json',
-				success: function(json) {
-					response($.map(json, function(item) {
-						return {
-							category: item.attribute_group,
-							label: item.name,
-							value: item.attribute_id
-						}
-					}));
-				}
-			});
-		},
-		'select': function(item) {
-			$('input[name=\'product_attribute[' + attribute_row + '][name]\']').val(item['label']);
-			$('input[name=\'product_attribute[' + attribute_row + '][attribute_id]\']').val(item['value']);
-		}
-	});
-}
-
-$('#attribute tbody tr').each(function(index, element) {
-	attributeautocomplete(index);
 });
 //--></script>
 <script type="text/javascript">

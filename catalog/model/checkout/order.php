@@ -18,22 +18,6 @@ class ModelCheckoutOrder extends Model {
 			}
 		}
 
-		// Gift Voucher
-		$this->load->model('extension/total/voucher');
-
-		// Vouchers
-		if (isset($data['vouchers'])) {
-			foreach ($data['vouchers'] as $voucher) {
-				$this->db->query("INSERT INTO " . DB_PREFIX . "order_voucher SET order_id = '" . (int)$order_id . "', description = '" . $this->db->escape($voucher['description']) . "', code = '" . $this->db->escape($voucher['code']) . "', from_name = '" . $this->db->escape($voucher['from_name']) . "', from_email = '" . $this->db->escape($voucher['from_email']) . "', to_name = '" . $this->db->escape($voucher['to_name']) . "', to_email = '" . $this->db->escape($voucher['to_email']) . "', voucher_theme_id = '" . (int)$voucher['voucher_theme_id'] . "', message = '" . $this->db->escape($voucher['message']) . "', amount = '" . (float)$voucher['amount'] . "'");
-
-				$order_voucher_id = $this->db->getLastId();
-
-				$voucher_id = $this->model_extension_total_voucher->addVoucher($order_id, $voucher);
-
-				$this->db->query("UPDATE " . DB_PREFIX . "order_voucher SET voucher_id = '" . (int)$voucher_id . "' WHERE order_voucher_id = '" . (int)$order_voucher_id . "'");
-			}
-		}
-
 		// Totals
 		if (isset($data['totals'])) {
 			foreach ($data['totals'] as $total) {
@@ -66,26 +50,6 @@ class ModelCheckoutOrder extends Model {
 			}
 		}
 
-		// Gift Voucher
-		$this->load->model('extension/total/voucher');
-
-		$this->model_extension_total_voucher->disableVoucher($order_id);
-
-		// Vouchers
-		$this->db->query("DELETE FROM " . DB_PREFIX . "order_voucher WHERE order_id = '" . (int)$order_id . "'");
-
-		if (isset($data['vouchers'])) {
-			foreach ($data['vouchers'] as $voucher) {
-				$this->db->query("INSERT INTO " . DB_PREFIX . "order_voucher SET order_id = '" . (int)$order_id . "', description = '" . $this->db->escape($voucher['description']) . "', code = '" . $this->db->escape($voucher['code']) . "', from_name = '" . $this->db->escape($voucher['from_name']) . "', from_email = '" . $this->db->escape($voucher['from_email']) . "', to_name = '" . $this->db->escape($voucher['to_name']) . "', to_email = '" . $this->db->escape($voucher['to_email']) . "', voucher_theme_id = '" . (int)$voucher['voucher_theme_id'] . "', message = '" . $this->db->escape($voucher['message']) . "', amount = '" . (float)$voucher['amount'] . "'");
-
-				$order_voucher_id = $this->db->getLastId();
-
-				$voucher_id = $this->model_extension_total_voucher->addVoucher($order_id, $voucher);
-
-				$this->db->query("UPDATE " . DB_PREFIX . "order_voucher SET voucher_id = '" . (int)$voucher_id . "' WHERE order_voucher_id = '" . (int)$order_voucher_id . "'");
-			}
-		}
-
 		// Totals
 		$this->db->query("DELETE FROM " . DB_PREFIX . "order_total WHERE order_id = '" . (int)$order_id . "'");
 
@@ -103,16 +67,10 @@ class ModelCheckoutOrder extends Model {
 		$this->db->query("DELETE FROM `" . DB_PREFIX . "order` WHERE order_id = '" . (int)$order_id . "'");
 		$this->db->query("DELETE FROM `" . DB_PREFIX . "order_product` WHERE order_id = '" . (int)$order_id . "'");
 		$this->db->query("DELETE FROM `" . DB_PREFIX . "order_option` WHERE order_id = '" . (int)$order_id . "'");
-		$this->db->query("DELETE FROM `" . DB_PREFIX . "order_voucher` WHERE order_id = '" . (int)$order_id . "'");
 		$this->db->query("DELETE FROM `" . DB_PREFIX . "order_total` WHERE order_id = '" . (int)$order_id . "'");
 		$this->db->query("DELETE FROM `" . DB_PREFIX . "order_history` WHERE order_id = '" . (int)$order_id . "'");
 		$this->db->query("DELETE `or`, ort FROM `" . DB_PREFIX . "order_recurring` `or`, `" . DB_PREFIX . "order_recurring_transaction` `ort` WHERE order_id = '" . (int)$order_id . "' AND ort.order_recurring_id = `or`.order_recurring_id");
 		$this->db->query("DELETE FROM `" . DB_PREFIX . "customer_transaction` WHERE order_id = '" . (int)$order_id . "'");
-
-		// Gift Voucher
-		$this->load->model('extension/total/voucher');
-
-		$this->model_extension_total_voucher->disableVoucher($order_id);
 	}
 
 	public function getOrder($order_id) {
@@ -261,9 +219,7 @@ class ModelCheckoutOrder extends Model {
 	}
 	
 	public function getOrderVouchers($order_id) {
-		$query = $this->db->query("SELECT * FROM " . DB_PREFIX . "order_voucher WHERE order_id = '" . (int)$order_id . "'");
-	
-		return $query->rows;
+		return array();
 	}
 	
 	public function getOrderTotals($order_id) {

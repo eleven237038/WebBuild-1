@@ -144,9 +144,7 @@ class ModelAccountOrder extends Model {
 	}
 
 	public function getOrderVouchers($order_id) {
-		$query = $this->db->query("SELECT * FROM `" . DB_PREFIX . "order_voucher` WHERE order_id = '" . (int)$order_id . "'");
-
-		return $query->rows;
+		return array();
 	}
 
 	public function getOrderTotals($order_id) {
@@ -174,8 +172,6 @@ class ModelAccountOrder extends Model {
 	}
 
 	public function getTotalOrderVouchersByOrderId($order_id) {
-		$query = $this->db->query("SELECT COUNT(*) AS total FROM `" . DB_PREFIX . "order_voucher` WHERE order_id = '" . (int)$order_id . "'");
-
-		return $query->row['total'];
+		return 0;
 	}
 }

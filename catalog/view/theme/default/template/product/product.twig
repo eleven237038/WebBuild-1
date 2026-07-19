@@ -226,12 +226,12 @@
         <p>Premium research-grade compound. Third-party HPLC tested with batch-specific Certificate of Analysis. Each order includes full documentation for complete traceability.</p>
         {% endif %}
 
-        {% if attribute_groups is defined and attribute_groups is not empty %}
+        {% if custom_tags is defined and custom_tags is not empty %}
         <table class="pdp-spec-table" style="margin-top:20px;">
-          {% for attribute_group in attribute_groups %}
-          {% for attribute in attribute_group.attribute %}
-          <tr><th>{{ attribute.name }}</th><td>{{ attribute.text }}</td></tr>
-          {% endfor %}
+          {% for ct in custom_tags %}
+          {% if ct.value %}
+          <tr><th>{{ ct.name }}</th><td>{{ ct.value }}</td></tr>
+          {% endif %}
           {% endfor %}
         </table>
         {% else %}

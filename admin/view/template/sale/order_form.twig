@@ -299,7 +299,6 @@
             <form class="form-horizontal">
               <ul class="nav nav-tabs nav-justified">
                 <li class="active"><a href="#tab-product" data-toggle="tab">{{ tab_product }}</a></li>
-                <li><a href="#tab-voucher" data-toggle="tab">{{ tab_voucher }}</a></li>
               </ul>
               <div class="tab-content">
                 <div class="tab-pane active" id="tab-product">
@@ -321,60 +320,6 @@
                   </fieldset>
                   <div class="text-right">
                     <button type="button" id="button-product-add" data-loading-text="{{ text_loading }}" class="btn btn-primary"><i class="fa fa-plus-circle"></i> {{ button_product_add }}</button>
-                  </div>
-                </div>
-                <div class="tab-pane" id="tab-voucher">
-                  <fieldset>
-                    <legend>{{ text_voucher }}</legend>
-                    <div class="form-group required">
-                      <label class="col-sm-2 control-label" for="input-to-name">{{ entry_to_name }}</label>
-                      <div class="col-sm-10">
-                        <input type="text" name="to_name" value="" id="input-to-name" class="form-control"/>
-                      </div>
-                    </div>
-                    <div class="form-group required">
-                      <label class="col-sm-2 control-label" for="input-to-email">{{ entry_to_email }}</label>
-                      <div class="col-sm-10">
-                        <input type="text" name="to_email" value="" id="input-to-email" class="form-control"/>
-                      </div>
-                    </div>
-                    <div class="form-group required">
-                      <label class="col-sm-2 control-label" for="input-from-name">{{ entry_from_name }}</label>
-                      <div class="col-sm-10">
-                        <input type="text" name="from_name" value="" id="input-from-name" class="form-control"/>
-                      </div>
-                    </div>
-                    <div class="form-group required">
-                      <label class="col-sm-2 control-label" for="input-from-email">{{ entry_from_email }}</label>
-                      <div class="col-sm-10">
-                        <input type="text" name="from_email" value="" id="input-from-email" class="form-control"/>
-                      </div>
-                    </div>
-                    <div class="form-group required">
-                      <label class="col-sm-2 control-label" for="input-theme">{{ entry_theme }}</label>
-                      <div class="col-sm-10">
-                        <select name="voucher_theme_id" id="input-theme" class="form-control">
-                          {% for voucher_theme in voucher_themes %}
-                            <option value="{{ voucher_theme.voucher_theme_id }}">{{ voucher_theme.name }}</option>
-                          {% endfor %}
-                        </select>
-                      </div>
-                    </div>
-                    <div class="form-group">
-                      <label class="col-sm-2 control-label" for="input-message">{{ entry_message }}</label>
-                      <div class="col-sm-10">
-                        <textarea name="message" rows="5" id="input-message" class="form-control"></textarea>
-                      </div>
-                    </div>
-                    <div class="form-group required">
-                      <label class="col-sm-2 control-label" for="input-amount">{{ entry_amount }}</label>
-                      <div class="col-sm-10">
-                        <input type="text" name="amount" value="{{ voucher_min }}" id="input-amount" class="form-control"/>
-                      </div>
-                    </div>
-                  </fieldset>
-                  <div class="text-right">
-                    <button type="button" id="button-voucher-add" data-loading-text="{{ text_loading }}" class="btn btn-primary"><i class="fa fa-plus-circle"></i> {{ button_voucher_add }}</button>
                   </div>
                 </div>
               </div>
@@ -894,17 +839,6 @@
                   </div>
                 </div>
                 <div class="form-group">
-                  <label class="col-sm-2 control-label" for="input-voucher">{{ entry_voucher }}</label>
-                  <div class="col-sm-10">
-                    <div class="input-group">
-                      <input type="text" name="voucher" value="{{ voucher }}" id="input-voucher" data-loading-text="{{ text_loading }}" class="form-control"/>
-                      <div class="input-group-btn">
-                        <button type="button" id="button-voucher" data-loading-text="{{ text_loading }}" class="btn btn-primary">{{ button_apply }}</button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="form-group">
                   <label class="col-sm-2 control-label" for="input-reward">{{ entry_reward }}</label>
                   <div class="col-sm-10">
                     <div class="input-group">
@@ -1132,31 +1066,7 @@ $('#button-customer').on('click', function() {
 				// Highlight any found errors
 				$('.text-danger').parentsUntil('.form-group').parent().addClass('has-error');
 			} else {
-				// Refresh products, vouchers and totals
-				$.ajax({
-					url: '{{ catalog }}index.php?route=api/voucher/add&api_token={{ api_token }}&store_id=' + $('select[name=\'store_id\'] option:selected').val(),
-					type: 'post',
-					data: $('#cart input[name^=\'voucher\'][type=\'hidden\']'),
-					dataType: 'json',
-					crossDomain: true,
-					beforeSend: function() {
-						$('#button-voucher-add').button('loading');
-					},
-					complete: function() {
-						$('#button-voucher-add').button('reset');
-					},
-					success: function(json) {
-						$('.alert-dismissible, .text-danger').remove();
-						$('.form-group').removeClass('has-error');
-
-						if (json['error'] && json['error']['warning']) {
-							$('#content > .container-fluid').prepend('<div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> ' + json['error']['warning'] + ' <button type="button" class="close" data-dismiss="alert">&times;</button></div>');
-						}
-					},
-					error: function(xhr, ajaxOptions, thrownError) {
-						alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
-					}
-				}).then(function() {
+				// Refresh products and totals
 					$.ajax({
 						url: '{{ catalog }}index.php?route=api/cart/add&api_token={{ api_token }}&store_id=' + $('select[name=\'store_id\'] option:selected').val(),
 						type: 'post',
@@ -1185,8 +1095,7 @@ $('#button-customer').on('click', function() {
 
 						$('#collapse-cart').collapse('toggle');
 					});
-				});
-			}
+				}
 		},
 		error: function(xhr, ajaxOptions, thrownError) {
 			alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
@@ -1443,58 +1352,6 @@ $('#button-product-add').on('click', function() {
 	});
 });
 
-// Voucher
-$('#button-voucher-add').on('click', function() {
-	$.ajax({
-		url: '{{ catalog }}index.php?route=api/voucher/add&api_token={{ api_token }}&store_id=' + $('select[name=\'store_id\'] option:selected').val(),
-		type: 'post',
-		data: $('#tab-voucher input[type=\'text\'], #tab-voucher input[type=\'hidden\'], #tab-voucher input[type=\'radio\']:checked, #tab-voucher input[type=\'checkbox\']:checked, #tab-voucher select, #tab-voucher textarea'),
-		dataType: 'json',
-		crossDomain: true,
-		beforeSend: function() {
-			$('#button-voucher-add').button('loading');
-		},
-		complete: function() {
-			$('#button-voucher-add').button('reset');
-		},
-		success: function(json) {
-			$('.alert-dismissible, .text-danger').remove();
-			$('.form-group').removeClass('has-error');
-
-			if (json['error']) {
-				if (json['error']['warning']) {
-					$('#content > .container-fluid').prepend('<div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> ' + json['error']['warning'] + ' <button type="button" class="close" data-dismiss="alert">&times;</button></div>');
-				}
-
-				for (i in json['error']) {
-					var element = $('#input-' + i.replace('_', '-'));
-
-					if (element.parent().hasClass('input-group')) {
-						$(element).parent().after('<div class="text-danger">' + json['error'][i] + '</div>');
-					} else {
-						$(element).after('<div class="text-danger">' + json['error'][i] + '</div>');
-					}
-				}
-
-				// Highlight any found errors
-				$('.text-danger').parentsUntil('.form-group').parent().addClass('has-error');
-			} else {
-				$('input[name=\'from_name\']').val('');
-				$('input[name=\'from_email\']').val('');
-				$('input[name=\'to_name\']').val('');
-				$('input[name=\'to_email\']').val('');
-				$('textarea[name=\'message\']').val('');
-				$('input[name=\'amount\']').val('{{ voucher_min|escape('js') }}');
-
-				// Refresh products, vouchers and totals
-				$('#button-refresh').trigger('click');
-			}
-		},
-		error: function(xhr, ajaxOptions, thrownError) {
-			alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
-		}
-	});
-});
 
 $('#cart').delegate('.btn-danger', 'click', function() {
 	var element = this;
@@ -2055,43 +1912,6 @@ $('#button-coupon').on('click', function() {
 	});
 });
 
-// Voucher
-$('#button-voucher').on('click', function() {
-	$.ajax({
-		url: '{{ catalog }}index.php?route=api/voucher&api_token={{ api_token }}&store_id=' + $('select[name=\'store_id\'] option:selected').val(),
-		type: 'post',
-		data: 'voucher=' + $('input[name=\'voucher\']').val(),
-		dataType: 'json',
-		crossDomain: true,
-		beforeSend: function() {
-			$('#button-voucher').button('loading');
-		},
-		complete: function() {
-			$('#button-voucher').button('reset');
-		},
-		success: function(json) {
-			$('.alert-dismissible, .text-danger').remove();
-			$('.form-group').removeClass('has-error');
-
-			if (json['error']) {
-				$('#content > .container-fluid').prepend('<div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> ' + json['error'] + ' <button type="button" class="close" data-dismiss="alert">&times;</button></div>');
-
-				// Highlight any found errors
-				$('input[name=\'voucher\']').closest('.form-group').addClass('has-error');
-			}
-
-			if (json['success']) {
-				$('#content > .container-fluid').prepend('<div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> ' + json['success'] + ' <button type="button" class="close" data-dismiss="alert">&times;</button></div>');
-
-				// Refresh products, vouchers and totals
-				$('#button-refresh').trigger('click');
-			}
-		},
-		error: function(xhr, ajaxOptions, thrownError) {
-			alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
-		}
-	});
-});
 
 // Reward
 $('#button-reward').on('click', function() {

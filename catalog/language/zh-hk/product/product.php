@@ -50,7 +50,6 @@ $_['entry_captcha']                           = '請輸入驗證碼';
 
 // Tabs
 $_['tab_description']                         = '商品詳情';
-$_['tab_attribute']                           = '商品屬性';
 $_['tab_review']                              = '商品評價';
 
 // Error

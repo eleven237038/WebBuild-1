@@ -2,15 +2,267 @@
 <div id="content">
   <div class="page-header">
     <div class="container-fluid">
-      <h1>Schedule Sending</h1>
+      <div class="pull-right">
+        <button type="button" data-toggle="tooltip" title="{{ button_add }}" class="btn btn-primary" onclick="openCompose(0);"><i class="fa fa-plus"></i></button>
+        <button type="button" data-toggle="tooltip" title="{{ button_delete }}" class="btn btn-danger" onclick="confirm('{{ text_confirm }}') ? $('#form-list').submit() : false;"><i class="fa fa-trash-o"></i></button>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+          <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
     </div>
   </div>
   <div class="container-fluid">
+    {% if error_permission %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_permission }} <button type="button" class="close" data-dismiss="alert">&times;</button></div>
+    {% endif %}
     <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-list"></i> {{ text_list }}</h3>
+      </div>
       <div class="panel-body">
-        <p>Email schedule management interface will be available here.</p>
+        <form action="{{ delete }}" method="post" enctype="multipart/form-data" id="form-list">
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+              <thead>
+                <tr>
+                  <td style="width: 1px;" class="text-center"><input type="checkbox" onclick="$('input[name*=\'selected\']').prop('checked', this.checked);" /></td>
+                  <td class="text-left">{{ column_subject }}</td>
+                  <td class="text-left">{{ column_recipient }}</td>
+                  <td class="text-left">{{ column_send_at }}</td>
+                  <td class="text-left">{{ column_status }}</td>
+                  <td class="text-left">{{ column_progress }}</td>
+                  <td class="text-right">{{ column_action }}</td>
+                </tr>
+              </thead>
+              <tbody>
+                {% if campaigns %}
+                {% for c in campaigns %}
+                <tr>
+                  <td class="text-center"><input type="checkbox" name="selected[]" value="{{ c.schedule_id }}" /></td>
+                  <td class="text-left">{{ c.subject }}</td>
+                  <td class="text-left">{{ c.recipient_type }}</td>
+                  <td class="text-left">{{ c.send_at }}</td>
+                  <td class="text-left">
+                    {% if c.status == 'sent' %}<span class="label label-success">{{ c.status_text }}</span>
+                    {% elseif c.status == 'sending' %}<span class="label label-warning">{{ c.status_text }}</span>
+                    {% elseif c.status == 'cancelled' %}<span class="label label-default">{{ c.status_text }}</span>
+                    {% else %}<span class="label label-info">{{ c.status_text }}</span>{% endif %}
+                  </td>
+                  <td class="text-left">{{ c.sent_count }} / {{ c.total_count }}</td>
+                  <td class="text-right">
+                    <a onclick="openCompose({{ c.schedule_id }});" data-toggle="tooltip" title="{{ button_edit }}" class="btn btn-primary"><i class="fa fa-pencil"></i></a>
+                    {% if c.status != 'sent' and c.status != 'sending' %}
+                    <a onclick="sendNow({{ c.schedule_id }});" data-toggle="tooltip" title="{{ button_send }}" class="btn btn-success"><i class="fa fa-envelope"></i></a>
+                    {% endif %}
+                    <a onclick="deleteOne({{ c.schedule_id }});" data-toggle="tooltip" title="{{ button_delete }}" class="btn btn-danger"><i class="fa fa-trash-o"></i></a>
+                  </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                  <td class="text-center" colspan="7">{{ text_no_results }}</td>
+                </tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </form>
       </div>
     </div>
   </div>
 </div>
+
+<!-- Compose Modal -->
+<div class="modal fade" id="compose-modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <form id="compose-form">
+        <input type="hidden" name="schedule_id" value="0" />
+        <input type="hidden" name="message" id="compose-message-hidden" value="" />
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">{{ heading_title }}</h4>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="control-label" for="input-store">{{ entry_store }}</label>
+            <select name="store_id" id="input-store" class="form-control">
+              {% for id, name in stores %}
+              <option value="{{ id }}">{{ name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group required">
+            <label class="control-label" for="input-recipient-type">{{ entry_recipient }}</label>
+            <select name="recipient_type" id="input-recipient-type" class="form-control">
+              {% for key, label in recipient_types %}
+              <option value="{{ key }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group" id="group-customer-group" style="display:none;">
+            <label class="control-label" for="input-customer-group">{{ entry_customer_group }}</label>
+            <select name="recipient_data" id="input-customer-group" class="form-control">
+              {% for g in customer_groups %}
+              <option value="{{ g.customer_group_id }}">{{ g.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group" id="group-emails" style="display:none;">
+            <label class="control-label" for="input-emails">{{ entry_emails }}</label>
+            <textarea name="recipient_data" id="input-emails" class="form-control" rows="3" placeholder="a@b.com, c@d.com"></textarea>
+          </div>
+          <div class="form-group required">
+            <label class="control-label" for="input-subject">{{ entry_subject }}</label>
+            <input type="text" name="subject" id="input-subject" class="form-control" />
+          </div>
+          <div class="form-group required">
+            <label class="control-label" for="input-message">{{ entry_message }}</label>
+            <textarea name="message_html" id="input-message" data-toggle="summernote" data-lang="{{ summernote }}" class="form-control"></textarea>
+          </div>
+          <div class="form-group required">
+            <label class="control-label" for="input-send-at">{{ entry_send_at }}</label>
+            <div class="input-group date">
+              <input type="text" name="send_at" id="input-send-at" class="form-control" />
+              <span class="input-group-btn">
+                <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+          <button type="button" id="button-save" class="btn btn-primary" data-loading-text="{{ text_loading }}">{{ button_save }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript"><!--
+function openCompose(schedule_id) {
+	$('#compose-form')[0].reset();
+	$('input[name=\'schedule_id\']').val(schedule_id || 0);
+	$('#input-message').summernote('code', '');
+	if (schedule_id > 0) {
+		// 编辑:从列表行回填 (通过 AJAX 获取)
+		$.ajax({
+			url: 'index.php?route=marketing/mail_schedule/getCampaign&user_token={{ user_token }}&schedule_id=' + schedule_id,
+			dataType: 'json',
+			success: function(json) {
+				if (json && json.schedule_id) {
+					$('select[name=\'store_id\']').val(json.store_id);
+					$('select[name=\'recipient_type\']').val(json.recipient_type);
+					$('select[name=\'recipient_data\']').val(json.recipient_data);
+					$('#input-emails').val(json.recipient_data);
+					$('#input-subject').val(json.subject);
+					$('#input-message').summernote('code', json.message);
+					$('#input-send-at').val(json.send_at);
+					$('select[name=\'recipient_type\']').trigger('change');
+				}
+			}
+		});
+	} else {
+		$('#input-send-at').val('{{ "now"|date("Y-m-d H:i") }}');
+		$('select[name=\'recipient_type\']').trigger('change');
+	}
+	$('#compose-modal').modal('show');
+}
+
+$('select[name=\'recipient_type\']').on('change', function() {
+	$('#group-customer-group, #group-emails').hide();
+	// 切换时把非活动输入清空,避免误提交
+	$('#group-customer-group select, #group-emails textarea').prop('disabled', true);
+	if (this.value == 'customer_group') {
+		$('#group-customer-group').show();
+		$('#group-customer-group select').prop('disabled', false);
+	} else if (this.value == 'emails') {
+		$('#group-emails').show();
+		$('#group-emails textarea').prop('disabled', false);
+	}
+});
+
+$('#button-save').on('click', function() {
+	// summernote 内容同步到 hidden
+	$('input[name=\'message\']').val($('#input-message').summernote('code'));
+	$.ajax({
+		url: '{{ save }}',
+		type: 'post',
+		data: $('#compose-form input, #compose-form select, #compose-form textarea').not('[disabled]'),
+		dataType: 'json',
+		beforeSend: function() { $('#button-save').button('loading'); },
+		complete: function() { $('#button-save').button('reset'); },
+		success: function(json) {
+			$('.alert-dismissible').remove();
+			if (json['error']) {
+				$('#compose-modal .modal-body').prepend('<div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> ' + json['error'] + ' <button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+			}
+			if (json['success']) {
+				$('#compose-modal').modal('hide');
+				location.reload();
+			}
+		},
+		error: function(xhr, ajaxOptions, thrownError) {
+			alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+		}
+	});
+});
+
+function sendNow(schedule_id) {
+	if (!confirm('{{ text_send_now }}')) return;
+	$.ajax({
+		url: '{{ send }}&schedule_id=' + schedule_id,
+		type: 'post',
+		dataType: 'json',
+		beforeSend: function() { $('#button-save').button('loading'); },
+		success: function(json) {
+			$('.alert-dismissible').remove();
+			if (json['error']) {
+				$('#content > .container-fluid').prepend('<div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> ' + json['error'] + ' <button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+			}
+			if (json['success']) {
+				$('#content > .container-fluid').prepend('<div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> ' + json['success'] + ' <button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+				setTimeout(function() { location.reload(); }, 1500);
+			}
+		},
+		error: function(xhr, ajaxOptions, thrownError) {
+			alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+		}
+	});
+}
+
+function deleteOne(schedule_id) {
+	if (!confirm('{{ text_confirm }}')) return;
+	$.ajax({
+		url: '{{ delete }}&schedule_id=' + schedule_id,
+		type: 'post',
+		dataType: 'json',
+		success: function(json) { location.reload(); }
+	});
+}
+
+$('#form-list').on('submit', function(e) {
+	// 批量删除通过 AJAX 处理
+	e.preventDefault();
+	if (!$('input[name^="selected"]:checked').length) { return; }
+	$.ajax({
+		url: '{{ delete }}',
+		type: 'post',
+		data: $('input[name^="selected"]'),
+		dataType: 'json',
+		success: function(json) { location.reload(); }
+	});
+});
+
+$('.date').datetimepicker({
+	pickDate: true,
+	pickTime: true,
+	format: 'YYYY-MM-DD HH:mm'
+});
+
+$('#input-message').summernote({ height: 200 });
+//--></script>
 {{ footer }}

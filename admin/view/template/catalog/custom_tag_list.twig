@@ -1,25 +1,80 @@
 <!-- ==========================================================================
- *  GenScript — Tag Management with Nestable2 Drag-Drop Tree UI
- *  Left panel: Add new tag form   |   Right panel: Drag-drop tree
+ *  GenScript - 自定义字段管理 (WordPress nav-menu 拖拽引擎完整移植)
+ *  Left: 添加字段   |   Right: 扁平拖拽树
+ *
+ *  引擎逐行移植自 WordPress wp-admin/js/nav-menu.js (initSortables + jQuery
+ *  extensions + moveMenuItem), 适配为 tag/field 命名空间。关键点:
+ *    1. 扁平 DOM: 所有字段为 #tag-menu 下的同级 <li>, 层级 = margin-left/30px
+ *       (depthToPx/pxToDepth), 并挂 .tag-depth-N 类。
+ *    2. jQuery UI sortable (helper:'original'), 拖动时鼠标 X 实时决定深度。
+ *    3. 深度约束: minDepth=下一项深度, maxDepth=上一项深度+1, 防止非法树。
+ *    4. 子字段跟随: start 时把子字段移入 .tag-transport, 并执行 WordPress 的
+ *       "tempHolder margin-top 吸收 + sortable('refresh')" 技巧, 让 jQuery UI
+ *       在子字段离开列表后重新计算, 避免占位符错位/抖动 (旧实现漏掉的关键)。
+ *    5. stop 时子字段插回父字段之后, 并按 depthChange 整体平移深度类。
+ *    6. 方向键 ←↑↓-> 调用 moveMenuItem 做无鼠标精确移动 (无障碍)。
  * ========================================================================== -->
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/nestable2/1.6.0/jquery.nestable.min.css">
-
 <style>
-.tag-manager { display: grid; grid-template-columns: 280px 1fr; gap: 24px; min-height: 500px; }
-.tag-left  {  }
-.tag-right {  }
-.dd { max-width: 100%; }
-.dd-item > button { font-family: monospace; }
-.dd-item .dd-handle { display:flex; align-items:center; gap:10px; justify-content:space-between; cursor:grab; }
-.dd-item .tag-name { font-weight:600; flex:1; }
-.dd-item .tag-actions { display:flex; gap:6px; white-space:nowrap; }
-.dd-item .tag-actions .btn { font-size:11px; padding:2px 8px; }
-.dd-empty, .dd-placeholder { border:2px dashed #ccc; min-height:40px; background:#f9f9f9; border-radius:4px; }
-.dd-dragel > .dd-item .dd-handle { box-shadow:0 4px 12px rgba(0,0,0,0.15); }
-.tree-toolbar { margin-bottom:12px; display:flex; gap:8px; align-items:center; }
-#save-status { font-size:12px; color:#999; margin-left:auto; }
-#save-status.saved { color:#10B981; }
+.field-manager { display: grid; grid-template-columns: 300px 1fr; gap: 24px; min-height: 500px; }
+
+/* ── 扁平菜单容器 ── */
+.tag-menu { list-style: none; padding: 0; margin: 0; min-height: 60px; }
+.tag-item {
+  position: relative;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-left: 2px dashed transparent;
+  border-radius: 4px;
+  margin-bottom: 4px;
+  -webkit-user-select: none; -moz-user-select: none; user-select: none;
+}
+/* 层级缩进: depth = margin-left / 30px (menuItemDepthPerLevel) */
+{% for d in range(0, 11) %}.tag-depth-{{ d }} { margin-left: {{ d * 30 }}px; }
+{% endfor %}
+{% for d in range(1, 11) %}.tag-depth-{{ d }} { border-left-color: #cbd5e1; }
+{% endfor %}
+
+.tag-handle {
+  display: flex; align-items: center; gap: 10px; padding: 8px 10px; cursor: grab;
+  outline: none;
+}
+.tag-handle:focus { box-shadow: inset 0 0 0 2px #0ea5e9; }
+.tag-handle:active { cursor: grabbing; }
+.tag-grip { color: #94a3b8; cursor: grab; }
+.tag-toggle { color: #64748b; cursor: pointer; width: 14px; text-align: center; transition: transform .15s; }
+.tag-item.tag-collapsed > .tag-handle .tag-toggle { transform: rotate(-90deg); }
+.tag-nodrag { cursor: default; }
+.tag-transport { margin: 0; padding: 0; }   /* 子字段在拖动期间暂存于此, 随父字段一起移动 */
+
+.field-name { font-weight: 600; flex: 1; display: flex; align-items: center; gap: 6px; min-width: 0; }
+.field-meta { display: flex; gap: 4px; align-items: center; }
+.badge-type { font-size: 10px; background: #64748b; color: #fff; padding: 1px 6px; border-radius: 3px; }
+.badge-required { font-size: 10px; background: #ef4444; color: #fff; padding: 1px 6px; border-radius: 3px; }
+.badge-core { font-size: 10px; background: #0ea5e9; color: #fff; padding: 1px 6px; border-radius: 3px; }
+.field-id { font-size: 10px; color: #aaa; }
+.field-actions { display: flex; gap: 6px; white-space: nowrap; align-items: center; }
+.field-actions .btn { font-size: 11px; padding: 2px 8px; }
+
+/* jQuery UI sortable 视觉 (移植自 .sortable-placeholder) */
+.tag-placeholder {
+  visibility: visible !important;
+  background: #e0f2fe;
+  border: 2px dashed #0ea5e9;
+  border-radius: 4px;
+  margin-bottom: 4px;
+  min-height: 42px;
+}
+.ui-sortable-helper { box-shadow: 0 6px 18px rgba(0,0,0,0.2); opacity: .97; }
+.tag-item.tag-hidden { display: none; }   /* 折叠的子字段 */
+.tag-empty { text-align: center; padding: 30px; color: #999; border: 2px dashed #ccc; border-radius: 4px; background: #f9f9f9; }
+
+.tree-toolbar { margin-bottom: 12px; display: flex; gap: 8px; align-items: center; }
+#save-status { font-size: 12px; color: #999; margin-left: auto; }
+#save-status.saved { color: #10B981; }
+#save-status.saving { color: #3b82f6; }
+#save-status.error { color: #ef4444; }
+.field-cb { margin: 0 4px 0 0; vertical-align: middle; }
 </style>
 
 {{ header }}{{ column_left }}
@@ -27,45 +82,53 @@
   <div class="page-header">
     <div class="container-fluid">
       <div class="pull-right">
-        <button onclick="saveTree()" class="btn btn-success btn-lg" id="btn-save-tree" style="margin-right:8px;"><i class="fa fa-save"></i> 保存菜单结构</button>
+        <button onclick="saveTree()" class="btn btn-success btn-lg" id="btn-save-tree" style="margin-right:8px;"><i class="fa fa-save"></i> 保存排序</button>
         <button type="button" onclick="deleteSelected()" class="btn btn-danger"><i class="fa fa-trash-o"></i> 批量删除</button>
       </div>
-      <h1>标签管理 (拖拽排序)</h1>
+      <h1>自定义字段 (拖拽排序)</h1>
     </div>
   </div>
   <div class="container-fluid">
     {% if error_warning %}<div class="alert alert-danger">{{ error_warning }}</div>{% endif %}
     {% if success %}<div class="alert alert-success">{{ success }}</div>{% endif %}
 
-    <div class="tag-manager">
+    <div class="field-manager">
 
-      <!-- ═══ LEFT: Add new tag ═══ -->
-      <div class="tag-left">
+      <!-- ═══ LEFT: 添加字段 ═══ -->
+      <div class="field-left">
         <div class="panel panel-default">
-          <div class="panel-heading"><h4 class="panel-title">添加标签</h4></div>
+          <div class="panel-heading"><h4 class="panel-title">添加字段</h4></div>
           <div class="panel-body">
-            <form id="form-add-tag">
+            <form id="form-add-field">
               <div class="form-group">
-                <label>标签名称</label>
-                <input type="text" name="name" id="input-tag-name" class="form-control" placeholder="输入标签名称" required>
+                <label>字段名称</label>
+                <input type="text" name="name" id="input-field-name" class="form-control" placeholder="输入字段名称" required maxlength="64">
               </div>
               <div class="form-group">
-                <label>状态</label>
-                <select name="status" id="input-tag-status" class="form-control">
-                  <option value="1">启用</option>
-                  <option value="0">禁用</option>
+                <label>类型</label>
+                <select name="tag_type" id="input-field-type" class="form-control">
+                  <option value="text">文本</option>
+                  <option value="textarea">多行文本</option>
+                  <option value="number">数字</option>
+                  <option value="date">日期</option>
+                  <option value="image">图片</option>
+                  <option value="select">下拉选择</option>
+                  <option value="radio">单选</option>
                 </select>
+              </div>
+              <div class="form-group">
+                <label class="checkbox-inline"><input type="checkbox" name="is_required" id="input-field-required" value="1"> 是否必填</label>
               </div>
               <button type="submit" class="btn btn-primary btn-block"><i class="fa fa-plus"></i> 添加</button>
             </form>
             <hr>
-            <p style="font-size:11px;color:#999;">提示: 添加后在右侧拖拽排列层级。<br>拖拽标签到另一个标签下方可变为其子标签。点击「保存树形结构」写入数据库。</p>
+            <p style="font-size:11px;color:#999;">提示：拖动手柄上下移动可同级排序；左右移动可改变层级（向右缩进为子级，左侧对齐为同级）。子字段随父字段一起移动。也可用键盘：先点选字段使其获得焦点，再按 ←↑↓→ 移动（←升一级 / →降一级，↑↓同级上下）。编辑/删除/勾选按钮不会触发拖拽。改动后自动保存。点击三角箭头可折叠/展开子字段。</p>
           </div>
         </div>
       </div>
 
-      <!-- ═══ RIGHT: Tree panel ═══ -->
-      <div class="tag-right">
+      <!-- ═══ RIGHT: 扁平树面板 ═══ -->
+      <div class="field-right">
         <div class="tree-toolbar">
           <button onclick="expandAll()" class="btn btn-default btn-xs">展开全部</button>
           <button onclick="collapseAll()" class="btn btn-default btn-xs">折叠全部</button>
@@ -74,40 +137,38 @@
 
         <div class="panel panel-default">
           <div class="panel-body">
-            <div class="dd" id="tag-tree">
-              <ol class="dd-list">
-                {% macro treeNode(tag, tree) %}
-                  {% if tag.tag_id is defined %}
-                    <li class="dd-item" data-id="{{ tag.tag_id }}">
-                      <div class="dd-handle">
-                        <span class="tag-name">{{ tag.name }}</span>
-                        <span class="tag-actions">
-                          <span style="font-size:10px;color:#aaa;">ID:{{ tag.tag_id }}</span>
-                          <a href="index.php?route=catalog/custom_tag/edit&user_token={{ user_token }}&tag_id={{ tag.tag_id }}" class="btn btn-default btn-xs" onclick="event.stopPropagation()"><i class="fa fa-pencil"></i></a>
-                          <button type="button" class="btn btn-danger btn-xs" onclick="event.stopPropagation();deleteTag({{ tag.tag_id }})"><i class="fa fa-trash"></i></button>
+            <div class="tag-editor" id="tag-tree">
+              <ul class="tag-menu" id="tag-menu">
+                {% for field in tag_flat %}
+                  <li class="tag-item tag-depth-{{ field.depth }}" data-id="{{ field.tag_id }}">
+                    <div class="tag-handle" tabindex="0">
+                      <i class="fa fa-caret-down tag-toggle" title="折叠/展开"></i>
+                      <i class="fa fa-ellipsis-v tag-grip" title="拖动排序"></i>
+                      <input type="checkbox" class="field-cb tag-nodrag" value="{{ field.tag_id }}">
+                      <span class="field-name">{{ field.name }}</span>
+                      <span class="field-actions">
+                        <span class="field-meta">
+                          <span class="badge-type" data-type="{{ field.tag_type }}">{{ field.tag_type }}</span>
+                          {% if field.is_required == 1 %}<span class="badge-required">必填</span>{% endif %}
+                          {% if field.is_core == 1 %}<span class="badge-core">核心</span>{% endif %}
                         </span>
-                      </div>
-                      {% if tag.children is defined and tag.children is not empty %}
-                        <ol class="dd-list">
-                          {% for child in tag.children %}
-                            {{ _self.treeNode(child, tree) }}
-                          {% endfor %}
-                        </ol>
-                      {% endif %}
-                    </li>
-                  {% endif %}
-                {% endmacro %}
-                {% import _self as treeMacro %}
-                {% for rootTag in tag_tree %}
-                  {{ treeMacro.treeNode(rootTag, tag_tree) }}
+                        <span class="field-id tag-nodrag">ID:{{ field.tag_id }}</span>
+                        <a href="index.php?route=catalog/custom_tag/edit&user_token={{ user_token }}&tag_id={{ field.tag_id }}" class="btn btn-default btn-xs tag-nodrag" data-toggle="tooltip" title="编辑"><i class="fa fa-pencil"></i></a>
+                        {% if field.is_core != 1 %}
+                        <button type="button" class="btn btn-danger btn-xs tag-nodrag" data-toggle="tooltip" title="删除" onclick="deleteField({{ field.tag_id }})"><i class="fa fa-trash"></i></button>
+                        {% else %}
+                        <button type="button" class="btn btn-default btn-xs tag-nodrag" disabled title="核心字段不可删除"><i class="fa fa-lock"></i></button>
+                        {% endif %}
+                      </span>
+                    </div>
+                    <div class="tag-transport"></div>
+                  </li>
                 {% endfor %}
-              </ol>
+              </ul>
+              {% if tag_flat is empty %}
+                <div class="tag-empty">暂无字段，请在左侧添加</div>
+              {% endif %}
             </div>
-            {% if tag_tree is empty %}
-              <div class="dd-empty" style="display:block;text-align:center;padding:30px;color:#999;">
-                暂无标签，请在左侧添加
-              </div>
-            {% endif %}
           </div>
         </div>
       </div>
@@ -116,85 +177,466 @@
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/nestable2/1.6.0/jquery.nestable.min.js"></script>
 <script>
 var userToken = '{{ user_token }}';
+var typeLabels = {text:'文本',textarea:'多行文本',number:'数字',date:'日期',image:'图片',select:'下拉选择',radio:'单选'};
+
+/* =============================================================================
+ *  WordPress nav-menu 拖拽引擎 (移植自 wp-admin/js/nav-menu.js)
+ *  扁平 DOM + 深度即 margin-left + jQuery UI sortable + tempHolder 吸收技巧
+ * ========================================================================== */
+var wpTagNav = (function($) {
+  var api = {};
+
+  api.options = {
+    menuItemDepthPerLevel: 30,   // 每级缩进像素 (勿直接用, 走 depthToPx/pxToDepth)
+    globalMaxDepth: 11,          // 最大层级 (与 CSS 生成的 .tag-depth-0..11 对应)
+    sortableItems: '> .tag-item:not(.tag-hidden)',
+    targetTolerance: 0
+  };
+  api.menuList = undefined;
+  api.onChange = null;           // 外部注入的"变更回调" (接到 scheduleSave)
+
+  api.pxToDepth = function(px) { return Math.floor(px / api.options.menuItemDepthPerLevel); };
+  api.depthToPx = function(depth) { return depth * api.options.menuItemDepthPerLevel; };
+
+  // ── jQuery 扩展 (对应 WP jQueryExtensions) ──
+  function jQueryExtensions() {
+    $.fn.extend({
+      tagItemDepth: function() {
+        var margin = this.eq(0).css('margin-left');
+        return api.pxToDepth(margin && -1 != margin.indexOf('px') ? margin.slice(0, -2) : 0);
+      },
+      updateDepthClass: function(current, prev) {
+        return this.each(function() {
+          var t = $(this);
+          prev = prev || t.tagItemDepth();
+          $(this).removeClass('tag-depth-' + prev).addClass('tag-depth-' + current);
+        });
+      },
+      shiftDepthClass: function(change) {
+        return this.each(function() {
+          var t = $(this), depth = t.tagItemDepth(), newDepth = depth + change;
+          if (newDepth < 0) { newDepth = 0; }
+          if (newDepth > api.options.globalMaxDepth) { newDepth = api.options.globalMaxDepth; }
+          t.removeClass('tag-depth-' + depth).addClass('tag-depth-' + newDepth);
+        });
+      },
+      childTagItems: function() {
+        var result = $();
+        this.each(function() {
+          var t = $(this), depth = t.tagItemDepth(), n = t.next('.tag-item');
+          while (n.length && n.tagItemDepth() > depth) {
+            result = result.add(n);
+            n = n.next('.tag-item');
+          }
+        });
+        return result;
+      },
+      shiftHorizontally: function(dir) {
+        return this.each(function() {
+          var t = $(this), depth = t.tagItemDepth();
+          t.moveHorizontally(depth + dir, depth);
+        });
+      },
+      moveHorizontally: function(newDepth, depth) {
+        return this.each(function() {
+          var t = $(this), children = t.childTagItems(), diff = newDepth - depth;
+          if (newDepth < 0) { newDepth = 0; }
+          if (newDepth > api.options.globalMaxDepth) { newDepth = api.options.globalMaxDepth; }
+          t.updateDepthClass(newDepth, depth);
+          if (children.length) {
+            children.each(function() {
+              var c = $(this), d = c.tagItemDepth(), nd = d + diff;
+              if (nd < 0) { nd = 0; }
+              if (nd > api.options.globalMaxDepth) { nd = api.options.globalMaxDepth; }
+              c.updateDepthClass(nd, d);
+            });
+          }
+        });
+      }
+    });
+  }
+
+  api.init = function() {
+    api.menuList = $('#tag-menu');
+    if (!api.menuList.length) { return; }
+    jQueryExtensions();
+    api.initSortables();
+    api.initToggles();
+    api.initAccessibility();
+    api.refreshToggles();
+  };
+
+  // ── 核心: sortable 引擎 (对应 WP initSortables) ──
+  api.initSortables = function() {
+    var currentDepth = 0, originalDepth, minDepth, maxDepth,
+        prev, next, prevBottom, nextThreshold, helperHeight, transport,
+        menuEdge = 0;   // 实际值在每次 start 时刷新 (见下), 不在 init 时捕获
+
+    api.menuList.sortable({
+      handle: '.tag-handle',
+      placeholder: 'tag-placeholder',
+      items: api.options.sortableItems,
+      cursor: 'grabbing',
+      cancel: '.tag-nodrag, .tag-toggle',
+
+      start: function(e, ui) {
+        var height, width, children, tempHolder, maxChildDepth;
+
+        // 每次拖动重新读取菜单左边界。WP 原版在 initSortables 只读一次 (其后台布局
+        // 加载后不位移); 本实现左侧导航/表单面板在 CSS 完全加载后才 reflow, 实测
+        // #tag-menu 的 offset().left 在 DOMContentLoaded(~362) 与 load 后(~595) 之间
+        // 右移 ~230px。若仅在 init 捕获, menuEdge 会长期偏小, pxToDepth 整体偏深,
+        // 缩进(向右)靠 maxDepth 钳制"碰巧"生效, 但还原(向左)永远无法变浅 —— 即
+        // outdent 失效。每次 start 刷新即可根治, 且对窗口缩放/面板折叠同样稳健。
+        menuEdge = api.menuList.offset().left;
+
+        transport = ui.item.children('.tag-transport');
+
+        // 设定深度 (必须在定位子字段之前)
+        originalDepth = ui.item.tagItemDepth();
+        updateCurrentDepth(ui, originalDepth);
+
+        // 子字段移入 transport, 整棵子树随父字段一起移动
+        children = ui.item.childTagItems();
+        transport.append(children);
+
+        // 占位符高度 = 整棵子树实际高度 (父字段手柄 + 子字段)。
+        // 注: WP 原版用 transport.outerHeight() + helper.outerHeight(), 那建立在
+        // transport 脱离文档流的前提下; 本实现 transport 保持常规流(子字段随拖动
+        // 可见), 直接取 helper 的实时 outerHeight 即为子树全高, 避免重复计入。
+        height = ui.helper.outerHeight();
+        height += (height > 0) ? (parseFloat(ui.placeholder.css('margin-top')) || 0) : 0;
+        helperHeight = height;
+        height -= 2; // 减去 2px 边框
+        ui.placeholder.height(height);
+
+        // 占位符宽度覆盖到最深子字段, 视觉上表示整个子树的落点
+        maxChildDepth = originalDepth;
+        children.each(function() {
+          var d = $(this).tagItemDepth();
+          if (d > maxChildDepth) { maxChildDepth = d; }
+        });
+        width = ui.helper.find('.tag-handle').outerWidth();
+        width += api.depthToPx(maxChildDepth - originalDepth);
+        width -= 2;
+        ui.placeholder.width(width);
+
+        // WordPress 关键技巧: 用 margin-top 给下一项预留空间, 暂时摘除占位符,
+        // 调 sortable('refresh') 让 jQuery UI 知道子字段已不再是可排序项,
+        // 再把占位符挂回父字段之后。否则 jQuery UI 仍按旧位置计算, 造成抖动/错位。
+        tempHolder = ui.placeholder.next('.tag-item');
+        tempHolder.css('margin-top', helperHeight + 'px');
+        ui.placeholder.detach();
+        $(this).sortable('refresh');
+        ui.item.after(ui.placeholder);
+        tempHolder.css('margin-top', 0);
+
+        updateSharedVars(ui);
+      },
+
+      stop: function(e, ui) {
+        var children, depthChange = currentDepth - originalDepth;
+
+        // 子字段回到列表, 紧跟父字段之后
+        children = transport.children().insertAfter(ui.item);
+
+        if (depthChange !== 0) {
+          ui.item.updateDepthClass(currentDepth, originalDepth);
+          children.shiftDepthClass(depthChange);
+        }
+
+        // 清掉 sortable 残留的 inline 定位, 让 margin-left 接管层级
+        ui.item[0].style.top = 0;
+        ui.item[0].style.left = 'auto';
+
+        api.registerChange();
+        api.refreshToggles();
+      },
+
+      change: function(e, ui) {
+        // 占位符必须留在菜单内
+        if (!ui.placeholder.parent().is(api.menuList)) {
+          if (prev.length) { prev.after(ui.placeholder); } else { api.menuList.prepend(ui.placeholder); }
+        }
+        updateSharedVars(ui);
+      },
+
+      sort: function(e, ui) {
+        var offset = ui.helper.offset(),
+            edge = offset.left,
+            depth = api.pxToDepth(edge - menuEdge);
+
+        // 深度范围约束: 不能比上一项深超过 1 级, 不能浅于下一项; 向上越过上一项时夹到 maxDepth
+        if (depth > maxDepth || offset.top < (prevBottom - api.options.targetTolerance)) {
+          depth = maxDepth;
+        } else if (depth < minDepth) {
+          depth = minDepth;
+        }
+        if (depth !== currentDepth) { updateCurrentDepth(ui, depth); }
+
+        // 与下一项重叠时, 把占位符下移
+        if (nextThreshold && offset.top + helperHeight > nextThreshold) {
+          next.after(ui.placeholder);
+          updateSharedVars(ui);
+          $(this).sortable('refreshPositions');
+        }
+      }
+    });
+
+    // 依据占位符位置重算 prev/next/边界 (对应 WP updateSharedVars)
+    function updateSharedVars(ui) {
+      var depth;
+      prev = ui.placeholder.prev('.tag-item');
+      next = ui.placeholder.next('.tag-item');
+      if (prev[0] === ui.item[0]) { prev = prev.prev('.tag-item'); }
+      if (next[0] === ui.item[0]) { next = next.next('.tag-item'); }
+
+      prevBottom = prev.length ? prev.offset().top + prev.height() : 0;
+      nextThreshold = next.length ? next.offset().top + next.height() / 3 : 0;
+      minDepth = next.length ? next.tagItemDepth() : 0;
+
+      if (prev.length) {
+        depth = prev.tagItemDepth() + 1;
+        maxDepth = (depth > api.options.globalMaxDepth) ? api.options.globalMaxDepth : depth;
+      } else {
+        maxDepth = 0;
+      }
+    }
+
+    function updateCurrentDepth(ui, depth) {
+      ui.placeholder.updateDepthClass(depth, currentDepth);
+      currentDepth = depth;
+    }
+  };
+
+  // ── 折叠/展开 (对应 WP initToggles, 简化为自定义) ──
+  api.initToggles = function() {
+    api.menuList.on('click', '.tag-toggle', function(e) {
+      e.stopPropagation();
+      var $it = $(this).closest('.tag-item');
+      $it.toggleClass('tag-collapsed');
+      $it.childTagItems().toggleClass('tag-hidden', $it.hasClass('tag-collapsed'));
+    });
+  };
+
+  // 有子字段的项才显示折叠箭头
+  api.refreshToggles = function() {
+    $('.tag-item').each(function() {
+      var $it = $(this);
+      var hasKids = $it.childTagItems().length > 0;
+      $it.find('.tag-toggle').css('visibility', hasKids ? 'visible' : 'hidden');
+      if (!hasKids) { $it.removeClass('tag-collapsed'); }
+    });
+  };
+
+  api.expandAll = function() {
+    $('.tag-item').removeClass('tag-collapsed tag-hidden');
+    api.refreshToggles();
+  };
+  api.collapseAll = function() {
+    $('.tag-item').each(function() {
+      var $it = $(this);
+      if ($it.childTagItems().length) {
+        $it.addClass('tag-collapsed');
+        $it.childTagItems().addClass('tag-hidden');
+      }
+    });
+    api.refreshToggles();
+  };
+
+  // ── 键盘移动 (对应 WP moveMenuItem + 方向键) ──
+  // 以深度判断"已是上一项的子字段", 替代 WP 的 menu-item-data-parent-id 输入框
+  // (本应用父级由服务端依 depth+order 重建, 无需客户端 parent-id 输入)。
+  api.moveMenuItem = function($handle, dir) {
+    var menuItems = $('#tag-menu .tag-item'),
+        menuItemsCount = menuItems.length,
+        thisItem = $handle.closest('.tag-item'),
+        thisItemChildren = thisItem.childTagItems(),
+        thisItemDepth = thisItem.tagItemDepth(),
+        thisItemPosition = menuItems.index(thisItem),
+        prevItem = thisItem.prevAll('.tag-item').first(),
+        prevItemDepth = prevItem.length ? prevItem.tagItemDepth() : 0,
+        nextItem = thisItem.nextAll('.tag-item').first(),
+        nextItemChildren = nextItem.length ? nextItem.childTagItems() : $(),
+        nextItemDepth = nextItem.length ? nextItem.tagItemDepth() + 1 : 0,
+        items, newItemPosition, newDepth;
+
+    if (menuItemsCount < 2) { return; }
+
+    switch (dir) {
+    case 'up':
+      newItemPosition = thisItemPosition - 1;
+      if (0 === thisItemPosition) { break; }
+      // 移到顶部时, 若本身是子字段则升到 0 级
+      if (0 === newItemPosition && 0 !== thisItemDepth) { thisItem.moveHorizontally(0, thisItemDepth); }
+      // 上一项是子字段时, 对齐其深度
+      if (0 !== prevItemDepth) { thisItem.moveHorizontally(prevItemDepth, thisItemDepth); }
+      if (thisItemChildren.length) {
+        items = thisItem.add(thisItemChildren);
+        items.detach().insertBefore(menuItems.eq(newItemPosition));
+      } else {
+        thisItem.detach().insertBefore(menuItems.eq(newItemPosition));
+      }
+      break;
+    case 'down':
+      if (thisItemChildren.length) {
+        items = thisItem.add(thisItemChildren);
+        nextItem = menuItems.eq(thisItemPosition + items.length);
+        nextItemChildren = nextItem.length ? nextItem.childTagItems() : $();
+        if (nextItemChildren.length) {
+          newDepth = nextItem.tagItemDepth() + 1;
+          thisItem.moveHorizontally(newDepth, thisItemDepth);
+        }
+        if (menuItemsCount === thisItemPosition + items.length) { break; }
+        items.detach().insertAfter(menuItems.eq(thisItemPosition + items.length));
+      } else {
+        // 下一项有子字段时, 降为它的子级
+        if (nextItemChildren.length) { thisItem.moveHorizontally(nextItemDepth, thisItemDepth); }
+        if (menuItemsCount === thisItemPosition + 1) { break; }
+        thisItem.detach().insertAfter(menuItems.eq(thisItemPosition + 1));
+      }
+      break;
+    case 'top':
+      if (0 === thisItemPosition) { break; }
+      if (thisItemChildren.length) {
+        items = thisItem.add(thisItemChildren);
+        items.detach().insertBefore(menuItems.eq(0));
+      } else {
+        thisItem.detach().insertBefore(menuItems.eq(0));
+      }
+      break;
+    case 'left':
+      if (0 === thisItemDepth) { break; }
+      thisItem.shiftHorizontally(-1);
+      break;
+    case 'right':
+      if (0 === thisItemPosition) { break; }                 // 顶部不能成为子级
+      if (thisItemDepth === prevItemDepth + 1) { break; }    // 已是上一项的子字段
+      thisItem.shiftHorizontally(1);
+      break;
+    }
+    api.registerChange();
+    api.refreshToggles();
+  };
+
+  api.initAccessibility = function() {
+    api.menuList.on('keydown', '.tag-handle', function(e) {
+      if (e.which !== 37 && e.which !== 38 && e.which !== 39 && e.which !== 40) { return; }
+      // 只在手柄本身聚焦时响应; 按钮/输入框上的方向键交给浏览器默认行为, 避免误触移动
+      if (e.target !== this) { return; }
+      e.preventDefault();
+      if (e.repeat) { return; } // 忽略按键长按自动重复, 一次按键 = 一次移动
+      var arrows = { '38': 'up', '40': 'down', '37': 'left', '39': 'right' };
+      var $this = $(this);
+      api.moveMenuItem($this, arrows[e.which]);
+      $this.trigger('focus'); // 移动后把焦点留在原字段上 (detach/insert 保留了节点)
+    });
+  };
+
+  api.registerChange = function() { if (api.onChange) { api.onChange(); } };
+
+  // 序列化为扁平 [{id, depth}] (对应 WP getItemData, 只取排序所需)
+  api.serialize = function() {
+    var out = [];
+    $('#tag-menu > .tag-item').each(function() {
+      out.push({ id: $(this).data('id'), depth: $(this).tagItemDepth() });
+    });
+    return out;
+  };
+
+  return api;
+})(jQuery);
 
 $(function() {
-// ── Init Nestable2 ──
-var nestable = $('#tag-tree').nestable({
-  maxDepth: 5,
-  group: 1,
-  expandBtnHTML: '<button data-action="expand" type="button">+</button>',
-  collapseBtnHTML: '<button data-action="collapse" type="button">-</button>',
-});
-
-function expandAll()  { $('.dd').nestable('expandAll'); }
-function collapseAll() { $('.dd').nestable('collapseAll'); }
-
-// ── Add tag via AJAX ──
-$('#form-add-tag').on('submit', function(e) {
-  e.preventDefault();
-  var name = $('#input-tag-name').val().trim();
-  if (!name) return alert('请输入标签名称');
-  var status = $('#input-tag-status').val();
-  $.post('index.php?route=catalog/custom_tag/add&user_token=' + userToken, {
-    name: name, status: status, sort_order: 0
-  }, function(res) {
-    location.reload();
-  }).fail(function() { alert('添加失败'); });
-});
-
-// ── Delete single tag ──
-function deleteTag(id) {
-  if (!confirm('确认删除此标签及其子标签?')) return;
-  $.post('index.php?route=catalog/custom_tag/delete&user_token=' + userToken, {
-    'selected[]': [id]
-  }, function() { location.reload(); }).fail(function() { alert('删除失败'); });
-}
-
-// ── Batch delete ──
-function deleteSelected() {
-  var ids = [];
-  $('.dd-item').each(function() {
-    if ($(this).find('input[type="checkbox"]:checked').length) {
-      ids.push($(this).data('id'));
-    }
+  // 徽标类型文本转中文
+  $('.badge-type').each(function() {
+    var t = $(this).data('type');
+    if (typeLabels[t]) { $(this).text(typeLabels[t]); }
   });
-  if (!ids.length) return alert('请先勾选要删除的标签');
-  if (!confirm('确认删除选中的 ' + ids.length + ' 个标签?')) return;
-  $.post('index.php?route=catalog/custom_tag/delete&user_token=' + userToken, {
-    'selected[]': ids
-  }, function() { location.reload(); });
-}
 
-// ── Save tree structure via AJAX ──
-function saveTree() {
-  var data = nestable.nestable('serialize');
-  var $btn = $('#btn-save-tree');
-  var $status = $('#save-status');
-  $btn.prop('disabled', true).text('保存中...');
-  $status.text('').removeClass('saved');
+  wpTagNav.init();
+  wpTagNav.onChange = scheduleSave;   // 把拖拽/键盘变更接到自动保存 (修复旧版 autosave 从不触发的 bug)
+  $('body').tooltip({ selector: '[data-toggle="tooltip"]' });
 
-  $.ajax({
-    url: 'index.php?route=catalog/custom_tag/saveTree&user_token=' + userToken,
-    type: 'POST',
-    contentType: 'application/json',
-    data: JSON.stringify({ tree: data }),
-    success: function(res) {
-      try { var r = JSON.parse(res); if (r.success) {
-        $status.text('✓ 已保存').addClass('saved');
-        setTimeout(function() { $status.text('').removeClass('saved'); }, 3000);
-      }} catch(e) { $status.text('保存失败: ' + res).css('color','red'); }
-    },
-    error: function(xhr, status, err) {
-      $status.text('保存失败: ' + err).css('color','red');
-    },
-    complete: function() {
-      $btn.prop('disabled', false).text('保存树形结构');
-    }
+  window.expandAll   = function() { wpTagNav.expandAll(); };
+  window.collapseAll = function() { wpTagNav.collapseAll(); };
+
+  // ── 添加字段 ──
+  $('#form-add-field').on('submit', function(e) {
+    e.preventDefault();
+    var name = $('#input-field-name').val().trim();
+    if (!name) { return alert('请输入字段名称'); }
+    var tag_type = $('#input-field-type').val();
+    var is_required = $('#input-field-required').is(':checked') ? 1 : 0;
+    $.ajax({
+      url: 'index.php?route=catalog/custom_tag/add&user_token=' + userToken,
+      type: 'POST',
+      data: { name: name, tag_type: tag_type, is_required: is_required, sort_order: 0, status: 1 },
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      success: function() { location.reload(); },
+      error: function() { alert('添加失败'); }
+    });
   });
-}
+
+  // ── 删除单个字段 ──
+  window.deleteField = function(id) {
+    if (!confirm('确认删除此字段及其子字段?')) { return; }
+    $.post('index.php?route=catalog/custom_tag/delete&user_token=' + userToken, {
+      'selected[]': [id]
+    }, function() { location.reload(); }).fail(function() { alert('删除失败'); });
+  };
+
+  // ── 批量删除 ──
+  window.deleteSelected = function() {
+    var ids = [];
+    $('.field-cb:checked').each(function() { ids.push($(this).val()); });
+    if (!ids.length) { return alert('请先勾选要删除的字段'); }
+    if (!confirm('确认删除选中的 ' + ids.length + ' 个字段?')) { return; }
+    $.post('index.php?route=catalog/custom_tag/delete&user_token=' + userToken, {
+      'selected[]': ids
+    }, function() { location.reload(); }).fail(function() { alert('删除失败'); });
+  };
+
+  // ── 保存树结构 ──
+  window.saveTree = function() { doSaveTree(false); };
+
+  var saveTimer = null;
+  function scheduleSave() {
+    clearTimeout(saveTimer);
+    $('#save-status').text('等待保存...').removeClass('saved error').addClass('saving');
+    saveTimer = setTimeout(function() { doSaveTree(true); }, 600);
+  }
+
+  function doSaveTree(auto) {
+    var data = wpTagNav.serialize();
+    var $btn = $('#btn-save-tree');
+    var $status = $('#save-status');
+    if (!auto) { $btn.prop('disabled', true).text('保存中...'); }
+    $status.text('保存中...').removeClass('saved error').addClass('saving');
+    $.ajax({
+      url: 'index.php?route=catalog/custom_tag/saveTree&user_token=' + userToken,
+      type: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify({ tree: data }),
+      success: function(res) {
+        try {
+          var r = (typeof res === 'string') ? JSON.parse(res) : res;
+          if (r.success) {
+            $status.text('✓ 已保存').removeClass('saving error').addClass('saved');
+            setTimeout(function() { $status.text('').removeClass('saved'); }, 2500);
+          } else {
+            $status.text('保存失败').removeClass('saving saved').addClass('error');
+          }
+        } catch (e) {
+          $status.text('保存失败').removeClass('saving saved').addClass('error');
+        }
+      },
+      error: function() { $status.text('保存失败').removeClass('saving saved').addClass('error'); },
+      complete: function() { if (!auto) { $btn.prop('disabled', false).text('保存排序'); } }
+    });
+  }
 });
 </script>
 {{ footer }}

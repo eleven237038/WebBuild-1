@@ -895,15 +895,25 @@ class ControllerCatalogProduct extends Controller {
 		$data['tag_tree'] = $this->model_catalog_custom_tag->getCustomTagTree();
 		// Build core_fields lookup: name => display_label for is_core=1 records
 		$all_tags = $this->model_catalog_custom_tag->getTags();
-		// Core field labels for General tab + system fields for dynamic Data tab
+		// Core field labels for General tab + system fields for dynamic Data tab + custom (non-core) fields
 		$data['core_fields']   = array();
 		$data['system_fields'] = array();
+		$data['custom_fields'] = array();
 		foreach ($all_tags as $t) {
-			if ($t['is_core']) {
+			if (!empty($t['is_core'])) {
 				if (!empty($t['system_column'])) {
+					// Attach picker options for known system select columns
+					if ($t['system_column'] == 'stock_status_id' && !empty($data['stock_statuses'])) {
+						$t['options'] = array();
+						foreach ($data['stock_statuses'] as $ss) {
+							$t['options'][] = array('value' => $ss['stock_status_id'], 'text' => $ss['name']);
+						}
+					}
 					$data['system_fields'][] = $t;
 				}
-				$data['core_fields'][$t['name']] = $t['display_label'] ?: $t['name'];
+				$data['core_fields'][$t['name']] = !empty($t['display_label']) ? $t['display_label'] : $t['name'];
+			} else {
+				$data['custom_fields'][] = $t;
 			}
 		}
 		if (isset($this->request->post['product_custom_tag'])) {
@@ -1038,31 +1048,6 @@ class ControllerCatalogProduct extends Controller {
 				$data['product_filters'][] = array(
 					'filter_id' => $filter_info['filter_id'],
 					'name'      => $filter_info['group'] . ' &gt; ' . $filter_info['name']
-				);
-			}
-		}
-
-		// Attributes
-		$this->load->model('catalog/attribute');
-
-		if (isset($this->request->post['product_attribute'])) {
-			$product_attributes = $this->request->post['product_attribute'];
-		} elseif (isset($this->request->get['product_id'])) {
-			$product_attributes = $this->model_catalog_product->getProductAttributes($this->request->get['product_id']);
-		} else {
-			$product_attributes = array();
-		}
-
-		$data['product_attributes'] = array();
-
-		foreach ($product_attributes as $product_attribute) {
-			$attribute_info = $this->model_catalog_attribute->getAttribute($product_attribute['attribute_id']);
-
-			if ($attribute_info) {
-				$data['product_attributes'][] = array(
-					'attribute_id'                  => $product_attribute['attribute_id'],
-					'name'                          => $attribute_info['name'],
-					'product_attribute_description' => $product_attribute['product_attribute_description']
 				);
 			}
 		}

@@ -257,15 +257,11 @@ class ModelSaleOrder extends Model {
 	}
 
 	public function getOrderVouchers($order_id) {
-		$query = $this->db->query("SELECT * FROM " . DB_PREFIX . "order_voucher WHERE order_id = '" . (int)$order_id . "'");
-
-		return $query->rows;
+		return array();
 	}
 
 	public function getOrderVoucherByVoucherId($voucher_id) {
-		$query = $this->db->query("SELECT * FROM `" . DB_PREFIX . "order_voucher` WHERE voucher_id = '" . (int)$voucher_id . "'");
-
-		return $query->row;
+		return array();
 	}
 
 	public function getOrderTotals($order_id) {

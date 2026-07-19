@@ -49,8 +49,6 @@ class ControllerProductCompare extends Controller {
 
 		$data['products'] = array();
 
-		$data['attribute_groups'] = array();
-
 		foreach ($this->session->data['compare'] as $key => $product_id) {
 			$product_info = $this->model_catalog_product->getProduct($product_id);
 
@@ -77,16 +75,6 @@ class ControllerProductCompare extends Controller {
 					$availability = $this->language->get('text_instock');
 				}
 
-				$attribute_data = array();
-
-				$attribute_groups = $this->model_catalog_product->getProductAttributes($product_id);
-
-				foreach ($attribute_groups as $attribute_group) {
-					foreach ($attribute_group['attribute'] as $attribute) {
-						$attribute_data[$attribute['attribute_id']] = $attribute['text'];
-					}
-				}
-
 				$data['products'][$product_id] = array(
 					'product_id'   => $product_info['product_id'],
 					'name'         => $product_info['name'],
@@ -104,18 +92,9 @@ class ControllerProductCompare extends Controller {
 					'length'       => $this->length->format($product_info['length'], $product_info['length_class_id']),
 					'width'        => $this->length->format($product_info['width'], $product_info['length_class_id']),
 					'height'       => $this->length->format($product_info['height'], $product_info['length_class_id']),
-					'attribute'    => $attribute_data,
 					'href'         => $this->url->link('product/product', 'product_id=' . $product_id),
 					'remove'       => $this->url->link('product/compare', 'remove=' . $product_id)
 				);
-
-				foreach ($attribute_groups as $attribute_group) {
-					$data['attribute_groups'][$attribute_group['attribute_group_id']]['name'] = $attribute_group['name'];
-
-					foreach ($attribute_group['attribute'] as $attribute) {
-						$data['attribute_groups'][$attribute_group['attribute_group_id']]['attribute'][$attribute['attribute_id']]['name'] = $attribute['name'];
-					}
-				}
 			} else {
 				unset($this->session->data['compare'][$key]);
 			}

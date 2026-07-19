@@ -6,7 +6,7 @@
         <button type="submit" form="form-tag" data-toggle="tooltip" title="保存" class="btn btn-primary"><i class="fa fa-save"></i></button>
         <a href="{{ cancel }}" data-toggle="tooltip" title="取消" class="btn btn-default"><i class="fa fa-reply"></i></a>
       </div>
-      <h1>{{ 'tag_id' in app.request.get ? '编辑标签' : '添加标签' }}</h1>
+      <h1>{{ heading }}</h1>
     </div>
   </div>
   <div class="container-fluid">
@@ -14,54 +14,80 @@
     <div class="panel panel-default">
       <div class="panel-body">
         <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-tag" class="form-horizontal">
+
           <div class="form-group required">
-            <label class="col-sm-2 control-label" for="input-name">标签名称</label>
+            <label class="col-sm-2 control-label" for="input-name">字段名称</label>
             <div class="col-sm-10">
-              <input type="text" name="name" value="{{ name }}" id="input-name" class="form-control"/>
+              <input type="text" name="name" value="{{ name }}" id="input-name" class="form-control" maxlength="64"/>
               {% if error_name %}<div class="text-danger">{{ error_name }}</div>{% endif %}
             </div>
           </div>
+
           <div class="form-group">
-            <label class="col-sm-2 control-label" for="input-display-label">显示名称</label>
+            <label class="col-sm-2 control-label" for="input-display-label">显示标签</label>
             <div class="col-sm-10">
-              <input type="text" name="display_label" value="{{ display_label }}" id="input-display-label" class="form-control" placeholder="在前端和后端显示的自定义文字"/>
+              <input type="text" name="display_label" value="{{ display_label }}" id="input-display-label" class="form-control" maxlength="128"/>
+              <div class="help-block">用户可见的标签文字,留空则使用字段名称</div>
             </div>
           </div>
+
           <div class="form-group">
-            <label class="col-sm-2 control-label" for="input-field-type">字段类型</label>
-            <div class="col-sm-10">
-              <select name="field_type" id="input-field-type" class="form-control">
-                <option value="tag"        {{ field_type == 'tag'        ? 'selected' }}>普通标签</option>
-                <option value="core_text"  {{ field_type == 'core_text'  ? 'selected' }}>核心字段 - 文本</option>
-                <option value="core_price" {{ field_type == 'core_price' ? 'selected' }}>核心字段 - 价格</option>
-                <option value="rich_text"  {{ field_type == 'rich_text'  ? 'selected' }}>核心字段 - 富文本</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="col-sm-2 control-label" for="input-parent">上级属性</label>
+            <label class="col-sm-2 control-label" for="input-parent">父字段</label>
             <div class="col-sm-10">
               <select name="parent_id" id="input-parent" class="form-control">
-                <option value="0">--- 无 (顶级属性) ---</option>
-                {% for t in all_tags %}
-                <option value="{{ t.tag_id }}" {{ t.tag_id == parent_id ? 'selected' }}>{{ t.name }}</option>
+                <option value="0">-- 顶级字段 --</option>
+                {% for opt in parent_options %}
+                <option value="{{ opt.tag_id }}" {{ parent_id == opt.tag_id ? 'selected' }}>{{ opt.name }}</option>
                 {% endfor %}
               </select>
+              <div class="help-block">调整层级关系(也可在列表页拖拽排序)。不能设为自身或自身的子字段。</div>
+              {% if error_parent %}<div class="text-danger">{{ error_parent }}</div>{% endif %}
             </div>
           </div>
+
           <div class="form-group">
-            <label class="col-sm-2 control-label" for="input-sort-order">排序</label>
-            <div class="col-sm-10"><input type="text" name="sort_order" value="{{ sort_order }}" id="input-sort-order" class="form-control"/></div>
-          </div>
-          <div class="form-group">
-            <label class="col-sm-2 control-label" for="input-status">状态</label>
+            <label class="col-sm-2 control-label" for="input-tag-type">类型</label>
             <div class="col-sm-10">
-              <select name="status" id="input-status" class="form-control">
-                <option value="1" {{ status == 1 ? 'selected' }}>启用</option>
-                <option value="0" {{ status == 0 ? 'selected' }}>禁用</option>
+              <select name="tag_type" id="input-tag-type" class="form-control">
+                <option value="text"     {{ tag_type == 'text'     ? 'selected' }}>文本</option>
+                <option value="textarea" {{ tag_type == 'textarea' ? 'selected' }}>多行文本</option>
+                <option value="number"   {{ tag_type == 'number'   ? 'selected' }}>数字</option>
+                <option value="date"     {{ tag_type == 'date'     ? 'selected' }}>日期</option>
+                <option value="image"    {{ tag_type == 'image'    ? 'selected' }}>图片</option>
+                <option value="select"   {{ tag_type == 'select'   ? 'selected' }}>下拉选择</option>
+                <option value="radio"    {{ tag_type == 'radio'    ? 'selected' }}>单选</option>
               </select>
             </div>
           </div>
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label">是否必填</label>
+            <div class="col-sm-10">
+              <label class="checkbox-inline"><input type="checkbox" name="is_required" value="1" {{ is_required == 1 ? 'checked' }}/> 启用必填校验</label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label">状态</label>
+            <div class="col-sm-10">
+              <label class="checkbox-inline"><input type="checkbox" name="status" value="1" {{ status == 1 ? 'checked' }}/> 启用(取消则前台不显示该字段)</label>
+            </div>
+          </div>
+
+          {% if is_core or system_column %}
+          <div class="form-group">
+            <label class="col-sm-2 control-label">系统信息</label>
+            <div class="col-sm-10">
+              <p class="form-control-static" style="font-size:12px;color:#999;">
+                核心字段:{{ is_core ? '是' : '否' }}
+                {% if field_type %} | 字段类型:{{ field_type }}{% endif %}
+                {% if system_column %} | 系统列:{{ system_column }}{% endif %}
+                <span class="help-block" style="margin-top:4px;">系统管理字段,不可在此修改。</span>
+              </p>
+            </div>
+          </div>
+          {% endif %}
+
         </form>
       </div>
     </div>

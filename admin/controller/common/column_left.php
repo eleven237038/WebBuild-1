@@ -27,9 +27,9 @@ class ControllerCommonColumnLeft extends Controller {
 			);
 		}
 
-		if ($this->user->hasPermission('access', 'catalog/option')) {
+		if ($this->user->hasPermission('access', 'catalog/custom_tag')) {
 			$catalog[] = array(
-				'name'     => '标签管理',
+				'name'     => '自定义字段',
 				'href'     => $this->url->link('catalog/custom_tag', 'user_token=' . $this->session->data['user_token']),
 				'children' => array()
 			);
@@ -42,6 +42,69 @@ class ControllerCommonColumnLeft extends Controller {
 				'name'     => '商品目录',
 				'href'     => '',
 				'children' => $catalog
+			);
+		}
+
+		// 联系方式管理（含邮件管理子组）
+		$contact = array();
+
+		if ($this->user->hasPermission('access', 'catalog/contact')) {
+			$contact[] = array(
+				'name'     => '联系方式设置',
+				'href'     => $this->url->link('catalog/contact', 'user_token=' . $this->session->data['user_token']),
+				'children' => array()
+			);
+		}
+
+		// 邮件管理（作为联系方式管理的子组）
+		$email_mgmt = array();
+
+		$mail_blast = array();
+		if ($this->user->hasPermission('access', 'marketing/mail_schedule')) {
+			$mail_blast[] = array(
+				'name'     => '定时群发',
+				'href'     => $this->url->link('marketing/mail_schedule', 'user_token=' . $this->session->data['user_token']),
+				'children' => array()
+			);
+		}
+		if ($this->user->hasPermission('access', 'marketing/contact')) {
+			$mail_blast[] = array(
+				'name'     => '单次群发',
+				'href'     => $this->url->link('marketing/contact', 'user_token=' . $this->session->data['user_token']),
+				'children' => array()
+			);
+		}
+		if ($mail_blast) {
+			$email_mgmt[] = array(
+				'name'     => '邮件群发',
+				'href'     => '',
+				'children' => $mail_blast
+			);
+		}
+
+		if ($this->user->hasPermission('access', 'marketing/mail_trigger')) {
+			$email_mgmt[] = array(
+				'name'     => '触发邮件',
+				'href'     => $this->url->link('marketing/mail_trigger', 'user_token=' . $this->session->data['user_token']),
+				'children' => array()
+			);
+		}
+
+		if ($email_mgmt) {
+			$contact[] = array(
+				'name'     => '邮件管理',
+				'href'     => '',
+				'children' => $email_mgmt
+			);
+		}
+
+		if ($contact) {
+			$data['menus'][] = array(
+				'id'       => 'menu-contact',
+				'icon'     => 'fa-envelope',
+				'name'     => '联系方式管理',
+				'href'     => '',
+				'children' => $contact
 			);
 		}
 
@@ -148,33 +211,6 @@ class ControllerCommonColumnLeft extends Controller {
 				);
 			}
 
-			// Voucher
-			$voucher = array();
-
-			if ($this->user->hasPermission('access', 'sale/voucher')) {
-				$voucher[] = array(
-					'name'	   => $this->language->get('text_voucher'),
-					'href'     => $this->url->link('sale/voucher', 'user_token=' . $this->session->data['user_token']),
-					'children' => array()
-				);
-			}
-
-			if ($this->user->hasPermission('access', 'sale/voucher_theme')) {
-				$voucher[] = array(
-					'name'	   => $this->language->get('text_voucher_theme'),
-					'href'     => $this->url->link('sale/voucher_theme', 'user_token=' . $this->session->data['user_token']),
-					'children' => array()
-				);
-			}
-
-			if ($voucher) {
-				$sale[] = array(
-					'name'	   => $this->language->get('text_voucher'),
-					'href'     => '',
-					'children' => $voucher
-				);
-			}
-
 			if ($sale) {
 				$data['menus'][] = array(
 					'id'       => 'menu-sale',
@@ -267,41 +303,6 @@ class ControllerCommonColumnLeft extends Controller {
 					'children' => $marketing
 				);
 			}
-
-				// 邮件管理
-				$email_mgmt = array();
-
-				$mail_blast = array();
-				$mail_blast[] = array(
-					'name'     => '定时群发',
-					'href'     => $this->url->link('marketing/mail_schedule', 'user_token=' . $this->session->data['user_token']),
-					'children' => array()
-				);
-				$mail_blast[] = array(
-					'name'     => '单次群发',
-					'href'     => $this->url->link('marketing/contact', 'user_token=' . $this->session->data['user_token']),
-					'children' => array()
-				);
-
-				$email_mgmt[] = array(
-					'name'     => '邮件群发',
-					'href'     => '',
-					'children' => $mail_blast
-				);
-
-				$email_mgmt[] = array(
-					'name'     => '触发邮件',
-					'href'     => $this->url->link('marketing/mail_trigger', 'user_token=' . $this->session->data['user_token']),
-					'children' => array()
-				);
-
-				$data['menus'][] = array(
-					'id'       => 'menu-email',
-					'icon'     => 'fa-envelope',
-					'name'     => '邮件管理',
-					'href'     => '',
-					'children' => $email_mgmt
-				);
 
 			// System
 			$system = array();

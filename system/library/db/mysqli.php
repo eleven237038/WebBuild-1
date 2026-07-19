@@ -10,7 +10,10 @@ final class MySQLi {
 			throw new \Exception('Error: ' . $this->connection->connect_error . '<br />Error No: ' . $this->connection->connect_errno);
 		}
 
-		$this->connection->set_charset("utf8");
+		// Use utf8mb4 when defined, otherwise fall back to utf8
+		$charset = defined('DB_CHARSET') ? DB_CHARSET : 'utf8';
+		$this->connection->set_charset($charset);
+		$this->connection->query("SET NAMES '" . $this->connection->real_escape_string($charset) . "'");
 		$this->connection->query("SET SQL_MODE = ''");
 	}
 

@@ -1,0 +1,104 @@
+{# ==========================================================================
+ *  EAV Field Render Macro - Dynamic Form Engine
+ *  Renders native OpenCart components based on tag_type
+ *  Supported: text, textarea (Summernote), select, radio, image (Image Manager), date (Datepicker), number
+ *
+ *  Macros run in isolated scope and cannot see the caller's template context,
+ *  so all UI strings / placeholder URL are passed explicitly via the `ui` map.
+ *
+ *  Params:
+ *    field        - custom_tag row (tag_type, is_required, display_label, name, options, system_column, tag_id)
+ *    value        - current value (string)
+ *    fieldName    - HTML input name (e.g. system_column or product_custom_tag[id][value])
+ *    productImages- additional product images (only relevant for the main image field)
+ *    idKey        - safe HTML id suffix (defaults to system_column, then 'field_<tag_id>')
+ *    ui           - map of UI strings: placeholder, yes, no, select, summernote, entry_additional_image, entry_sort_order
+ * ========================================================================== #}
+{% macro renderField(field, value, fieldName, productImages, idKey, ui) %}
+{% set name = fieldName is defined and fieldName is not empty ? fieldName : field.system_column %}
+{% set idk  = idKey is defined and idKey is not empty ? idKey : (field.system_column is defined and field.system_column is not empty ? field.system_column : 'field_' ~ field.tag_id) %}
+{% set val  = value is defined ? value : '' %}
+{% set label = field.display_label is defined and field.display_label is not empty ? field.display_label : field.name %}
+{% set ph   = ui.placeholder is defined ? ui.placeholder : '' %}
+{% set l_yes = ui.yes is defined and ui.yes is not empty ? ui.yes : '是' %}
+{% set l_no  = ui.no is defined and ui.no is not empty ? ui.no : '否' %}
+{% set l_sel = ui.select is defined and ui.select is not empty ? ui.select : '-- 请选择 --' %}
+{% set l_sn  = ui.summernote is defined and ui.summernote is not empty ? ui.summernote : 'en-gb' %}
+{% set l_ai  = ui.entry_additional_image is defined and ui.entry_additional_image is not empty ? ui.entry_additional_image : '附加图片' %}
+{% set l_so  = ui.entry_sort_order is defined and ui.entry_sort_order is not empty ? ui.entry_sort_order : '排序' %}
+
+<div class="form-group{% if field.is_required is defined and field.is_required == 1 %} required{% endif %}">
+  <label class="col-md-2 control-label" for="input-{{ idk }}">{{ label }}</label>
+  <div class="col-md-6">
+
+    {# --- 单行文本 --- #}
+    {% if field.tag_type is defined and field.tag_type == 'text' %}
+      <input type="text" name="{{ name }}" value="{{ val }}" id="input-{{ idk }}" class="form-control" placeholder="{{ label }}"/>
+
+    {# --- 多行文本 (Summernote 富文本) --- #}
+    {% elseif field.tag_type is defined and field.tag_type == 'textarea' %}
+      <textarea name="{{ name }}" id="input-{{ idk }}" data-toggle="summernote" data-lang="{{ l_sn }}" class="form-control tinymce">{{ val }}</textarea>
+
+    {# --- 下拉选择 (有选项时渲染 select；无选项时退化为文本输入，避免空下拉) --- #}
+    {% elseif field.tag_type is defined and field.tag_type == 'select' %}
+      {% if field.options is defined and field.options is not empty %}
+        <select name="{{ name }}" id="input-{{ idk }}" class="form-control">
+          <option value="">{{ l_sel }}</option>
+          {% for opt in field.options %}
+            <option value="{{ opt.value }}" {{ val == opt.value ? 'selected' }}>{{ opt.text }}</option>
+          {% endfor %}
+        </select>
+      {% else %}
+        <input type="text" name="{{ name }}" value="{{ val }}" id="input-{{ idk }}" class="form-control" placeholder="{{ label }}"/>
+      {% endif %}
+
+    {# --- 单选按钮 (是/否) --- #}
+    {% elseif field.tag_type is defined and field.tag_type == 'radio' %}
+      <label class="radio-inline"><input type="radio" name="{{ name }}" value="1" {{ val == 1 ? 'checked' }}> {{ l_yes }}</label>
+      <label class="radio-inline"><input type="radio" name="{{ name }}" value="0" {{ val != 1 ? 'checked' }}> {{ l_no }}</label>
+
+    {# --- 图像上传 (OpenCart Image Manager) --- #}
+    {% elseif field.tag_type is defined and field.tag_type == 'image' %}
+      <a href="" id="thumb-{{ idk }}" data-toggle="image" class="img-thumbnail" style="display:inline-block;">
+        <img src="{{ val ? val : ph }}" alt="" title="" data-placeholder="{{ ph }}"/>
+      </a>
+      <input type="hidden" name="{{ name }}" value="{{ val }}" id="input-{{ idk }}"/>
+      {% if productImages is defined and productImages is not empty %}
+      <table id="images" class="table table-striped table-bordered table-hover">
+        <thead><tr><td class="text-left">{{ l_ai }}</td><td class="text-right">{{ l_so }}</td></tr></thead>
+        <tbody>
+          {% for img in productImages %}
+          <tr id="image-row{{ loop.index0 }}">
+            <td class="text-left">
+              <a href="" id="thumb-image{{ loop.index0 }}" data-toggle="image" class="img-thumbnail">
+                <img src="{{ img.thumb }}" alt="" title="" data-placeholder="{{ ph }}"/>
+              </a>
+              <input type="hidden" name="product_image[{{ loop.index0 }}][image]" value="{{ img.image }}" id="input-image{{ loop.index0 }}"/>
+            </td>
+            <td class="text-right">
+              <input type="text" name="product_image[{{ loop.index0 }}][sort_order]" value="{{ img.sort_order }}" class="form-control"/>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+
+    {# --- 日期选择 (原生日历) --- #}
+    {% elseif field.tag_type is defined and field.tag_type == 'date' %}
+      <div class="input-group date">
+        <input type="text" name="{{ name }}" value="{{ val }}" data-date-format="YYYY-MM-DD" id="input-{{ idk }}" class="form-control"/>
+        <div class="input-group-btn"><button class="btn btn-default" type="button"><i class="fa fa-calendar"></i></button></div>
+      </div>
+
+    {# --- 数字输入 --- #}
+    {% elseif field.tag_type is defined and field.tag_type == 'number' %}
+      <input type="number" name="{{ name }}" value="{{ val }}" id="input-{{ idk }}" class="form-control"/>
+
+    {% else %}
+      <input type="text" name="{{ name }}" value="{{ val }}" id="input-{{ idk }}" class="form-control"/>
+    {% endif %}
+
+  </div>
+</div>
+{% endmacro %}

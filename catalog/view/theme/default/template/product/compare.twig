@@ -92,27 +92,6 @@
           <td>{{ product.length }} x {{ product.width }} x {{ product.height }}</td>
           {% endfor %} </tr>
           </tbody>
-        {% for attribute_group in attribute_groups %}
-        <thead>
-          <tr>
-            <td colspan="{{ products|length + 1 }}"><strong>{{ attribute_group.name }}</strong></td>
-          </tr>
-        </thead>
-        {% for key, attribute in attribute_group.attribute %}
-        <tbody>
-          <tr>
-            <td>{{ attribute.name }}</td>
-            {% for product in products %}
-            {% if product.attribute[key] %}
-            <td> {{ product.attribute[key] }}</td>
-            {% else %}
-            <td></td>
-            {% endif %}
-            {% endfor %}
-          </tr>
-        </tbody>
-        {% endfor %}
-        {% endfor %}
         <tr>
           <td></td>
           {% for product in products %}

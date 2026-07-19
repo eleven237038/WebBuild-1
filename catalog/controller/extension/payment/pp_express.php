@@ -719,7 +719,6 @@ class ControllerExtensionPaymentPPExpress extends Controller {
 		}
 
 		$data['coupon'] = $this->load->controller('extension/total/coupon');
-		$data['voucher'] = $this->load->controller('extension/total/voucher');
 		$data['reward'] = $this->load->controller('extension/total/reward');
 		$data['column_left'] = $this->load->controller('common/column_left');
 		$data['column_right'] = $this->load->controller('common/column_right');
@@ -1809,16 +1808,7 @@ class ControllerExtensionPaymentPPExpress extends Controller {
 	}
 
 	protected function validateVoucher() {
-		$this->load->model('extension/total/coupon');
-
-		$voucher_info = $this->model_extension_total_voucher->getVoucher($this->request->post['voucher']);
-
-		if ($voucher_info) {
-			return true;
-		} else {
-			$this->session->data['error_warning'] = $this->language->get('error_voucher');
-			return false;
-		}
+		return false;
 	}
 
 	protected function validateReward() {

@@ -41,7 +41,6 @@ $_['entry_bad']         = 'Malo';
 
 // Tabs
 $_['tab_description']   = 'Descripción';
-$_['tab_attribute']     = 'Especificaciones';
 $_['tab_review']        = 'Opiniones (%s)';
 //Traducción V.3.0.3.2 Realizada por Reitier - ©Reitier - www.reitier.com - Opencart V.3.0.3.2 - 28/04/2019
 // Error

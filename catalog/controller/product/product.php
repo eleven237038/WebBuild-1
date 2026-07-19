@@ -376,7 +376,7 @@ class ControllerProductProduct extends Controller {
 
 			$data['share'] = $this->url->link('product/product', 'product_id=' . (int)$this->request->get['product_id']);
 
-			$data['attribute_groups'] = $this->model_catalog_product->getProductAttributes($this->request->get['product_id']);
+			$data['custom_tags'] = $this->model_catalog_product->getProductCustomTags($this->request->get['product_id']);
 
 			$data['products'] = array();
 
