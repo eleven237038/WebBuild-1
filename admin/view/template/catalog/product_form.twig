@@ -27,143 +27,109 @@
       </div>
       <div class="panel-body">
         <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-product" class="form-horizontal">
-          <ul class="nav nav-tabs">
-            <li class="active"><a href="#tab-general" data-toggle="tab">{{ tab_general }}</a></li>
-            <li><a href="#tab-data" data-toggle="tab">{{ tab_data }}</a></li>
-            <li><a href="#tab-image" data-toggle="tab">{{ tab_image }}</a></li>
-          </ul>
-          <div class="tab-content">
-            <div class="tab-pane active" id="tab-general">
-              <ul class="nav nav-tabs" id="language">
-                {% for language in languages %}
-                  <li><a href="#language{{ language.language_id }}" data-toggle="tab"><img src="language/{{ language.code }}/{{ language.code }}.png" title="{{ language.name }}"/> {{ language.name }}</a></li>
-                {% endfor %}
-              </ul>
-              <div class="tab-content">{% for language in languages %}
-                <div class="tab-pane" id="language{{ language.language_id }}">
-                  <div class="form-group required">
-                    <label class="col-md-2 control-label" for="input-name{{ language.language_id }}">{{ core_fields.product_name is defined ? core_fields.product_name : entry_name }}</label>
-                    <div class="col-md-10">
-                      <input type="text" name="product_description[{{ language.language_id }}][name]" value="{{ product_description[language.language_id] ? product_description[language.language_id].name }}" placeholder="{{ core_fields.product_name is defined ? core_fields.product_name : entry_name }}" id="input-name{{ language.language_id }}" class="form-control"/>
-                      {% if error_name[language.language_id] %}
-                        <div class="text-danger">{{ error_name[language.language_id] }}</div>
-                      {% endif %} </div>
-                  </div>
-                  <div class="form-group">
-                    <label class="col-md-2 control-label" for="input-description{{ language.language_id }}">{{ entry_description }}</label>
-                    <div class="col-md-10">
-                      <textarea name="product_description[{{ language.language_id }}][description]" placeholder="{{ entry_description }}" id="input-description{{ language.language_id }}" data-toggle="" data-lang="{{ summernote }}" class="form-control tinymce">{{ product_description[language.language_id] ? product_description[language.language_id].description }}</textarea>
-                    </div>
-                  </div>
-                  <div class="form-group required">
-                    <label class="col-md-2 control-label" for="input-meta-title{{ language.language_id }}">{{ entry_meta_title }}</label>
-                    <div class="col-md-10">
-                      <input type="text" name="product_description[{{ language.language_id }}][meta_title]" value="{{ product_description[language.language_id] ? product_description[language.language_id].meta_title }}" placeholder="{{ entry_meta_title }}" id="input-meta-title{{ language.language_id }}" class="form-control"/>
-                      {% if error_meta_title[language.language_id] %}
-                        <div class="text-danger">{{ error_meta_title[language.language_id] }}</div>
-                      {% endif %} </div>
-                  </div>
-                  <div class="form-group">
-                    <label class="col-md-2 control-label" for="input-meta-description{{ language.language_id }}">{{ entry_meta_description }}</label>
-                    <div class="col-md-10">
-                      <textarea name="product_description[{{ language.language_id }}][meta_description]" rows="5" placeholder="{{ entry_meta_description }}" id="input-meta-description{{ language.language_id }}" class="form-control">{{ product_description[language.language_id] ? product_description[language.language_id].meta_description }}</textarea>
-                    </div>
-                  </div>
-                  <div class="form-group">
-                    <label class="col-md-2 control-label" for="input-meta-keyword{{ language.language_id }}">{{ entry_meta_keyword }}</label>
-                    <div class="col-md-10">
-                      <textarea name="product_description[{{ language.language_id }}][meta_keyword]" rows="5" placeholder="{{ entry_meta_keyword }}" id="input-meta-keyword{{ language.language_id }}" class="form-control">{{ product_description[language.language_id] ? product_description[language.language_id].meta_keyword }}</textarea>
-                    </div>
-                  </div>
-                  <div class="form-group">
-                    <label class="col-md-2 control-label" for="input-tag{{ language.language_id }}"><span data-toggle="tooltip" title="{{ help_tag }}">{{ entry_tag }}</span></label>
-                    <div class="col-md-10">
-                      <input type="text" name="product_description[{{ language.language_id }}][tag]" value="{{ product_description[language.language_id] ? product_description[language.language_id].tag }}" placeholder="{{ entry_tag }}" id="input-tag{{ language.language_id }}" class="form-control"/>
-                    </div>
-                  </div>
-                </div>{% endfor %}
-              </div>
-            </div>
-            <div class="tab-pane" id="tab-data">
-              {% import "catalog/_eav_field_render.twig" as eav %}
-              {% set eav_ui = {
-                placeholder: placeholder|default(''),
-                yes: text_yes|default('是'),
-                no: text_no|default('否'),
-                select: text_select|default('-- 请选择 --'),
-                summernote: summernote|default('en-gb'),
-                entry_additional_image: entry_additional_image|default('附加图片'),
-                entry_sort_order: entry_sort_order|default('排序')
-              } %}
-              {% if system_fields is not empty %}
-                <fieldset>
-                  <legend>系统字段</legend>
-                  {% for field in system_fields %}
-                    {{ eav.renderField(field, _context[field.system_column] is defined ? _context[field.system_column] : '', field.system_column, product_images, field.system_column, eav_ui) }}
+          {% import "catalog/_eav_field_render.twig" as eav %}
+          {% set eav_ui = {
+            placeholder: placeholder|default(''),
+            yes: text_yes|default('是'),
+            no: text_no|default('否'),
+            select: text_select|default('-- 请选择 --'),
+            summernote: summernote|default('en-gb'),
+            entry_additional_image: entry_additional_image|default('附加图片'),
+            entry_sort_order: entry_sort_order|default('排序')
+          } %}
+          {# 整个表单内容完全由 custom_tag (自定义字段) 驱动, 按 sort_order 顺序渲染;
+             添加商品 / 编辑商品 共用同一 getForm(), 已统一。原 General / Image 硬编码标签页已删除,
+             其字段 (商品描述 / Meta / 标签 / 主图) 迁移为 is_core=1 的 custom_tag 记录, 可拖拽排序。 #}
+          {% if system_fields is not empty %}
+            <fieldset>
+              <legend>系统字段</legend>
+              {% set image_row = 0 %}
+              {% for field in system_fields %}
+                {% if field.field_type == 'core_text_ml' %}
+                  {# 多语言核心字段 (商品名称/描述/Meta标题/Meta描述/Meta关键字/商品标签):
+                     修复"中英重复输入两次"bug: 详情页仅保留中文(zh-cn)输入框, 不再堆叠 en-gb。
+                     保存时控制器 mirrorChineseToAllLanguages() 把中文值镜像写入 en-gb 等其他语言行,
+                     避免 editProduct 的 DELETE+重插 丢失英文行 (否则 en-gb 前台商品名为空)。
+                     DB 已为 utf8mb4, 中文存取正常; 控制器/模型 SQL 无需改动。 #}
+                  {% set zh_lang = null %}
+                  {% for language in languages %}
+                    {% if zh_lang is null and language.code starts with 'zh' %}{% set zh_lang = language %}{% endif %}
                   {% endfor %}
-                </fieldset>
-              {% endif %}
-              {% if custom_fields is not empty %}
-                <fieldset>
-                  <legend>自定义字段</legend>
-                  {% for field in custom_fields %}
-                    {% set pcv = product_custom_tag[field.tag_id] is defined ? product_custom_tag[field.tag_id].value : '' %}
-                    {{ eav.renderField(field, pcv, 'product_custom_tag[' ~ field.tag_id ~ '][value]', [], 'cf_' ~ field.tag_id, eav_ui) }}
-                  {% endfor %}
-                </fieldset>
-              {% endif %}
-            </div>
-            <div class="tab-pane" id="tab-image">
-              <div class="table-responsive">
-                <table class="table table-striped table-bordered table-hover">
-                  <thead>
-                    <tr>
-                      <td class="text-left">{{ entry_image }}</td>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td class="text-left"><a href="" id="thumb-image" data-toggle="image" class="img-thumbnail"><img src="{{ thumb }}" alt="" title="" data-placeholder="{{ placeholder }}"/></a> <input type="hidden" name="image" value="{{ image }}" id="input-image"/></td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <div class="table-responsive">
-                <table id="images" class="table table-striped table-bordered table-hover">
-                  <thead>
-                    <tr>
-                      <td class="text-left">{{ entry_additional_image }}</td>
-                      <td class="text-right">{{ entry_sort_order }}</td>
-                      <td></td>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {% set image_row = 0 %}
-                    {% for product_image in product_images %}
-                      <tr id="image-row{{ image_row }}">
-                        <td class="text-left"><a href="" id="thumb-image{{ image_row }}" data-toggle="image" class="img-thumbnail"><img src="{{ product_image.thumb }}" alt="" title="" data-placeholder="{{ placeholder }}"/></a> <input type="hidden" name="product_image[{{ image_row }}][image]" value="{{ product_image.image }}" id="input-image{{ image_row }}"/></td>
-                        <td class="text-right"><input type="text" name="product_image[{{ image_row }}][sort_order]" value="{{ product_image.sort_order }}" placeholder="{{ entry_sort_order }}" class="form-control"/></td>
-                        <td class="text-left"><button type="button" onclick="$('#image-row{{ image_row }}').remove();" data-toggle="tooltip" title="{{ button_remove }}" class="btn btn-danger"><i class="fa fa-minus-circle"></i></button></td>
-                      </tr>
-                      {% set image_row = image_row + 1 %}
-                    {% endfor %}
-                  </tbody>
-                  <tfoot>
-                    <tr>
-                      <td colspan="2"></td>
-                      <td class="text-left"><button type="button" onclick="addImage();" data-toggle="tooltip" title="{{ button_image_add }}" class="btn btn-primary"><i class="fa fa-plus-circle"></i></button></td>
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
-            </div>
+                  {% if zh_lang is null %}{% set zh_lang = languages|first %}{% endif %}
+                  {% set lval = product_description[zh_lang.language_id] is defined and product_description[zh_lang.language_id][field.system_column] is defined ? product_description[zh_lang.language_id][field.system_column] : '' %}
+                  <div class="form-group{% if field.is_required %} required{% endif %}">
+                    <label class="col-md-2 control-label" for="input-{{ field.system_column }}{{ zh_lang.language_id }}">{{ field.display_label is defined and field.display_label is not empty ? field.display_label : field.name }}</label>
+                    <div class="col-md-10">
+                      {% if field.tag_type == 'textarea' %}
+                        <textarea name="product_description[{{ zh_lang.language_id }}][{{ field.system_column }}]" rows="5" id="input-{{ field.system_column }}{{ zh_lang.language_id }}" class="form-control{% if field.input_type == 'summernote' %} tinymce{% endif %}" data-toggle="" data-lang="{{ summernote|default('en-gb') }}" placeholder="{{ field.display_label is defined and field.display_label is not empty ? field.display_label : field.name }}">{{ lval }}</textarea>
+                      {% else %}
+                        <input type="text" name="product_description[{{ zh_lang.language_id }}][{{ field.system_column }}]" value="{{ lval }}" id="input-{{ field.system_column }}{{ zh_lang.language_id }}" class="form-control" placeholder="{{ field.display_label is defined and field.display_label is not empty ? field.display_label : field.name }}"/>
+                      {% endif %}
+                      {% if field.system_column == 'name' and error_name[zh_lang.language_id] is defined and error_name[zh_lang.language_id] %}
+                        <div class="text-danger">{{ error_name[zh_lang.language_id] }}</div>
+                      {% elseif field.system_column == 'meta_title' and error_meta_title[zh_lang.language_id] is defined and error_meta_title[zh_lang.language_id] %}
+                        <div class="text-danger">{{ error_meta_title[zh_lang.language_id] }}</div>
+                      {% endif %}
+                    </div>
+                  </div>
+                {% elseif field.system_column == 'image' %}
+                  {# 商品主图 + 附加图片: 保留原 Image 标签页的完整表格 (含 添加/删除 按钮, addImage() 依赖 #images)。
+                     主图 input name="image" -> oc_product.image; 附加图 product_image[row][image|sort_order] -> oc_product_image。 #}
+                  <div class="form-group">
+                    <label class="col-md-2 control-label">{{ field.display_label is defined and field.display_label is not empty ? field.display_label : field.name }}</label>
+                    <div class="col-md-10">
+                      <a href="" id="thumb-image" data-toggle="image" class="img-thumbnail"><img src="{{ thumb }}" alt="" title="" data-placeholder="{{ placeholder }}"/></a>
+                      <input type="hidden" name="image" value="{{ image }}" id="input-image"/>
+                      <div class="table-responsive" style="margin-top:10px;">
+                        <table id="images" class="table table-striped table-bordered table-hover">
+                          <thead>
+                            <tr>
+                              <td class="text-left">{{ entry_additional_image }}</td>
+                              <td class="text-right">{{ entry_sort_order }}</td>
+                              <td></td>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {% for product_image in product_images %}
+                              <tr id="image-row{{ image_row }}">
+                                <td class="text-left"><a href="" id="thumb-image{{ image_row }}" data-toggle="image" class="img-thumbnail"><img src="{{ product_image.thumb }}" alt="" title="" data-placeholder="{{ placeholder }}"/></a> <input type="hidden" name="product_image[{{ image_row }}][image]" value="{{ product_image.image }}" id="input-image{{ image_row }}"/></td>
+                                <td class="text-right"><input type="text" name="product_image[{{ image_row }}][sort_order]" value="{{ product_image.sort_order }}" placeholder="{{ entry_sort_order }}" class="form-control"/></td>
+                                <td class="text-left"><button type="button" onclick="$('#image-row{{ image_row }}').remove();" data-toggle="tooltip" title="{{ button_remove }}" class="btn btn-danger"><i class="fa fa-minus-circle"></i></button></td>
+                              </tr>
+                              {% set image_row = image_row + 1 %}
+                            {% endfor %}
+                          </tbody>
+                          <tfoot>
+                            <tr>
+                              <td colspan="2"></td>
+                              <td class="text-left"><button type="button" onclick="addImage();" data-toggle="tooltip" title="{{ button_image_add }}" class="btn btn-primary"><i class="fa fa-plus-circle"></i></button></td>
+                            </tr>
+                          </tfoot>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                {% else %}
+                  {{ eav.renderField(field, _context[field.system_column] is defined ? _context[field.system_column] : '', field.system_column, product_images, field.system_column, eav_ui) }}
+                {% endif %}
+              {% endfor %}
+            </fieldset>
+          {% endif %}
+          {% if custom_fields is not empty %}
+            <fieldset>
+              <legend>自定义字段</legend>
+              {% for field in custom_fields %}
+                {% set pcv = product_custom_tag[field.tag_id] is defined ? product_custom_tag[field.tag_id].value : '' %}
+                {{ eav.renderField(field, pcv, 'product_custom_tag[' ~ field.tag_id ~ '][value]', [], 'cf_' ~ field.tag_id, eav_ui) }}
+              {% endfor %}
+            </fieldset>
+          {% endif %}
             
             
             
             
             
             
-          </div>
         </form>
       </div>
     </div>
@@ -547,7 +513,7 @@ function addSpecial() {
 }
 //--></script>
 <script type="text/javascript"><!--
-var image_row = {{ image_row }};
+var image_row = {{ image_row|default(0) }};
 
 function addImage() {
 	html = '<tr id="image-row' + image_row + '">';
@@ -578,9 +544,5 @@ $('.datetime').datetimepicker({
 	pickDate: true,
 	pickTime: true
 });
-//--></script>
-<script type="text/javascript"><!--
-$('#language a:first').tab('show');
-$('#option a:first').tab('show');
 //--></script>
 {{ footer }}

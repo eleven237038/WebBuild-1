@@ -2,6 +2,33 @@
 class ControllerCatalogProduct extends Controller {
 	private $error = array();
 
+	/**
+	 * 表单详情页仅保留中文输入 (zh-cn); 保存前把已提交的中文值镜像到所有其他启用语言行,
+	 * 避免 editProduct 的 DELETE+重插 丢失 en-gb 等行 (否则非中文前台商品名为空),
+	 * 同时保证 addProduct 为每个语言都写入一行。调用时机: validateForm 通过后、add/editProduct 之前。
+	 */
+	protected function mirrorChineseToAllLanguages() {
+		if (empty($this->request->post['product_description'])) {
+			return;
+		}
+		$this->load->model('localisation/language');
+		$languages = $this->model_localisation_language->getLanguages();
+
+		// 表单只渲染中文, 故 POST 通常只有一行; 取第一个提交行作为镜像源。
+		$src = reset($this->request->post['product_description']);
+		if (!is_array($src) || !$src) {
+			return;
+		}
+
+		foreach ($languages as $lang) {
+			$lid = (int)$lang['language_id'];
+			// 仅补齐缺失的语言行, 不覆盖用户已显式提交的 (防御性, 当前表单不会提交多语言)。
+			if (!isset($this->request->post['product_description'][$lid])) {
+				$this->request->post['product_description'][$lid] = $src;
+			}
+		}
+	}
+
 	public function index() {
 		$this->load->language('catalog/product');
 
@@ -29,6 +56,7 @@ class ControllerCatalogProduct extends Controller {
 		if (!isset($this->request->post['product_download'])) { $this->request->post['product_download'] = array(); }
 		if (!isset($this->request->post['product_filter'])) { $this->request->post['product_filter'] = array(); }
 		if (!isset($this->request->post['product_layout'])) { $this->request->post['product_layout'] = array(); }
+		$this->mirrorChineseToAllLanguages();
 		$this->model_catalog_product->addProduct($this->request->post);
 
 			$this->session->data['success'] = $this->language->get('text_success');
@@ -90,6 +118,7 @@ class ControllerCatalogProduct extends Controller {
 		if (!isset($this->request->post['product_download'])) { $this->request->post['product_download'] = array(); }
 		if (!isset($this->request->post['product_filter'])) { $this->request->post['product_filter'] = array(); }
 		if (!isset($this->request->post['product_layout'])) { $this->request->post['product_layout'] = array(); }
+		$this->mirrorChineseToAllLanguages();
 		$this->model_catalog_product->editProduct($this->request->get['product_id'], $this->request->post);
 
 			$this->session->data['success'] = $this->language->get('text_success');
