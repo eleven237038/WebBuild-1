@@ -316,6 +316,39 @@ class ControllerCatalogProduct extends Controller {
 			$filter_image = '';
 		}
 
+		// ── 自定义字段筛选 (filter_cf): session 持久化, cf_apply 时同步, 全新进入则清空 ──
+		$fresh_nav = !isset($this->request->get['filter_name'])
+			&& !isset($this->request->get['filter_model'])
+			&& !isset($this->request->get['filter_price'])
+			&& !isset($this->request->get['filter_quantity'])
+			&& !isset($this->request->get['filter_status'])
+			&& !isset($this->request->get['filter_category'])
+			&& !isset($this->request->get['filter_image'])
+			&& !isset($this->request->get['sort'])
+			&& !isset($this->request->get['order'])
+			&& !isset($this->request->get['page'])
+			&& !isset($this->request->get['cf_apply']);
+
+		if (isset($this->request->get['cf_apply'])) {
+			if (isset($this->request->get['filter_cf']) && is_array($this->request->get['filter_cf'])) {
+				$this->session->data['product_filter_cf'] = $this->request->get['filter_cf'];
+			} else {
+				unset($this->session->data['product_filter_cf']);
+			}
+		} elseif ($fresh_nav) {
+			unset($this->session->data['product_filter_cf']);
+		}
+
+		$filter_cf = array();
+		if (!empty($this->session->data['product_filter_cf']) && is_array($this->session->data['product_filter_cf'])) {
+			foreach ($this->session->data['product_filter_cf'] as $tid => $val) {
+				$tid = (int)$tid;
+				if ($tid > 0 && (string)$val !== '') {
+					$filter_cf[$tid] = (string)$val;
+				}
+			}
+		}
+
 		if (isset($this->request->get['sort'])) {
 			$sort = $this->request->get['sort'];
 		} else {
@@ -411,6 +444,44 @@ class ControllerCatalogProduct extends Controller {
 			);
 		}
 
+		// 加载自定义字段定义, 构建 filter_cf 模型输入与模板行
+		$this->load->model('catalog/custom_tag');
+		$all_cf_tags = $this->model_catalog_custom_tag->getTags();
+		$cf_tag_map = array();
+		$cf_tags_for_dropdown = array();
+		foreach ($all_cf_tags as $t) {
+			if (empty($t['status'])) {
+				continue;
+			}
+			$cf_tag_map[(int)$t['tag_id']] = $t;
+			$cf_tags_for_dropdown[] = array(
+				'tag_id'        => (int)$t['tag_id'],
+				'label'         => !empty($t['display_label']) ? $t['display_label'] : $t['name'],
+				'system_column' => $t['system_column'],
+			);
+		}
+
+		$filter_cf_model = array();
+		$filter_cf_rows  = array();
+		foreach ($filter_cf as $tid => $val) {
+			if (!isset($cf_tag_map[$tid])) {
+				continue;
+			}
+			$t = $cf_tag_map[$tid];
+			$filter_cf_model[] = array(
+				'tag_id'        => $tid,
+				'system_column' => $t['system_column'],
+				'field_type'    => $t['field_type'],
+				'value'         => $val,
+			);
+			$filter_cf_rows[] = array(
+				'tag_id'  => $tid,
+				'label'   => !empty($t['display_label']) ? $t['display_label'] : $t['name'],
+				'value'   => $val,
+				'options' => $this->model_catalog_product->getCustomTagValues($t),
+			);
+		}
+
 		$data['products'] = array();
 
 		$filter_data = array(
@@ -421,6 +492,7 @@ class ControllerCatalogProduct extends Controller {
 			'filter_category' => $filter_category,
 			'filter_status'   => $filter_status,
 			'filter_image'    => $filter_image,
+			'filter_cf'       => $filter_cf_model,
 			'sort'            => $sort,
 			'order'           => $order,
 			'start'           => ($page - 1) * $this->config->get('config_limit_admin'),
@@ -591,6 +663,9 @@ class ControllerCatalogProduct extends Controller {
 		$data['filter_status'] = $filter_status;
 		$data['filter_image'] = $filter_image;
 		$data['filter_category'] = $filter_category;
+
+		$data['cf_tags']   = $cf_tags_for_dropdown;
+		$data['filter_cf'] = $filter_cf_rows;
 
 		$data['sort'] = $sort;
 		$data['order'] = $order;
@@ -1506,6 +1581,26 @@ class ControllerCatalogProduct extends Controller {
 		$json['status'] = 1;
 		$json['message'] = 'Done.';
 		$json['data'] = null;
+
+		$this->json_output($json);
+	}
+
+	/**
+	 * 自定义字段筛选取值: GET tag_id -> JSON [{value,text},...] (该字段在现有商品数据中的可选值)。
+	 * 供商品管理筛选面板 "添加筛选字段" 后 AJAX 填充新行的值下拉。
+	 */
+	public function cfValues() {
+		$this->load->model('catalog/custom_tag');
+		$this->load->model('catalog/product');
+
+		$json = array();
+
+		if (isset($this->request->get['tag_id']) && (int)$this->request->get['tag_id'] > 0) {
+			$tag = $this->model_catalog_custom_tag->getTag((int)$this->request->get['tag_id']);
+			if ($tag) {
+				$json = $this->model_catalog_product->getCustomTagValues($tag);
+			}
+		}
 
 		$this->json_output($json);
 	}

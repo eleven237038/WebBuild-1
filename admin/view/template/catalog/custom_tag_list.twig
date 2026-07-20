@@ -1,6 +1,6 @@
 <!-- ==========================================================================
  *  GenScript - 自定义字段管理 (WordPress nav-menu 拖拽引擎完整移植)
- *  Left: 添加字段   |   Right: 扁平拖拽树
+ *  顶部工具栏: 添加字段 / 保存排序 / 批量删除   |   下方: 扁平拖拽树
  *
  *  引擎逐行移植自 WordPress wp-admin/js/nav-menu.js (initSortables + jQuery
  *  extensions + moveMenuItem), 适配为 tag/field 命名空间。关键点:
@@ -16,7 +16,7 @@
  * ========================================================================== -->
 
 <style>
-.field-manager { display: grid; grid-template-columns: 300px 1fr; gap: 24px; min-height: 500px; }
+.field-manager { display: grid; grid-template-columns: 1fr; gap: 24px; min-height: 500px; }
 
 /* ── 扁平菜单容器 ── */
 .tag-menu { list-style: none; padding: 0; margin: 0; min-height: 60px; }
@@ -81,6 +81,7 @@
   <div class="page-header">
     <div class="container-fluid">
       <div class="pull-right">
+        <a href="{{ add }}" class="btn btn-primary btn-lg" style="margin-right:8px;"><i class="fa fa-plus"></i> 添加字段</a>
         <button onclick="saveTree()" class="btn btn-success btn-lg" id="btn-save-tree" style="margin-right:8px;"><i class="fa fa-save"></i> 保存排序</button>
         <button type="button" onclick="deleteSelected()" class="btn btn-danger"><i class="fa fa-trash-o"></i> 批量删除</button>
       </div>
@@ -93,25 +94,13 @@
 
     <div class="field-manager">
 
-      <!-- ═══ LEFT: 添加字段 ═══ -->
-      <div class="field-left">
-        <div class="panel panel-default">
-          <div class="panel-heading"><h4 class="panel-title">字段管理</h4></div>
-          <div class="panel-body">
-            <a href="{{ add }}" class="btn btn-primary btn-block btn-lg" style="margin-bottom:12px;"><i class="fa fa-plus"></i> 添加字段</a>
-            <hr>
-            <p style="font-size:11px;color:#999;">提示：拖动手柄上下移动可同级排序；左右移动可改变层级（向右缩进为子级，左侧对齐为同级）。子字段随父字段一起移动。也可用键盘：先点选字段使其获得焦点，再按 ←↑↓→ 移动（←升一级 / →降一级，↑↓同级上下）。编辑/删除/勾选按钮不会触发拖拽。改动后自动保存。点击三角箭头可折叠/展开子字段。</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- ═══ RIGHT: 扁平树面板 ═══ -->
       <div class="field-right">
         <div class="tree-toolbar">
           <button onclick="expandAll()" class="btn btn-default btn-xs">展开全部</button>
           <button onclick="collapseAll()" class="btn btn-default btn-xs">折叠全部</button>
           <span id="save-status"></span>
         </div>
+        <p style="font-size:11px;color:#999;margin:8px 0 12px;">提示：拖动手柄上下移动可同级排序；左右移动可改变层级（向右缩进为子级，左侧对齐为同级）。子字段随父字段一起移动。也可用键盘：先点选字段使其获得焦点，再按 ←↑↓-> 移动（←升一级 / ->降一级，↑↓同级上下）。编辑/删除/勾选按钮不会触发拖拽。改动后自动保存。点击三角箭头可折叠/展开子字段。</p>
 
         <div class="panel panel-default">
           <div class="panel-body">

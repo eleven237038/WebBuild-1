@@ -339,6 +339,12 @@ class ModelCatalogProduct extends Model {
 			$sql .= " LEFT JOIN " . DB_PREFIX . "product_to_category p2c ON (p.product_id = p2c.product_id) ";
 		}
 
+		$cf_sql = array('', '');
+		if (!empty($data['filter_cf'])) {
+			$cf_sql = $this->buildFilterCfSql($data['filter_cf']);
+			$sql .= $cf_sql[0];
+		}
+
 		$sql .= " WHERE pd.language_id = '";
 		$sql .=  (int)$this->config->get('config_language_id') . "'";
 
@@ -371,6 +377,10 @@ class ModelCatalogProduct extends Model {
 			} else {
 				$sql .= " AND (p.image IS NULL OR p.image = '' OR p.image = 'no_image.png')";
 			}
+		}
+
+		if (!empty($cf_sql[1])) {
+			$sql .= $cf_sql[1];
 		}
 
 		$sql .= " GROUP BY p.product_id";
@@ -605,6 +615,12 @@ class ModelCatalogProduct extends Model {
 			$sql .= " LEFT JOIN " . DB_PREFIX . "product_to_category p2c ON (p.product_id = p2c.product_id) ";
 		}
 
+		$cf_sql = array('', '');
+		if (!empty($data['filter_cf'])) {
+			$cf_sql = $this->buildFilterCfSql($data['filter_cf']);
+			$sql .= $cf_sql[0];
+		}
+
 		$sql .= " WHERE pd.language_id = '" . (int)$this->config->get('config_language_id') . "'";
 
 		if (!empty($data['filter_category'])) {
@@ -639,9 +655,106 @@ class ModelCatalogProduct extends Model {
 			}
 		}
 
+		if (!empty($cf_sql[1])) {
+			$sql .= $cf_sql[1];
+		}
+
 		$query = $this->db->query($sql);
 
 		return $query->row['total'];
+	}
+
+	/**
+	 * 自定义字段筛选: 根据 filter_cf (每项含 tag_id/system_column/field_type/value)
+	 * 生成 EAV JOIN 片段与 WHERE 条件片段。系统列走 p./pd. 真实列, 其余走 product_to_custom_tag EAV。
+	 * 返回 array($join_sql, $where_sql)。
+	 */
+	public function buildFilterCfSql($filter_cf) {
+		$prod_cols  = array('price','image','quantity','stock_status_id','model','sku','subtract','shipping','minimum','date_available','weight','length','width','height','location','sort_order','status');
+		$desc_cols  = array('name','description','meta_title','meta_description','meta_keyword','tag');
+		$int_cols   = array('quantity','stock_status_id','subtract','shipping','status','minimum','sort_order');
+		$float_cols = array('price','weight','length','width','height');
+
+		$join  = '';
+		$where = '';
+
+		foreach ($filter_cf as $cf) {
+			$col = isset($cf['system_column']) ? $cf['system_column'] : '';
+			$val = isset($cf['value']) ? (string)$cf['value'] : '';
+			$tid = isset($cf['tag_id']) ? (int)$cf['tag_id'] : 0;
+
+			if ($val === '') {
+				continue;
+			}
+
+			if (in_array($col, $prod_cols, true)) {
+				if (in_array($col, $int_cols, true)) {
+					$where .= " AND p.`" . $col . "` = '" . (int)$val . "'";
+				} elseif (in_array($col, $float_cols, true)) {
+					$where .= " AND p.`" . $col . "` = '" . (float)$val . "'";
+				} else {
+					$where .= " AND p.`" . $col . "` = '" . $this->db->escape($val) . "'";
+				}
+			} elseif (in_array($col, $desc_cols, true)) {
+				$where .= " AND pd.`" . $col . "` = '" . $this->db->escape($val) . "'";
+			} else {
+				// EAV: product_to_custom_tag (单值, 无 language_id)
+				$alias = 'pct' . $tid;
+				$join  .= " LEFT JOIN " . DB_PREFIX . "product_to_custom_tag " . $alias . " ON (p.product_id = " . $alias . ".product_id AND " . $alias . ".tag_id = '" . $tid . "')";
+				$where .= " AND " . $alias . ".`value` = '" . $this->db->escape($val) . "'";
+			}
+		}
+
+		return array($join, $where);
+	}
+
+	/**
+	 * 取某 custom_tag 在当前商品数据中的可选值 (用于筛选下拉)。
+	 * 系统列走真实表 DISTINCT; stock_status_id 关联名称; subtract/shipping/status 映射 是/否、启用/禁用;
+	 * 其余 (无 system_column) 走 product_to_custom_tag EAV DISTINCT。image 不参与。
+	 */
+	public function getCustomTagValues($tag) {
+		$values = array();
+		$col = isset($tag['system_column']) ? $tag['system_column'] : '';
+		$prod_cols = array('price','image','quantity','stock_status_id','model','sku','subtract','shipping','minimum','date_available','weight','length','width','height','location','sort_order','status');
+		$desc_cols = array('name','description','meta_title','meta_description','meta_keyword','tag');
+		$toggle_cols = array('subtract','shipping','status');
+		$lid = (int)$this->config->get('config_language_id');
+
+		if ($col == 'stock_status_id') {
+			$this->load->model('localisation/stock_status');
+			$statuses = $this->model_localisation_stock_status->getStockStatuses();
+			foreach ($statuses as $ss) {
+				$values[] = array('value' => $ss['stock_status_id'], 'text' => $ss['name']);
+			}
+		} elseif (in_array($col, $toggle_cols, true)) {
+			$q = $this->db->query("SELECT DISTINCT p.`" . $col . "` AS v FROM " . DB_PREFIX . "product p WHERE p.`" . $col . "` IS NOT NULL ORDER BY p.`" . $col . "` DESC");
+			$yes = ($col == 'status') ? '启用' : '是';
+			$no  = ($col == 'status') ? '禁用' : '否';
+			foreach ($q->rows as $r) {
+				$values[] = array('value' => $r['v'], 'text' => ($r['v'] == 1 ? $yes : $no));
+			}
+		} elseif ($col == 'image') {
+			$values = array();
+		} elseif (in_array($col, $prod_cols, true)) {
+			$q = $this->db->query("SELECT DISTINCT p.`" . $col . "` AS v FROM " . DB_PREFIX . "product p WHERE p.`" . $col . "` IS NOT NULL AND p.`" . $col . "` <> '' ORDER BY p.`" . $col . "`");
+			foreach ($q->rows as $r) {
+				$values[] = array('value' => $r['v'], 'text' => $r['v']);
+			}
+		} elseif (in_array($col, $desc_cols, true)) {
+			$q = $this->db->query("SELECT DISTINCT pd.`" . $col . "` AS v FROM " . DB_PREFIX . "product_description pd WHERE pd.language_id = '" . $lid . "' AND pd.`" . $col . "` IS NOT NULL AND pd.`" . $col . "` <> '' ORDER BY pd.`" . $col . "`");
+			foreach ($q->rows as $r) {
+				$values[] = array('value' => $r['v'], 'text' => $r['v']);
+			}
+		} else {
+			$tid = (int)$tag['tag_id'];
+			$q = $this->db->query("SELECT DISTINCT pt.`value` AS v FROM " . DB_PREFIX . "product_to_custom_tag pt WHERE pt.tag_id = '" . $tid . "' AND pt.`value` <> '' ORDER BY pt.`value`");
+			foreach ($q->rows as $r) {
+				$values[] = array('value' => $r['v'], 'text' => $r['v']);
+			}
+		}
+
+		return $values;
 	}
 
 	public function getTotalProductsByTaxClassId($tax_class_id) {
