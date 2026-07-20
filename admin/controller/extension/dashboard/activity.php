@@ -106,7 +106,7 @@ class ControllerExtensionDashboardActivity extends Controller {
 			$replace = array(
 				$this->url->link('customer/customer/edit', 'user_token=' . $this->session->data['user_token'] . '&customer_id='),
 				$this->url->link('sale/order/info', 'user_token=' . $this->session->data['user_token'] . '&order_id='),
-				$this->url->link('sale/return/edit', 'user_token=' . $this->session->data['user_token'] . '&return_id=')
+				'#'   // 商品退换 (sale/return) 已删除, 退换活动保留文案但不生成死链
 			);
 
 			$data['activities'][] = array(

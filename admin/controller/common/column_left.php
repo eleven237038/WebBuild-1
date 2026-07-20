@@ -16,12 +16,12 @@ class ControllerCommonColumnLeft extends Controller {
 				'children' => array()
 			);
 
-				// 商品目录子菜单顺序: 商品类型管理 / 商品管理 / 商品卡片设置 / 商品详情页设置
+				// 商品目录子菜单顺序: 商品类型 / 商品管理 / 商品卡片设置 / 商品详情页设置
 		$catalog = array();
 
 		if ($this->user->hasPermission('access', 'catalog/custom_tag')) {
 			$catalog[] = array(
-				'name'     => '商品类型管理',
+				'name'     => '商品类型',
 				'href'     => $this->url->link('catalog/custom_tag', 'user_token=' . $this->session->data['user_token']),
 				'children' => array()
 			);
@@ -58,6 +58,28 @@ class ControllerCommonColumnLeft extends Controller {
 				'name'     => '商品目录',
 				'href'     => '',
 				'children' => $catalog
+			);
+		}
+
+		// 评价目录 - 直链到商品评价列表
+		if ($this->user->hasPermission('access', 'catalog/review')) {
+			$data['menus'][] = array(
+				'id'       => 'menu-review',
+				'icon'     => 'fa-comments',
+				'name'     => '评价目录',
+				'href'     => $this->url->link('catalog/review', 'user_token=' . $this->session->data['user_token']),
+				'children' => array()
+			);
+		}
+
+		// 文章目录 - 直链到信息/文章列表
+		if ($this->user->hasPermission('access', 'catalog/information')) {
+			$data['menus'][] = array(
+				'id'       => 'menu-information',
+				'icon'     => 'fa-file-text-o',
+				'name'     => '文章目录',
+				'href'     => $this->url->link('catalog/information', 'user_token=' . $this->session->data['user_token']),
+				'children' => array()
 			);
 		}
 
@@ -189,53 +211,16 @@ class ControllerCommonColumnLeft extends Controller {
 				);
 			}
 
-				// 页面设计 — 内容编辑器
-		$design = array();
-		if ($this->user->hasPermission('access', 'catalog/information')) {
-			$design[] = array(
-				'name'     => '页面编辑器',
-				'href'     => $this->url->link('catalog/information', 'user_token=' . $this->session->data['user_token']),
+		// Sales - direct link to order list (order mgmt merged into sale, returns removed)
+		if ($this->user->hasPermission('access', 'sale/order')) {
+			$data['menus'][] = array(
+				'id'       => 'menu-sale',
+				'icon'     => 'fa-shopping-cart',
+				'name'     => $this->language->get('text_sale'),
+				'href'     => $this->url->link('sale/order', 'user_token=' . $this->session->data['user_token']),
 				'children' => array()
 			);
 		}
-		if ($design) {
-			$data['menus'][] = array(
-				'id'       => 'menu-design',
-				'icon'     => 'fa-pencil',
-				'name'     => '页面设计',
-				'href'     => '',
-				'children' => $design
-			);
-		}
-
-// Sales
-			$sale = array();
-
-			if ($this->user->hasPermission('access', 'sale/order')) {
-				$sale[] = array(
-					'name'	   => $this->language->get('text_order'),
-					'href'     => $this->url->link('sale/order', 'user_token=' . $this->session->data['user_token']),
-					'children' => array()
-				);
-			}
-
-			if ($this->user->hasPermission('access', 'sale/return')) {
-				$sale[] = array(
-					'name'	   => $this->language->get('text_return'),
-					'href'     => $this->url->link('sale/return', 'user_token=' . $this->session->data['user_token']),
-					'children' => array()
-				);
-			}
-
-			if ($sale) {
-				$data['menus'][] = array(
-					'id'       => 'menu-sale',
-					'icon'	   => 'fa-shopping-cart',
-					'name'	   => $this->language->get('text_sale'),
-					'href'     => '',
-					'children' => $sale
-				);
-			}
 
 			// Customer
 			$customer = array();

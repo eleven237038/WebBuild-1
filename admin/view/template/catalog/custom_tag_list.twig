@@ -1,5 +1,5 @@
 <!-- ==========================================================================
- *  GenScript - 商品类型管理 (WordPress nav-menu 拖拽引擎完整移植)
+ *  GenScript - 商品类型 (WordPress nav-menu 拖拽引擎完整移植)
  *  顶部工具栏: 添加字段 / 保存排序 / 批量删除   |   下方: 扁平拖拽树
  *
  *  引擎逐行移植自 WordPress wp-admin/js/nav-menu.js (initSortables + jQuery
@@ -79,7 +79,7 @@
 .type-list .panel-heading { display:flex; align-items:center; justify-content:space-between; padding:8px 12px; flex-wrap:wrap; gap:8px; }
 .type-list .panel-heading .panel-title { font-weight:600; }
 .type-field-actions { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
-.type-list .panel-body { padding:0 !important; }
+.type-list .panel-body { padding:10px; }
 .type-menu { list-style:none; padding:0; margin:0; }
 .type-item { display:flex; align-items:center; border-bottom:1px solid #f1f5f9; }
 .type-item:last-child { border-bottom:none; }
@@ -91,6 +91,31 @@
 .type-actions { display:flex; gap:4px; padding-right:12px; }
 .type-actions .btn { font-size:11px; padding:2px 6px; }
 .type-empty { padding:20px; text-align:center; color:#999; font-size:12px; }
+
+/* ── 类型悬停展开下拉 (替代默认铺开所有类型) ── */
+.type-dropdown { position:relative; padding-bottom:4px; }   /* 底部 padding 桥接触发栏与下拉之间的空隙, 鼠标下移进入下拉时不丢失 :hover (否则 4px 空隙会令下拉瞬间收回) */
+.type-dropdown-trigger {
+  display:flex; align-items:center; gap:12px; padding:12px 14px; cursor:pointer; min-width:0;
+  background:#fff; border:1px solid #e2e8f0; border-radius:4px; outline:none;
+  transition:border-color .15s, background .15s, box-shadow .15s;
+}
+.type-dropdown-trigger:hover,
+.type-dropdown.open .type-dropdown-trigger,
+.type-dropdown-trigger:focus { border-color:#0ea5e9; background:#f0f9ff; box-shadow:0 0 0 2px rgba(14,165,233,.15); }
+.type-dropdown-icon { color:#64748b; flex-shrink:0; }
+.type-dropdown-trigger .type-name { flex:0 1 auto; }
+.type-name-placeholder { color:#94a3b8; }
+.type-dropdown-caret { margin-left:auto; color:#64748b; transition:transform .15s; }
+.type-dropdown-menu {
+  display:none; position:absolute; top:100%; left:0; right:0; z-index:50;
+  background:#fff; border:1px solid #e2e8f0; border-radius:4px;
+  max-height:420px; overflow-y:auto; box-shadow:0 6px 18px rgba(0,0,0,0.12);
+}
+/* 悬停展开 (主交互) + .open 点击兜底 (触屏) */
+.type-dropdown:hover .type-dropdown-menu,
+.type-dropdown.open .type-dropdown-menu { display:block; }
+.type-dropdown:hover .type-dropdown-caret,
+.type-dropdown.open .type-dropdown-caret { transform:rotate(180deg); }
 </style>
 
 {{ header }}{{ column_left }}
@@ -100,7 +125,7 @@
       <div class="pull-right">
         <button type="button" class="btn btn-primary btn-lg" id="btn-add-type"><i class="fa fa-plus"></i> 新建商品</button>
       </div>
-      <h1>商品类型管理</h1>
+      <h1>商品类型</h1>
     </div>
   </div>
   <div class="container-fluid">
@@ -112,7 +137,7 @@
       <div class="type-list">
         <div class="panel panel-default">
           <div class="panel-heading">
-            <span class="panel-title"><i class="fa fa-cubes"></i> 商品</span>
+            <span class="panel-title"><i class="fa fa-cubes"></i> 类型</span>
             <div class="type-field-actions">
               <a href="{{ add }}" class="btn btn-primary btn-sm"><i class="fa fa-plus"></i> 添加字段</a>
               <button onclick="saveTree()" class="btn btn-success btn-sm" id="btn-save-tree"><i class="fa fa-save"></i> 保存排序</button>
@@ -120,23 +145,39 @@
             </div>
           </div>
           <div class="panel-body">
-            <ul class="type-menu" id="type-menu">
-              {% for pt in product_types %}
-                <li class="type-item {{ pt.product_type_id == product_type_id ? 'active' }}" data-id="{{ pt.product_type_id }}">
-                  <a href="{{ list_base }}&product_type_id={{ pt.product_type_id }}" class="type-select">
-                    <span class="type-name">{{ pt.name }}</span>
-                    <span class="type-count">{{ pt.field_count }} 个字段</span>
-                  </a>
-                  <span class="type-actions">
-                    <button type="button" class="btn btn-default btn-xs tag-nodrag" title="重命名" onclick="renameType({{ pt.product_type_id }}, {{ pt.name|json_encode|raw }})"><i class="fa fa-pencil"></i></button>
-                    <button type="button" class="btn btn-danger btn-xs tag-nodrag" title="删除" onclick="deleteType({{ pt.product_type_id }}, {{ pt.field_count }})"><i class="fa fa-trash"></i></button>
-                  </span>
-                </li>
-              {% endfor %}
-              {% if product_types is empty %}
-                <li class="type-empty">暂无商品,点击右上角"新建商品"</li>
-              {% endif %}
-            </ul>
+            {% set current_type = null %}
+            {% for pt in product_types if pt.product_type_id == product_type_id %}{% set current_type = pt %}{% endfor %}
+            <div class="type-dropdown" id="type-dropdown">
+              <div class="type-dropdown-trigger" tabindex="0">
+                <i class="fa fa-cubes type-dropdown-icon"></i>
+                {% if current_type %}
+                  <span class="type-name">{{ current_type.name }}</span>
+                  <span class="type-count">{{ current_type.field_count }} 个字段</span>
+                {% else %}
+                  <span class="type-name type-name-placeholder">请选择类型…</span>
+                {% endif %}
+                <i class="fa fa-caret-down type-dropdown-caret"></i>
+              </div>
+              <div class="type-dropdown-menu">
+                <ul class="type-menu" id="type-menu">
+                  {% for pt in product_types %}
+                    <li class="type-item {{ pt.product_type_id == product_type_id ? 'active' }}" data-id="{{ pt.product_type_id }}">
+                      <a href="{{ list_base }}&product_type_id={{ pt.product_type_id }}" class="type-select">
+                        <span class="type-name">{{ pt.name }}</span>
+                        <span class="type-count">{{ pt.field_count }} 个字段</span>
+                      </a>
+                      <span class="type-actions">
+                        <button type="button" class="btn btn-default btn-xs tag-nodrag" title="重命名" onclick="renameType({{ pt.product_type_id }}, {{ pt.name|json_encode|raw }})"><i class="fa fa-pencil"></i></button>
+                        <button type="button" class="btn btn-danger btn-xs tag-nodrag" title="删除" onclick="deleteType({{ pt.product_type_id }}, {{ pt.field_count }})"><i class="fa fa-trash"></i></button>
+                      </span>
+                    </li>
+                  {% endfor %}
+                  {% if product_types is empty %}
+                    <li class="type-empty">暂无类型,点击右上角"新建商品"</li>
+                  {% endif %}
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -147,7 +188,6 @@
           <button onclick="collapseAll()" class="btn btn-default btn-xs">折叠全部</button>
           <span id="save-status"></span>
         </div>
-        <p style="font-size:11px;color:#999;margin:8px 0 12px;">提示：拖动手柄上下移动可同级排序；左右移动可改变层级（向右缩进为子级，左侧对齐为同级）。子字段随父字段一起移动。也可用键盘：先点选字段使其获得焦点，再按 ←↑↓-> 移动（←升一级 / ->降一级，↑↓同级上下）。编辑/删除/勾选按钮不会触发拖拽。改动后自动保存。点击三角箭头可折叠/展开子字段。</p>
 
         <div class="panel panel-default">
           <div class="panel-body">
@@ -579,6 +619,26 @@ $(function() {
   wpTagNav.init();
   wpTagNav.onChange = scheduleSave;   // 把拖拽/键盘变更接到自动保存 (修复旧版 autosave 从不触发的 bug)
   $('body').tooltip({ selector: '[data-toggle="tooltip"]' });
+
+  // ── 类型下拉: 悬停为主交互 (CSS), 点击切换 .open 做触屏兜底, 点外部收起 ──
+  (function() {
+    var $dd = $('#type-dropdown');
+    if (!$dd.length) { return; }
+    $dd.on('click', '.type-dropdown-trigger', function(e) {
+      e.preventDefault();
+      $dd.toggleClass('open');
+    });
+    // 键盘可达: 聚焦触发器后按 Enter/Space/下方向键展开
+    $dd.on('keydown', '.type-dropdown-trigger', function(e) {
+      if (e.which === 13 || e.which === 32 || e.which === 40) {
+        e.preventDefault();
+        $dd.addClass('open');
+      }
+    });
+    $(document).on('click', function(e) {
+      if (!$(e.target).closest('#type-dropdown').length) { $dd.removeClass('open'); }
+    });
+  })();
 
   window.expandAll   = function() { wpTagNav.expandAll(); };
   window.collapseAll = function() { wpTagNav.collapseAll(); };
