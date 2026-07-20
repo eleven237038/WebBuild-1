@@ -16,12 +16,12 @@ class ControllerCommonColumnLeft extends Controller {
 				'children' => array()
 			);
 
-				// 商品目录子菜单顺序: 字段管理 / 商品管理 / 商品卡片设置 / 商品详情页设置
+				// 商品目录子菜单顺序: 商品类型管理 / 商品管理 / 商品卡片设置 / 商品详情页设置
 		$catalog = array();
 
 		if ($this->user->hasPermission('access', 'catalog/custom_tag')) {
 			$catalog[] = array(
-				'name'     => '字段管理',
+				'name'     => '商品类型管理',
 				'href'     => $this->url->link('catalog/custom_tag', 'user_token=' . $this->session->data['user_token']),
 				'children' => array()
 			);

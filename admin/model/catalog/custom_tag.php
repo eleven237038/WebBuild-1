@@ -8,7 +8,8 @@ class ModelCatalogCustomTag extends Model {
 		$it  = $this->db->escape((string)($data['input_type'] ?? ''));
 		$dl  = $this->db->escape((string)($data['display_label'] ?? ''));
 		$ic  = (int)($data['is_core'] ?? 0);
-		$this->db->query("INSERT INTO " . DB_PREFIX . "custom_tag SET parent_id = '" . (int)($data['parent_id'] ?? 0) . "', name = '" . $this->db->escape($data['name']) . "', field_type = '" . $ft . "', tag_type = '" . $tt . "', is_required = '" . $ir . "', system_column = '" . $sc . "', input_type = '" . $it . "', display_label = '" . $dl . "', is_core = '" . $ic . "', sort_order = '" . (int)($data['sort_order'] ?? 0) . "', status = '" . (int)($data['status'] ?? 1) . "', show_in_list = '" . (int)($data['show_in_list'] ?? 0) . "', date_added = NOW(), date_modified = NOW()");
+		$ptid = (int)($data['product_type_id'] ?? 0);
+		$this->db->query("INSERT INTO " . DB_PREFIX . "custom_tag SET parent_id = '" . (int)($data['parent_id'] ?? 0) . "', name = '" . $this->db->escape($data['name']) . "', field_type = '" . $ft . "', tag_type = '" . $tt . "', is_required = '" . $ir . "', system_column = '" . $sc . "', input_type = '" . $it . "', display_label = '" . $dl . "', is_core = '" . $ic . "', product_type_id = '" . $ptid . "', sort_order = '" . (int)($data['sort_order'] ?? 0) . "', status = '" . (int)($data['status'] ?? 1) . "', show_in_list = '" . (int)($data['show_in_list'] ?? 0) . "', date_added = NOW(), date_modified = NOW()");
 		return $this->db->getLastId();
 	}
 
@@ -24,6 +25,7 @@ class ModelCatalogCustomTag extends Model {
 		$it         = $this->db->escape((string)($data['input_type'] ?? $existing['input_type']));
 		$dl         = $this->db->escape((string)($data['display_label'] ?? $existing['display_label']));
 		$ic         = (int)($data['is_core'] ?? $existing['is_core']);
+		$ptid       = (int)($data['product_type_id'] ?? $existing['product_type_id']);
 		$parent_id  = (int)($data['parent_id'] ?? $existing['parent_id']);
 		// 成环防御:父级不能是自身或自身后代
 		if ($parent_id && $this->wouldCreateCycle((int)$tag_id, $parent_id)) {
@@ -31,7 +33,7 @@ class ModelCatalogCustomTag extends Model {
 		}
 		$sort_order = (int)($data['sort_order'] ?? $existing['sort_order']);
 		$status     = (int)($data['status'] ?? $existing['status']);
-		$this->db->query("UPDATE " . DB_PREFIX . "custom_tag SET parent_id = '" . $parent_id . "', name = '" . $name . "', field_type = '" . $ft . "', tag_type = '" . $tt . "', is_required = '" . $ir . "', system_column = '" . $sc . "', input_type = '" . $it . "', display_label = '" . $dl . "', is_core = '" . $ic . "', sort_order = '" . $sort_order . "', status = '" . $status . "', show_in_list = '" . (int)($data['show_in_list'] ?? 0) . "', date_modified = NOW() WHERE tag_id = '" . (int)$tag_id . "'");
+		$this->db->query("UPDATE " . DB_PREFIX . "custom_tag SET parent_id = '" . $parent_id . "', name = '" . $name . "', field_type = '" . $ft . "', tag_type = '" . $tt . "', is_required = '" . $ir . "', system_column = '" . $sc . "', input_type = '" . $it . "', display_label = '" . $dl . "', is_core = '" . $ic . "', product_type_id = '" . $ptid . "', sort_order = '" . $sort_order . "', status = '" . $status . "', show_in_list = '" . (int)($data['show_in_list'] ?? 0) . "', date_modified = NOW() WHERE tag_id = '" . (int)$tag_id . "'");
 	}
 
 	public function deleteTag($tag_id) {
@@ -67,11 +69,13 @@ class ModelCatalogCustomTag extends Model {
 
 	// 供编辑表单父字段下拉。最大层级 4: 父字段可为任意非自身后代字段,
 	// 返回全部字段 (排除自身及其后代防成环), 按 depth 缩进前缀体现层级。
-	public function getParentOptions($exclude_tag_id = 0) {
+	// $product_type_id 非零时仅返回同类型字段 (父字段必须同属一个商品类型)。
+	public function getParentOptions($exclude_tag_id = 0, $product_type_id = 0) {
 		$exclude = $exclude_tag_id ? $this->getDescendantIds((int)$exclude_tag_id) : array();
 		$exclude[] = (int)$exclude_tag_id;
 		$options = array();
-		foreach ($this->getCustomTagFlat() as $row) {
+		$flat = $product_type_id ? $this->getCustomTagFlatByType((int)$product_type_id) : $this->getCustomTagFlat();
+		foreach ($flat as $row) {
 			if (in_array((int)$row['tag_id'], $exclude)) { continue; }
 			$options[] = array(
 				'tag_id' => $row['tag_id'],
@@ -142,6 +146,35 @@ class ModelCatalogCustomTag extends Model {
 		return $this->db->query("SELECT COUNT(*) AS total FROM " . DB_PREFIX . "custom_tag")->row['total'];
 	}
 
+	// ── 商品类型 (Product Type) CRUD ──
+	// 一个商品类型是一组字段的结构容器; 字段通过 product_type_id 归属某类型。
+	public function getProductTypes() {
+		return $this->db->query("SELECT * FROM " . DB_PREFIX . "product_type ORDER BY sort_order ASC, product_type_id ASC")->rows;
+	}
+
+	public function getProductType($product_type_id) {
+		return $this->db->query("SELECT * FROM " . DB_PREFIX . "product_type WHERE product_type_id = '" . (int)$product_type_id . "'")->row;
+	}
+
+	public function addProductType($name) {
+		$next = $this->db->query("SELECT COALESCE(MAX(sort_order), 0) + 1 AS s FROM " . DB_PREFIX . "product_type")->row['s'];
+		$this->db->query("INSERT INTO " . DB_PREFIX . "product_type SET name = '" . $this->db->escape((string)$name) . "', sort_order = '" . (int)$next . "', status = 1, date_added = NOW(), date_modified = NOW()");
+		return $this->db->getLastId();
+	}
+
+	public function editProductType($product_type_id, $name) {
+		$this->db->query("UPDATE " . DB_PREFIX . "product_type SET name = '" . $this->db->escape((string)$name) . "', date_modified = NOW() WHERE product_type_id = '" . (int)$product_type_id . "'");
+	}
+
+	// 删除商品类型:级联删除其下所有字段 (deleteTag 再级联 product_to_custom_tag)。
+	public function deleteProductType($product_type_id) {
+		$rows = $this->db->query("SELECT tag_id FROM " . DB_PREFIX . "custom_tag WHERE product_type_id = '" . (int)$product_type_id . "'")->rows;
+		foreach ($rows as $row) {
+			$this->deleteTag((int)$row['tag_id']);
+		}
+		$this->db->query("DELETE FROM " . DB_PREFIX . "product_type WHERE product_type_id = '" . (int)$product_type_id . "'");
+	}
+
 	// ── Product-tag associations (EAV: stores per-product value) ──
 	public function getProductTags($product_id) {
 		$query = $this->db->query("SELECT t.tag_id, t.name, t.tag_type, t.is_required, t.display_label, pt.`value` FROM " . DB_PREFIX . "custom_tag t INNER JOIN " . DB_PREFIX . "product_to_custom_tag pt ON t.tag_id = pt.tag_id WHERE pt.product_id = '" . (int)$product_id . "' AND t.status = 1 ORDER BY t.sort_order ASC");
@@ -182,7 +215,21 @@ class ModelCatalogCustomTag extends Model {
 	// Flat preorder traversal of the tree; each row is augmented with its `depth`.
 	// Feeds the WordPress-style flat drag UI where depth is encoded as margin-left.
 	public function getCustomTagFlat() {
-		$tree = $this->getCustomTagTree();
+		return $this->_flatFromRows($this->getTags());
+	}
+
+	// 同 getCustomTagFlat, 但仅返回某商品类型下的字段 (列表页右侧字段树用)。
+	public function getCustomTagFlatByType($product_type_id) {
+		return $this->_flatFromRows($this->getTagsByType($product_type_id));
+	}
+
+	public function getTagsByType($product_type_id) {
+		$sql = "SELECT * FROM " . DB_PREFIX . "custom_tag WHERE product_type_id = '" . (int)$product_type_id . "' ORDER BY sort_order ASC";
+		return $this->db->query($sql)->rows;
+	}
+
+	private function _flatFromRows($all) {
+		$tree = $this->_buildTree($all, 0);
 		$flat = array();
 		$walk = function($nodes, $depth) use (&$walk, &$flat) {
 			foreach ($nodes as $node) {

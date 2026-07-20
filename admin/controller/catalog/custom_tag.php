@@ -8,7 +8,7 @@ class ControllerCatalogCustomTag extends Controller {
 			return;
 		}
 		$this->load->language('catalog/category');
-		$this->document->setTitle('字段管理');
+		$this->document->setTitle('商品类型管理');
 		$this->load->model('catalog/custom_tag');
 		$this->getList();
 	}
@@ -17,17 +17,41 @@ class ControllerCatalogCustomTag extends Controller {
 		// jQuery UI sortable drives the WordPress-style flat drag tree.
 		$this->document->addScript('view/javascript/jquery/jquery-ui/jquery-ui.min.js');
 
-		$data['tag_flat']   = $this->model_catalog_custom_tag->getCustomTagFlat();
-		$data['user_token'] = $this->session->data['user_token'];
+		// 商品类型列表 + 当前选中类型 (GET 优先, 否则取排序最前的类型)
+		$product_types = $this->model_catalog_custom_tag->getProductTypes();
+		$product_type_id = isset($this->request->get['product_type_id']) ? (int)$this->request->get['product_type_id'] : 0;
+		if (!$product_type_id && $product_types) {
+			$product_type_id = (int)$product_types[0]['product_type_id'];
+		}
+		// 传入的类型不存在则回退到第一个
+		if ($product_type_id && !$this->model_catalog_custom_tag->getProductType($product_type_id)) {
+			$product_type_id = $product_types ? (int)$product_types[0]['product_type_id'] : 0;
+		}
+
+		// 为每个类型附字段计数
+		foreach ($product_types as &$pt) {
+			$pt['field_count'] = count($this->model_catalog_custom_tag->getTagsByType((int)$pt['product_type_id']));
+		}
+		unset($pt);
+
+		$data['product_types']   = $product_types;
+		$data['product_type_id'] = $product_type_id;
+		$data['tag_flat']        = $product_type_id ? $this->model_catalog_custom_tag->getCustomTagFlatByType($product_type_id) : array();
+		$data['user_token']      = $this->session->data['user_token'];
 
 		if (isset($this->error['warning'])) { $data['error_warning'] = $this->error['warning']; } else { $data['error_warning'] = ''; }
 		if (isset($this->session->data['success'])) { $data['success'] = $this->session->data['success']; unset($this->session->data['success']); } else { $data['success'] = ''; }
 
-		$data['add']    = $this->url->link('catalog/custom_tag/add', 'user_token=' . $this->session->data['user_token']);
-		$data['delete'] = $this->url->link('catalog/custom_tag/delete', 'user_token=' . $this->session->data['user_token']);
-		$data['header'] = $this->load->controller('common/header');
+		$pt_query = $product_type_id ? '&product_type_id=' . $product_type_id : '';
+		$data['add']         = $this->url->link('catalog/custom_tag/add', 'user_token=' . $this->session->data['user_token'] . $pt_query);
+		$data['delete']      = $this->url->link('catalog/custom_tag/delete', 'user_token=' . $this->session->data['user_token']);
+		$data['add_type']    = $this->url->link('catalog/custom_tag/addType', 'user_token=' . $this->session->data['user_token']);
+		$data['rename_type'] = $this->url->link('catalog/custom_tag/renameType', 'user_token=' . $this->session->data['user_token']);
+		$data['delete_type'] = $this->url->link('catalog/custom_tag/deleteType', 'user_token=' . $this->session->data['user_token']);
+		$data['list_base']   = $this->url->link('catalog/custom_tag', 'user_token=' . $this->session->data['user_token']);
+		$data['header']      = $this->load->controller('common/header');
 		$data['column_left'] = $this->load->controller('common/column_left');
-		$data['footer'] = $this->load->controller('common/footer');
+		$data['footer']      = $this->load->controller('common/footer');
 		$this->response->setOutput($this->load->view('catalog/custom_tag_list', $data));
 	}
 
@@ -42,6 +66,7 @@ class ControllerCatalogCustomTag extends Controller {
 			$this->request->post['is_required'] = isset($this->request->post['is_required']) ? 1 : 0;
 			$this->request->post['status']      = isset($this->request->post['status']) ? 1 : 0;
 			$this->request->post['parent_id']   = (int)($this->request->post['parent_id'] ?? 0);
+			$this->request->post['product_type_id'] = (int)($this->request->post['product_type_id'] ?? $this->request->get['product_type_id'] ?? 0);
 			$this->model_catalog_custom_tag->addTag($this->request->post);
 			$this->session->data['success'] = '字段已添加';
 			// If AJAX (from drag-drop UI), return JSON; else redirect
@@ -50,7 +75,9 @@ class ControllerCatalogCustomTag extends Controller {
 				$this->response->setOutput(json_encode(['success' => true]));
 				return;
 			}
-			$this->response->redirect($this->url->link('catalog/custom_tag', 'user_token=' . $this->session->data['user_token']));
+			$pt = (int)$this->request->post['product_type_id'];
+			$pt_query = $pt ? '&product_type_id=' . $pt : '';
+			$this->response->redirect($this->url->link('catalog/custom_tag', 'user_token=' . $this->session->data['user_token'] . $pt_query));
 		}
 		$this->getForm();
 	}
@@ -69,7 +96,11 @@ class ControllerCatalogCustomTag extends Controller {
 			$this->request->post['parent_id']   = (int)($this->request->post['parent_id'] ?? 0);
 			$this->model_catalog_custom_tag->editTag($this->request->get['tag_id'], $this->request->post);
 			$this->session->data['success'] = '字段已更新';
-			$this->response->redirect($this->url->link('catalog/custom_tag', 'user_token=' . $this->session->data['user_token']));
+			// 回列表时保留所属商品类型
+			$tag_info = $this->model_catalog_custom_tag->getTag((int)$this->request->get['tag_id']);
+			$pt = (int)($tag_info['product_type_id'] ?? 0);
+			$pt_query = $pt ? '&product_type_id=' . $pt : '';
+			$this->response->redirect($this->url->link('catalog/custom_tag', 'user_token=' . $this->session->data['user_token'] . $pt_query));
 		}
 		$this->getForm();
 	}
@@ -99,7 +130,18 @@ class ControllerCatalogCustomTag extends Controller {
 		if (isset($this->request->post['show_in_list'])) { $data['show_in_list'] = $this->request->post['show_in_list']; } elseif (!empty($tag_info)) { $data['show_in_list'] = $tag_info['show_in_list']; } else { $data['show_in_list'] = 0; }
 		if (isset($this->request->post['parent_id']))   { $data['parent_id']   = $this->request->post['parent_id'];   } elseif (!empty($tag_info)) { $data['parent_id']   = $tag_info['parent_id'];   } else { $data['parent_id'] = 0; }
 
-		$data['parent_options'] = $this->model_catalog_custom_tag->getParentOptions($tag_id);
+		// 所属商品类型:POST 优先, 其次现有字段, 最后 URL (新增字段时由列表页带入)
+		if (isset($this->request->post['product_type_id'])) {
+			$product_type_id = (int)$this->request->post['product_type_id'];
+		} elseif (!empty($tag_info)) {
+			$product_type_id = (int)$tag_info['product_type_id'];
+		} elseif (isset($this->request->get['product_type_id'])) {
+			$product_type_id = (int)$this->request->get['product_type_id'];
+		} else {
+			$product_type_id = 0;
+		}
+		$data['product_type_id'] = $product_type_id;
+		$data['parent_options'] = $this->model_catalog_custom_tag->getParentOptions($tag_id, $product_type_id);
 
 		// 只读系统字段(供表单展示)
 		if (!empty($tag_info)) {
@@ -112,7 +154,8 @@ class ControllerCatalogCustomTag extends Controller {
 			$data['system_column'] = '';
 		}
 
-		$data['cancel'] = $this->url->link('catalog/custom_tag', 'user_token=' . $this->session->data['user_token']);
+		$pt_query = $product_type_id ? '&product_type_id=' . $product_type_id : '';
+		$data['cancel'] = $this->url->link('catalog/custom_tag', 'user_token=' . $this->session->data['user_token'] . $pt_query);
 		$data['header'] = $this->load->controller('common/header');
 		$data['column_left'] = $this->load->controller('common/column_left');
 		$data['footer'] = $this->load->controller('common/footer');
@@ -133,6 +176,70 @@ class ControllerCatalogCustomTag extends Controller {
 			$this->session->data['success'] = '字段已删除';
 		}
 		$this->response->redirect($this->url->link('catalog/custom_tag', 'user_token=' . $this->session->data['user_token']));
+	}
+
+	// 新增商品类型 (AJAX)
+	public function addType() {
+		$this->response->addHeader('Content-Type: application/json');
+		if (!$this->user->hasPermission('modify', 'catalog/custom_tag')) {
+			$this->response->setOutput(json_encode(['error' => '没有权限']));
+			return;
+		}
+		if (!isset($this->request->get['user_token']) || $this->request->get['user_token'] !== $this->session->data['user_token']) {
+			$this->response->setOutput(json_encode(['error' => 'Invalid CSRF token']));
+			return;
+		}
+		$this->load->model('catalog/custom_tag');
+		$name = trim((string)($this->request->post['name'] ?? ''));
+		if ($name === '') {
+			$this->response->setOutput(json_encode(['error' => '名称不能为空']));
+			return;
+		}
+		$id = $this->model_catalog_custom_tag->addProductType($name);
+		$this->response->setOutput(json_encode(['success' => true, 'product_type_id' => $id]));
+	}
+
+	// 重命名商品类型 (AJAX)
+	public function renameType() {
+		$this->response->addHeader('Content-Type: application/json');
+		if (!$this->user->hasPermission('modify', 'catalog/custom_tag')) {
+			$this->response->setOutput(json_encode(['error' => '没有权限']));
+			return;
+		}
+		if (!isset($this->request->get['user_token']) || $this->request->get['user_token'] !== $this->session->data['user_token']) {
+			$this->response->setOutput(json_encode(['error' => 'Invalid CSRF token']));
+			return;
+		}
+		$this->load->model('catalog/custom_tag');
+		$id = (int)($this->request->post['product_type_id'] ?? 0);
+		$name = trim((string)($this->request->post['name'] ?? ''));
+		if (!$id || $name === '') {
+			$this->response->setOutput(json_encode(['error' => '参数不完整']));
+			return;
+		}
+		$this->model_catalog_custom_tag->editProductType($id, $name);
+		$this->response->setOutput(json_encode(['success' => true]));
+	}
+
+	// 删除商品类型 (AJAX) - 级联删除其下所有字段
+	public function deleteType() {
+		$this->response->addHeader('Content-Type: application/json');
+		if (!$this->user->hasPermission('modify', 'catalog/custom_tag')) {
+			$this->response->setOutput(json_encode(['error' => '没有权限']));
+			return;
+		}
+		if (!isset($this->request->get['user_token']) || $this->request->get['user_token'] !== $this->session->data['user_token']) {
+			$this->response->setOutput(json_encode(['error' => 'Invalid CSRF token']));
+			return;
+		}
+		$this->load->model('catalog/custom_tag');
+		$id = (int)($this->request->post['product_type_id'] ?? $this->request->get['product_type_id'] ?? 0);
+		if (!$id) {
+			$this->response->setOutput(json_encode(['error' => '缺少类型 ID']));
+			return;
+		}
+		$this->model_catalog_custom_tag->deleteProductType($id);
+		$this->response->setOutput(json_encode(['success' => true]));
 	}
 
 	protected function validateForm() {

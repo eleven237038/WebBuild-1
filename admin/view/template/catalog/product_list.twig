@@ -202,6 +202,11 @@ $('#cf-add-input').autocomplete({
 $(document).on('click', '.cf-remove', function() {
     $(this).closest('.cf-row').remove();
 });
+
+// 已添加的筛选字段更改值时自动刷新一次列表(委托绑定,覆盖 AJAX 后续添加的行)
+$(document).on('change', '.cf-val', function() {
+    $('#button-filter').trigger('click');
+});
 //--></script>
 <script type="text/javascript"><!--
 // IE and Edge fix!

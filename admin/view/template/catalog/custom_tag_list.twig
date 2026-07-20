@@ -1,5 +1,5 @@
 <!-- ==========================================================================
- *  GenScript - 字段管理 (WordPress nav-menu 拖拽引擎完整移植)
+ *  GenScript - 商品类型管理 (WordPress nav-menu 拖拽引擎完整移植)
  *  顶部工具栏: 添加字段 / 保存排序 / 批量删除   |   下方: 扁平拖拽树
  *
  *  引擎逐行移植自 WordPress wp-admin/js/nav-menu.js (initSortables + jQuery
@@ -73,6 +73,24 @@
 #save-status.saving { color: #3b82f6; }
 #save-status.error { color: #ef4444; }
 .field-cb { margin: 0 4px 0 0; vertical-align: middle; }
+
+/* ── 商品类型两栏布局 ── */
+.type-manager { display: grid; grid-template-columns: 260px 1fr; gap: 20px; min-height: 500px; }
+.type-list .panel-heading { display:flex; align-items:center; justify-content:space-between; padding:8px 10px; }
+.type-list .panel-heading .panel-title { font-weight:600; }
+.type-list .panel-body { padding:0 !important; }
+.type-menu { list-style:none; padding:0; margin:0; }
+.type-item { display:flex; align-items:center; border-bottom:1px solid #f1f5f9; }
+.type-item:last-child { border-bottom:none; }
+.type-item.active { background:#e0f2fe; }
+.type-select { flex:1; display:flex; flex-direction:column; padding:10px 12px; color:#334155; min-width:0; }
+.type-item.active .type-select { color:#0369a1; font-weight:600; }
+.type-name { font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.type-count { font-size:11px; color:#94a3b8; margin-top:2px; }
+.type-actions { display:flex; gap:4px; padding-right:8px; }
+.type-actions .btn { font-size:11px; padding:2px 6px; }
+.type-empty { padding:20px; text-align:center; color:#999; font-size:12px; }
+@media (max-width:640px) { .type-manager { grid-template-columns:1fr; } }
 </style>
 
 {{ header }}{{ column_left }}
@@ -84,14 +102,42 @@
         <button onclick="saveTree()" class="btn btn-success btn-lg" id="btn-save-tree" style="margin-right:8px;"><i class="fa fa-save"></i> 保存排序</button>
         <button type="button" onclick="deleteSelected()" class="btn btn-danger btn-lg"><i class="fa fa-trash-o"></i> 批量删除</button>
       </div>
-      <h1>字段管理 (拖拽排序)</h1>
+      <h1>商品类型管理</h1>
     </div>
   </div>
   <div class="container-fluid">
     {% if error_warning %}<div class="alert alert-danger">{{ error_warning }}</div>{% endif %}
     {% if success %}<div class="alert alert-success">{{ success }}</div>{% endif %}
 
-    <div class="field-manager">
+    <div class="type-manager">
+
+      <div class="type-list">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <span class="panel-title"><i class="fa fa-cubes"></i> 商品类型</span>
+            <button type="button" class="btn btn-primary btn-xs" id="btn-add-type"><i class="fa fa-plus"></i> 新建</button>
+          </div>
+          <div class="panel-body">
+            <ul class="type-menu" id="type-menu">
+              {% for pt in product_types %}
+                <li class="type-item {{ pt.product_type_id == product_type_id ? 'active' }}" data-id="{{ pt.product_type_id }}">
+                  <a href="{{ list_base }}&product_type_id={{ pt.product_type_id }}" class="type-select">
+                    <span class="type-name">{{ pt.name }}</span>
+                    <span class="type-count">{{ pt.field_count }} 个字段</span>
+                  </a>
+                  <span class="type-actions">
+                    <button type="button" class="btn btn-default btn-xs tag-nodrag" title="重命名" onclick="renameType({{ pt.product_type_id }}, {{ pt.name|json_encode|raw }})"><i class="fa fa-pencil"></i></button>
+                    <button type="button" class="btn btn-danger btn-xs tag-nodrag" title="删除" onclick="deleteType({{ pt.product_type_id }}, {{ pt.field_count }})"><i class="fa fa-trash"></i></button>
+                  </span>
+                </li>
+              {% endfor %}
+              {% if product_types is empty %}
+                <li class="type-empty">暂无商品类型,点击右上角"新建"</li>
+              {% endif %}
+            </ul>
+          </div>
+        </div>
+      </div>
 
       <div class="field-right">
         <div class="tree-toolbar">
@@ -117,7 +163,7 @@
                           <span class="badge-type" data-type="{{ field.tag_type }}">{{ field.tag_type }}</span>
                           {% if field.is_required == 1 %}<span class="badge-required">必填</span>{% endif %}
                         </span>
-                        <a href="index.php?route=catalog/custom_tag/edit&user_token={{ user_token }}&tag_id={{ field.tag_id }}" class="btn btn-default btn-xs tag-nodrag" data-toggle="tooltip" title="编辑"><i class="fa fa-pencil"></i></a>
+                        <a href="index.php?route=catalog/custom_tag/edit&user_token={{ user_token }}&tag_id={{ field.tag_id }}&product_type_id={{ product_type_id }}" class="btn btn-default btn-xs tag-nodrag" data-toggle="tooltip" title="编辑"><i class="fa fa-pencil"></i></a>
                         <button type="button" class="btn btn-danger btn-xs tag-nodrag" data-toggle="tooltip" title="删除" onclick="deleteField({{ field.tag_id }})"><i class="fa fa-trash"></i></button>
                       </span>
                     </div>
@@ -126,7 +172,7 @@
                 {% endfor %}
               </ul>
               {% if tag_flat is empty %}
-                <div class="tag-empty">暂无字段，请在左侧添加</div>
+                <div class="tag-empty">该商品类型下暂无字段，点击右上角"添加字段"</div>
               {% endif %}
             </div>
           </div>
@@ -139,6 +185,9 @@
 
 <script>
 var userToken = '{{ user_token }}';
+var addTypeUrl = '{{ add_type }}';
+var renameTypeUrl = '{{ rename_type }}';
+var deleteTypeUrl = '{{ delete_type }}';
 var typeLabels = {text:'文本',textarea:'多行文本',number:'数字',date:'日期',image:'图片',select:'下拉选择',radio:'单选'};
 
 /* =============================================================================
@@ -550,6 +599,40 @@ $(function() {
 
   // ── 保存树结构 ──
   window.saveTree = function() { doSaveTree(false); };
+
+  // ── 商品类型 CRUD ──
+  $('#btn-add-type').on('click', function() {
+    var name = prompt('请输入商品类型名称:');
+    if (name === null) { return; }
+    name = $.trim(name);
+    if (!name) { return alert('名称不能为空'); }
+    $.post(addTypeUrl, { name: name }, function(res) {
+      if (res && res.success) { location.reload(); }
+      else { alert((res && res.error) || '创建失败'); }
+    }, 'json').fail(function() { alert('创建失败'); });
+  });
+
+  window.renameType = function(id, oldName) {
+    var name = prompt('重命名商品类型:', oldName);
+    if (name === null) { return; }
+    name = $.trim(name);
+    if (!name || name === oldName) { return; }
+    $.post(renameTypeUrl, { product_type_id: id, name: name }, function(res) {
+      if (res && res.success) { location.reload(); }
+      else { alert((res && res.error) || '重命名失败'); }
+    }, 'json').fail(function() { alert('重命名失败'); });
+  };
+
+  window.deleteType = function(id, fieldCount) {
+    var msg = fieldCount > 0
+      ? '确认删除此商品类型? 该类型下 ' + fieldCount + ' 个字段及其商品取值将一并删除!'
+      : '确认删除此商品类型?';
+    if (!confirm(msg)) { return; }
+    $.post(deleteTypeUrl, { product_type_id: id }, function(res) {
+      if (res && res.success) { location.href = '{{ list_base }}'; }
+      else { alert((res && res.error) || '删除失败'); }
+    }, 'json').fail(function() { alert('删除失败'); });
+  };
 
   var saveTimer = null;
   function scheduleSave() {
