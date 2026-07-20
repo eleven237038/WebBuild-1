@@ -1,7 +1,8 @@
 {{ header }}
 <!-- ==========================================================================
- *  GenScript — Category / Shop Page (Research Compound Catalog)
+ *  InsightWellnessLab - Category / Shop Page (Research Compound Catalog)
  *  4-column Grid | Green accent var(--primary-green) | Deep navy product cards
+ *  Card markup/CSS shared via product_card.twig + product-card.css
  * ========================================================================== -->
 <style>
 /* ═══════ Page Wrapper ═══════ */
@@ -31,45 +32,15 @@
 .filter-pill--sm { padding: 5px 14px; font-size: 11px; border-radius: 16px; }
 
 /* ═══════ BLOCK 3+4: Product Grid + Cards ═══════ */
+/* Card (.product-card / .pcard-*) styles live in shared product-card.css,
+   loaded site-wide via header.twig so homepage & shop render identical cards. */
 .product-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-bottom: 40px; }
 
-.product-card { background: #fff; border-radius: 12px; overflow: hidden; position: relative; border: 1px solid #f0f0f0; transition: box-shadow 0.2s, transform 0.15s; }
-.product-card:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.08); transform: translateY(-2px); }
-
-/* Badges */
-.pcard-badge-pop { position: absolute; top: 12px; left: 12px; z-index: 2; background: var(--primary-green); color: #fff; font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 4px; letter-spacing: 0.5px; }
-.pcard-badge-coa { position: absolute; top: 12px; right: 12px; z-index: 2; background: #e6f7ee; color: var(--primary-green); font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 4px; }
-/* Dynamic tag badges — stack horizontally at top-left */
-.pcard-badge-dynamic { position: absolute; top: 12px; z-index: 2; background: var(--primary-green); color: #fff; font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 4px; letter-spacing: 0.5px; display: inline-block; }
-.pcard-badge-dynamic:first-of-type { left: 12px; }
-.pcard-badge-dynamic:nth-of-type(2) { left: 12px; top: 34px; }
-.pcard-badge-dynamic:nth-of-type(3) { left: 12px; top: 56px; }
-.pcard-badge-dynamic:nth-of-type(n+4) { display: none; }
-
-/* Image area — also works as <a> tag for clickable card */
-.pcard-img-wrap { position: relative; background: var(--bg-navy); height: 200px; display: flex; align-items: center; justify-content: center; text-decoration: none; cursor: pointer; }
-.pcard-img-wrap img { max-width: 80%; max-height: 80%; object-fit: contain; }
-.pcard-wishlist { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.35); background: transparent; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; transition: all 0.2s; }
-.pcard-wishlist:hover { border-color: var(--primary-green); color: var(--primary-green); background: rgba(0,166,81,0.1); }
-
-/* Card body */
-.pcard-body { padding: 16px; }
-.pcard-name { font-family: "Figtree",sans-serif; font-size: 15px; font-weight: 700; color: #1a1a2e; margin: 0 0 4px; }
-.pcard-desc { font-size: 12px; color: #888; margin: 0 0 12px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-
-/* Variants / SKU buttons */
-.pcard-variants { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
-.pcard-var { padding: 6px 14px; border: 1px solid #ddd; border-radius: 6px; font-size: 11px; font-weight: 600; color: #666; cursor: pointer; background: #fff; transition: all 0.15s; }
-.pcard-var:hover { border-color: var(--primary-green); color: var(--primary-green); }
-.pcard-var.active { border-color: var(--primary-green); color: var(--primary-green); background: #e6f7ee; }
-
-/* Price + Add row */
-.pcard-bottom { display: flex; align-items: flex-end; justify-content: space-between; }
-.pcard-price-label { font-size: 10px; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px; }
-.pcard-price { font-size: 22px; font-weight: 800; color: #1a1a2e; }
-.pcard-add { padding: 8px 18px; background: var(--primary-green); color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: background 0.2s; }
-.pcard-add:hover { background: #008c44; }
-.pcard-shipping { text-align: center; font-size: 10px; color: #bbb; margin-top: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+/* Empty state when a category has no products */
+.catalog-empty { text-align: center; padding: 60px 20px; color: var(--text-muted, #64748b); }
+.catalog-empty h3 { font-family: "Figtree",sans-serif; font-weight: 800; font-size: 20px; color: var(--text-dark, #1e293b); margin: 0 0 8px; }
+.catalog-empty p { font-size: 14px; margin: 0 0 18px; }
+.catalog-empty a { display: inline-block; padding: 10px 24px; background: var(--primary-green); color: #fff; border-radius: 6px; font-weight: 700; font-size: 13px; text-decoration: none; }
 
 /* ═══════ BLOCK 5: Pagination ═══════ */
 .pagination-bar { display: flex; justify-content: center; gap: 8px; margin-top: 40px; }
@@ -90,8 +61,12 @@
     <p class="catalog-breadcrumb">
       <a href="{{ home }}">Home</a> // <a href="index.php?route=product/category&path=59">THE CATALOG</a>
     </p>
-    <h1 class="catalog-title">EVERY COMPOUND, EVERY COA.</h1>
+    <h1 class="catalog-title">{{ heading_title is defined and heading_title ? heading_title : 'EVERY COMPOUND, EVERY COA.' }}</h1>
+    {% if description %}
+    <p class="catalog-subtitle">{{ description|striptags }}</p>
+    {% else %}
     <p class="catalog-subtitle">Premium research-grade peptides, third-party tested and documented to the batch. Every purchase includes a Certificate of Analysis with batch-specific HPLC data.</p>
+    {% endif %}
 
     <div class="catalog-search">
       <i class="fa-solid fa-magnifying-glass"></i>
@@ -107,7 +82,7 @@
         <a href="#" class="filter-pill">SUPPLIES</a>
       </div>
       <div class="filter-sort">
-        <span><strong>38</strong> COMPOUNDS</span>
+        <span><strong>{{ products is defined ? products|length : 0 }}</strong> COMPOUNDS</span>
         <select><option>SORT: POPULAR</option><option>PRICE: LOW-HIGH</option><option>PRICE: HIGH-LOW</option><option>NEWEST</option></select>
       </div>
     </div>
@@ -127,56 +102,18 @@
           {% include 'default/template/product/product_card.twig' with {'product': product} %}
         {% endfor %}
       {% else %}
-        {# --- Static demo cards when no products in DB --- #}
-        {% set demoProducts = [
-          {'name':'BPC-157','desc':'Third-party tested — 99% purity by HPLC. Full COA documentation included with every batch.','price':'$59.99','emoji':'💊'},
-          {'name':'TB-500','desc':'Tissue healing research peptide. HPLC verified at 99.4% purity. Batch-specific COA.','price':'$74.99','emoji':'🧬'},
-          {'name':'CJC-1295','desc':'Growth hormone secretagogue for metabolic research. 99% purity by HPLC analysis.','price':'$89.99','emoji':'🔬'},
-          {'name':'Ipamorelin','desc':'Selective GH secretagogue. Lab-verified at 99.2% purity with HPLC documentation.','price':'$64.99','emoji':'⚗️'},
-          {'name':'Semaglutide','desc':'GLP-1 receptor agonist. Research grade, 99% purity. Third-party tested.','price':'$129.99','emoji':'🧪'},
-          {'name':'Tirzepatide','desc':'Dual GIP/GLP-1 receptor agonist. Premium grade for metabolic studies.','price':'$149.99','emoji':'💉'},
-          {'name':'GHK-Cu','desc':'Copper peptide for tissue remodeling research. HPLC verified at 99% purity.','price':'$54.99','emoji':'🧫'},
-          {'name':'AOD-9604','desc':'Fragment peptide for fat metabolism research. Full COA with every order.','price':'$69.99','emoji':'⚡'}
-        ] %}
-        {% for p in demoProducts %}
-        <div class="product-card">
-          <span class="pcard-badge-pop" style="display:{{ loop.index <= 3 ? 'block' : 'none' }}">★ POPULAR</span>
-          <span class="pcard-badge-coa">✓ COA</span>
-          <a href="#" class="pcard-img-wrap">
-            <button class="pcard-wishlist" aria-label="Wishlist" onclick="event.preventDefault();event.stopPropagation();"><i class="fa-regular fa-heart"></i></button>
-            <span style="font-size:60px;">{{ p.emoji }}</span>
-          </a>
-          <div class="pcard-body">
-            <h3 class="pcard-name">{{ p.name }}</h3>
-            <p class="pcard-desc">{{ p.desc }}</p>
-            <div class="pcard-variants">
-              <span class="pcard-var active">5MG</span>
-              <span class="pcard-var">10MG</span>
-              <span class="pcard-var">25MG</span>
-            </div>
-            <div class="pcard-bottom">
-              <div>
-                <span class="pcard-price-label">STARTING FROM</span>
-                <p class="pcard-price">{{ p.price }}</p>
-              </div>
-              <button class="pcard-add"><i class="fa-solid fa-plus"></i> Add</button>
-            </div>
-            <p class="pcard-shipping">ships in &lt;24h</p>
-          </div>
+        <div class="catalog-empty" style="grid-column:1 / -1;">
+          <h3>No compounds found</h3>
+          <p>Products will appear here once they are added in 商品管理 (Product Management).</p>
+          <a href="{{ continue is defined ? continue : home }}">Continue browsing</a>
         </div>
-        {% endfor %}
       {% endif %}
     </div>
 
     <!-- ═══════ BLOCK 5: Pagination ═══════ -->
-    <div class="pagination-bar">
-      <a href="#">←</a>
-      <a href="#" class="active">1</a>
-      <a href="#">2</a>
-      <a href="#">3</a>
-      <a href="#">4</a>
-      <a href="#">→</a>
-    </div>
+    {% if pagination is defined and pagination %}
+    <div class="pagination-bar">{{ pagination|raw }}</div>
+    {% endif %}
 
   </div>
 </div>

@@ -82,9 +82,10 @@ header.scroll-header {
 .header-logo .logo-main-text {
   font-family: "Figtree", sans-serif;
   font-weight: 900;
-  font-size: 22px;
+  font-size: 19px;
   color: #ffffff;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
 }
 .header-logo .logo-tagline {
   font-family: "Figtree", sans-serif;
@@ -93,6 +94,7 @@ header.scroll-header {
   color: #22c55e;
   letter-spacing: 0.3px;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 /* ---- Main Navigation Links (center, horizontal, uppercase) ---- */

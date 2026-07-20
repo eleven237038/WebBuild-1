@@ -378,6 +378,58 @@ class ControllerProductProduct extends Controller {
 
 			$data['custom_tags'] = $this->model_catalog_product->getProductCustomTags($this->request->get['product_id']);
 
+			// ----- Specifications: fully DB-driven, mirrors 商品管理 fields -----
+			// Combines real product columns (system_column fields managed in
+			// 商品管理) with EAV custom_tag values, so the spec table updates
+			// automatically as 商品管理 content changes.
+			$data['specifications'] = array();
+
+			$spec_defs = array(
+				array('key' => 'model',        'label' => 'Model'),
+				array('key' => 'sku',         'label' => 'SKU'),
+				array('key' => 'upc',         'label' => 'UPC'),
+				array('key' => 'ean',         'label' => 'EAN'),
+				array('key' => 'jan',         'label' => 'JAN'),
+				array('key' => 'isbn',        'label' => 'ISBN'),
+				array('key' => 'mpn',         'label' => 'MPN'),
+				array('key' => 'location',    'label' => 'Location'),
+				array('key' => 'stock_status','label' => 'Stock Status'),
+				array('key' => 'manufacturer','label' => 'Manufacturer'),
+			);
+
+			foreach ($spec_defs as $def) {
+				if (isset($product_info[$def['key']]) && $product_info[$def['key']] !== '' && $product_info[$def['key']] !== null) {
+					$data['specifications'][] = array('label' => $def['label'], 'value' => $product_info[$def['key']]);
+				}
+			}
+
+			if (isset($product_info['weight']) && (float)$product_info['weight'] > 0) {
+				$data['specifications'][] = array('label' => 'Weight', 'value' => $product_info['weight'] . ' ' . (isset($product_info['weight_class']) ? $product_info['weight_class'] : ''));
+			}
+
+			if (isset($product_info['length']) && ((float)$product_info['length'] > 0 || (float)$product_info['width'] > 0 || (float)$product_info['height'] > 0)) {
+				$data['specifications'][] = array('label' => 'Dimensions (L×W×H)', 'value' => $product_info['length'] . ' × ' . $product_info['width'] . ' × ' . $product_info['height'] . ' ' . (isset($product_info['length_class']) ? $product_info['length_class'] : ''));
+			}
+
+			// EAV custom_tag values (admin 字段管理 custom fields with a saved value)
+			foreach ($data['custom_tags'] as $ct) {
+				if (isset($ct['value']) && $ct['value'] !== '') {
+					$label = (!empty($ct['parent_name'])) ? $ct['parent_name'] . ': ' . $ct['name'] : $ct['name'];
+					$data['specifications'][] = array('label' => $label, 'value' => $ct['value']);
+				}
+			}
+
+			// Product's primary category name (replaces hardcoded // PEPTIDES label)
+			$data['product_category'] = '';
+			$product_categories = $this->model_catalog_product->getCategories($this->request->get['product_id']);
+			if ($product_categories) {
+				$cat_info = $this->model_catalog_category->getCategory($product_categories[0]['category_id']);
+				if ($cat_info) {
+					$data['product_category'] = $cat_info['name'];
+				}
+			}
+
+
 			$data['products'] = array();
 
 			$results = $this->model_catalog_product->getProductRelated($this->request->get['product_id']);

@@ -1,6 +1,6 @@
 {{ header }}
 <!-- ==========================================================================
- *  LabCo Homepage — Modern Science-Backed Landing Page
+ *  InsightWellnessLab Homepage — Modern Science-Backed Landing Page
  *  10 Blocks: Hero → Stats → Bestsellers → Categories → Feature Compare
  *  → Reviews → Why Us Table → Education → FAQ → Money-Back Guarantee
  *  Brand Colors: Deep Navy var(--bg-navy) | Accent Green var(--primary-green)
@@ -38,14 +38,8 @@
 /* ═══════ BLOCK 3: Best Sellers Grid ═══════ */
 .section-title { font-family: "Figtree",sans-serif; font-weight: 800; font-size: 32px; margin: 0 0 40px; }
 .products-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
-.product-card { background: #fff; border-radius: 12px; overflow: hidden; border: 1px solid #eee; transition: box-shadow 0.2s; }
-.product-card:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.08); }
-.product-card-img { height: 200px; background: #f4f6f9; display: flex; align-items: center; justify-content: center; font-size: 60px; }
-.product-card-body { padding: 18px; }
-.product-card-body h3 { font-family: "Figtree",sans-serif; font-size: 15px; font-weight: 700; margin: 0 0 6px; }
-.product-card-body .purity { display: inline-block; background: #e6f7ee; color: var(--primary-green); font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px; margin-bottom: 8px; }
-.product-card-body .price { font-size: 20px; font-weight: 800; color: var(--bg-navy); margin: 0 0 12px; }
-.btn-add-cart { display: block; width: 100%; padding: 10px 0; background: var(--primary-green); color: #fff; border: none; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer; text-align: center; }
+/* Card markup (.product-card / .pcard-*) + styles live in shared product-card.css,
+   loaded via header.twig so homepage cards are identical to shop cards. */
 .btn-view-all { display: block; width: 100%; max-width: 360px; margin: 40px auto 0; padding: 14px 0; background: var(--primary-green); color: #fff; border: none; border-radius: 6px; font-weight: 700; font-size: 15px; cursor: pointer; text-align: center; text-decoration: none; }
 .trust-strip { display: flex; justify-content: center; gap: 60px; margin-top: 28px; }
 .trust-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #666; }
@@ -170,15 +164,7 @@
   <div class="home-wrap">
     <h2 class="section-title">BEST SELLERS — LAB VERIFIED THIS MONTH</h2>
     <div class="products-grid">
-      {% set homeProducts = [
-        {'product_id':'1','name':'BPC-157','price':'$59.99','emoji':'💊','href':'index.php?route=product/product&product_id=58','thumb':'','description':'Third-party tested — 99% purity by HPLC'},
-        {'product_id':'2','name':'TB-500','price':'$74.99','emoji':'🧬','href':'#','thumb':'','description':'Tissue healing research peptide. HPLC verified'},
-        {'product_id':'3','name':'CJC-1295','price':'$89.99','emoji':'🔬','href':'#','thumb':'','description':'Growth hormone secretagogue for metabolic research'},
-        {'product_id':'4','name':'Ipamorelin','price':'$64.99','emoji':'⚗️','href':'#','thumb':'','description':'Selective GH secretagogue. Lab-verified'},
-        {'product_id':'5','name':'Semaglutide','price':'$129.99','emoji':'🧪','href':'#','thumb':'','description':'GLP-1 receptor agonist for metabolic studies'},
-        {'product_id':'6','name':'Tirzepatide','price':'$149.99','emoji':'💉','href':'#','thumb':'','description':'Dual GIP/GLP-1 agonist. Premium research grade'}
-      ] %}
-      {% for product in homeProducts %}
+      {% for product in products %}
         {% include 'default/template/product/product_card.twig' with {'product': product} %}
       {% endfor %}
     </div>
@@ -222,8 +208,10 @@
         </ul>
       </div>
       <div style="display:flex;justify-content:center;">
-        {% set featured_product = {'product_id':'58','name':'BPC-157','price':'$59.99','emoji':'🧪','href':'index.php?route=product/product&product_id=58','thumb':'','description':'SKU: BPC-157-5MG — HPLC verified 99.4% purity'} %}
-        {% include 'default/template/product/product_card.twig' with {'product': featured_product} %}
+        {% set featured_product = products|first %}
+      {% if featured_product %}
+      {% include 'default/template/product/product_card.twig' with {'product': featured_product} %}
+      {% endif %}
       </div>
     </div>
   </div>
@@ -290,7 +278,7 @@
         <p>Peptide purity is determined through High-Performance Liquid Chromatography (HPLC), the gold standard in analytical chemistry. This method separates compounds based on their molecular properties, allowing precise quantification of the target peptide versus impurities. A purity level of 99% means that out of every 100 molecules, 99 are the intended compound — a standard that exceeds typical industry benchmarks.</p>
       </div>
       <div>
-        <p>Mass spectrometry (MS) complements HPLC by confirming molecular weight and structural integrity. Together, HPLC and MS form a complete analytical framework that ensures researchers receive exactly what they ordered. At LabCo, every batch is independently verified and documented before release.</p>
+        <p>Mass spectrometry (MS) complements HPLC by confirming molecular weight and structural integrity. Together, HPLC and MS form a complete analytical framework that ensures researchers receive exactly what they ordered. At InsightWellnessLab, every batch is independently verified and documented before release.</p>
         <p>Proper storage conditions — typically lyophilized powder at -20°C — preserve peptide integrity for long-term stability. Always consult the included COA for batch-specific handling recommendations.</p>
       </div>
     </div>
@@ -314,7 +302,7 @@
       </details>
       <details>
         <summary>Are your products for human consumption?</summary>
-        <div class="faq-answer">No. All products sold by LabCo are strictly for laboratory research and analytical purposes only. They are not intended for human or veterinary use. By purchasing, you certify that you are a qualified researcher affiliated with an accredited institution.</div>
+        <div class="faq-answer">No. All products sold by InsightWellnessLab are strictly for laboratory research and analytical purposes only. They are not intended for human or veterinary use. By purchasing, you certify that you are a qualified researcher affiliated with an accredited institution.</div>
       </details>
       <details>
         <summary>Do you ship internationally?</summary>

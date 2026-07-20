@@ -150,7 +150,7 @@
 
       <!-- Right: Product Info & Purchase -->
       <div class="pdp-info">
-        <p class="pdp-cat">// PEPTIDES</p>
+        <p class="pdp-cat">// {{ product_category is defined and product_category ? product_category|upper : 'PRODUCT' }}</p>
         <h1 class="pdp-title">{{ heading_title }}</h1>
 
         <div class="pdp-tags">
@@ -226,21 +226,11 @@
         <p>Premium research-grade compound. Third-party HPLC tested with batch-specific Certificate of Analysis. Each order includes full documentation for complete traceability.</p>
         {% endif %}
 
-        {% if custom_tags is defined and custom_tags is not empty %}
+        {% if specifications is defined and specifications is not empty %}
         <table class="pdp-spec-table" style="margin-top:20px;">
-          {% for ct in custom_tags %}
-          {% if ct.value %}
-          <tr><th>{{ ct.name }}</th><td>{{ ct.value }}</td></tr>
-          {% endif %}
+          {% for spec in specifications %}
+          <tr><th>{{ spec.label }}</th><td>{{ spec.value }}</td></tr>
           {% endfor %}
-        </table>
-        {% else %}
-        <table class="pdp-spec-table" style="margin-top:20px;">
-          <tr><th>CAS Number</th><td>137525-51-0</td></tr>
-          <tr><th>Molecular Formula</th><td>C<sub>62</sub>H<sub>98</sub>N<sub>16</sub>O<sub>22</sub></td></tr>
-          <tr><th>Molecular Weight</th><td>1419.6 g/mol</td></tr>
-          <tr><th>Purity</th><td>≥99% (HPLC)</td></tr>
-          <tr><th>Storage</th><td>-20°C, lyophilized</td></tr>
         </table>
         {% endif %}
       </div>

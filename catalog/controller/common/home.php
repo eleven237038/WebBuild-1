@@ -10,52 +10,31 @@ class ControllerCommonHome extends Controller {
 			$this->document->addLink($this->config->get('config_url'), 'canonical');
 		}
 
-		// ----- Dynamic Products for Homepage Service Cards -----
+		// ----- Dynamic Products for Homepage (real DB, same builder as shop) -----
+		// Mirrors product/category: handleSingleProduct() + getProductCustomTags()
+		// so homepage cards are byte-identical to shop cards (markup, CSS, data).
+		// Surfaces show_on_homepage=1 rows first, then fills with other active
+		// products, so the grid never empties as long as >=1 product is active.
 		$this->load->model('catalog/product');
 		$this->load->model('tool/image');
 
 		$data['products'] = array();
 
-		// Direct query: pick ONE language row per product (first available)
-		$query = $this->db->query("
-			SELECT p.product_id, pd.name, pd.description, p.image
-			FROM " . DB_PREFIX . "product p
-			JOIN " . DB_PREFIX . "product_description pd
-				ON (p.product_id = pd.product_id)
-			WHERE p.status = '1'
-				  AND p.show_on_homepage = 1
-				  AND p.date_available <= NOW()
-			  AND pd.description IS NOT NULL AND pd.description != ''
-			
-			ORDER BY p.sort_order ASC
-			LIMIT 8
-		");
+		$limit = 8;
 
-		foreach ($query->rows as $result) {
-			// Aggressively strip all HTML — strip_tags + regex fallback
-			$desc = $result['description'];
-			$desc = preg_replace('/<style[^>]*>.*?<\/style>/is', '', $desc);
-			$desc = preg_replace('/<script[^>]*>.*?<\/script>/is', '', $desc);
-			$desc = strip_tags($desc);
-			$desc = preg_replace('/&nbsp;|&amp;|&lt;|&gt;|&quot;|&#?\w+;/', ' ', $desc);
-			$desc = html_entity_decode($desc, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-			// Normalize whitespace
-			$desc = preg_replace('/\s+/', ' ', trim($desc));
+		$query = $this->db->query("SELECT p.product_id FROM " . DB_PREFIX . "product p LEFT JOIN " . DB_PREFIX . "product_to_store p2s ON (p.product_id = p2s.product_id) LEFT JOIN " . DB_PREFIX . "product_description pd ON (p.product_id = pd.product_id) WHERE p.status = '1' AND p.date_available <= NOW() AND p2s.store_id = '" . (int)$this->config->get('config_store_id') . "' AND pd.language_id = '" . (int)$this->config->get('config_language_id') . "' GROUP BY p.product_id ORDER BY p.show_on_homepage DESC, p.sort_order ASC, p.date_added DESC LIMIT " . (int)$limit);
 
-			// Truncate to ~150 chars without cutting words
-			if (mb_strlen($desc) > 150) {
-				$desc = mb_substr($desc, 0, 147) . '...';
+		$thumb_w = $this->config->get('theme_' . $this->config->get('config_theme') . '_image_product_width') ?: 228;
+		$thumb_h = $this->config->get('theme_' . $this->config->get('config_theme') . '_image_product_height') ?: 200;
+
+		foreach ($query->rows as $row) {
+			$pid = (int)$row['product_id'];
+			$product = $this->model_catalog_product->getProduct($pid);
+
+			if ($product) {
+				$href = $this->url->link('product/product', 'product_id=' . $pid);
+				$data['products'][] = $this->model_catalog_product->handleSingleProduct($product, $thumb_w, $thumb_h, $href) + array('custom_tags' => $this->model_catalog_product->getProductCustomTags($pid));
 			}
-
-			$data['products'][] = array(
-				'product_id'  => $result['product_id'],
-				'name'        => $result['name'],
-				'description' => $desc,
-				'image'       => $result['image']
-					? $this->model_tool_image->resize($result['image'], 80, 80)
-					: '',
-				'href'        => $this->url->link('product/product', 'product_id=' . $result['product_id']),
-			);
 		}
 
 		$data['column_left']    = $this->load->controller('common/column_left');
