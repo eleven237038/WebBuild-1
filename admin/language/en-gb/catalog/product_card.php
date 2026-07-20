@@ -1,6 +1,6 @@
 <?php
 // Heading
-$_['heading_title']     = 'Product Card Management';
+$_['heading_title']     = 'Product Card Settings';
 
 // Text
 $_['text_home']         = 'Home';

@@ -183,12 +183,18 @@ var wpTagNav = (function($) {
         });
       },
       childTagItems: function() {
+        // 注: 用 .nextAll('.tag-item').first() 而非 .next('.tag-item')。
+        // jQuery UI sortable 在 start 回调触发 *之前* 已把占位符(.tag-placeholder)
+        // 插到被拖项紧后方, 此时被拖项的 immediate next 是占位符而非 .tag-item,
+        // .next('.tag-item') 只匹配紧邻兄弟 -> 返回空 -> 子字段无法随父字段移动
+        // (父字段单独移走、子字段原地孤立). nextAll+first 跳过占位符取下一个真实字段,
+        // 对无占位符的键盘/折叠场景等价 (紧邻即 .tag-item 时取同一项).
         var result = $();
         this.each(function() {
-          var t = $(this), depth = t.tagItemDepth(), n = t.next('.tag-item');
+          var t = $(this), depth = t.tagItemDepth(), n = t.nextAll('.tag-item').first();
           while (n.length && n.tagItemDepth() > depth) {
             result = result.add(n);
-            n = n.next('.tag-item');
+            n = n.nextAll('.tag-item').first();
           }
         });
         return result;

@@ -1,6 +1,6 @@
 <?php
 // Heading
-$_['heading_title']     = '商品详情页管理';
+$_['heading_title']     = '商品详情页设置';
 
 // Text
 $_['text_home']         = '主页';

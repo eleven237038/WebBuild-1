@@ -16,16 +16,8 @@ class ControllerCommonColumnLeft extends Controller {
 				'children' => array()
 			);
 
-				// 商品管理 — 精简至两个核心入口
+				// 商品目录子菜单顺序: 字段管理 / 商品管理 / 商品卡片设置 / 商品详情页设置
 		$catalog = array();
-
-		if ($this->user->hasPermission('access', 'catalog/product')) {
-			$catalog[] = array(
-				'name'     => '商品管理',
-				'href'     => $this->url->link('catalog/product', 'user_token=' . $this->session->data['user_token']),
-				'children' => array()
-			);
-		}
 
 		if ($this->user->hasPermission('access', 'catalog/custom_tag')) {
 			$catalog[] = array(
@@ -35,9 +27,17 @@ class ControllerCommonColumnLeft extends Controller {
 			);
 		}
 
+		if ($this->user->hasPermission('access', 'catalog/product')) {
+			$catalog[] = array(
+				'name'     => '商品管理',
+				'href'     => $this->url->link('catalog/product', 'user_token=' . $this->session->data['user_token']),
+				'children' => array()
+			);
+		}
+
 		if ($this->user->hasPermission('access', 'catalog/product_card')) {
 			$catalog[] = array(
-				'name'     => '商品卡片管理',
+				'name'     => '商品卡片设置',
 				'href'     => $this->url->link('catalog/product_card', 'user_token=' . $this->session->data['user_token']),
 				'children' => array()
 			);
@@ -45,7 +45,7 @@ class ControllerCommonColumnLeft extends Controller {
 
 		if ($this->user->hasPermission('access', 'catalog/product_detail')) {
 			$catalog[] = array(
-				'name'     => '商品详情页管理',
+				'name'     => '商品详情页设置',
 				'href'     => $this->url->link('catalog/product_detail', 'user_token=' . $this->session->data['user_token']),
 				'children' => array()
 			);

@@ -1,6 +1,6 @@
 <?php
 // Heading
-$_['heading_title']     = '商品卡片管理';
+$_['heading_title']     = '商品卡片设置';
 
 // Text
 $_['text_home']         = '主页';

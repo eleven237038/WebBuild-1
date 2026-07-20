@@ -1,6 +1,6 @@
 <?php
 // Heading
-$_['heading_title']     = 'Product Detail Page Management';
+$_['heading_title']     = 'Product Detail Page Settings';
 
 // Text
 $_['text_home']         = 'Home';
