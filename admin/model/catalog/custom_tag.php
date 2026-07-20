@@ -8,7 +8,7 @@ class ModelCatalogCustomTag extends Model {
 		$it  = $this->db->escape((string)($data['input_type'] ?? ''));
 		$dl  = $this->db->escape((string)($data['display_label'] ?? ''));
 		$ic  = (int)($data['is_core'] ?? 0);
-		$this->db->query("INSERT INTO " . DB_PREFIX . "custom_tag SET parent_id = '" . (int)($data['parent_id'] ?? 0) . "', name = '" . $this->db->escape($data['name']) . "', field_type = '" . $ft . "', tag_type = '" . $tt . "', is_required = '" . $ir . "', system_column = '" . $sc . "', input_type = '" . $it . "', display_label = '" . $dl . "', is_core = '" . $ic . "', sort_order = '" . (int)($data['sort_order'] ?? 0) . "', status = '" . (int)($data['status'] ?? 1) . "', date_added = NOW(), date_modified = NOW()");
+		$this->db->query("INSERT INTO " . DB_PREFIX . "custom_tag SET parent_id = '" . (int)($data['parent_id'] ?? 0) . "', name = '" . $this->db->escape($data['name']) . "', field_type = '" . $ft . "', tag_type = '" . $tt . "', is_required = '" . $ir . "', system_column = '" . $sc . "', input_type = '" . $it . "', display_label = '" . $dl . "', is_core = '" . $ic . "', sort_order = '" . (int)($data['sort_order'] ?? 0) . "', status = '" . (int)($data['status'] ?? 1) . "', show_in_list = '" . (int)($data['show_in_list'] ?? 0) . "', date_added = NOW(), date_modified = NOW()");
 		return $this->db->getLastId();
 	}
 
@@ -31,7 +31,7 @@ class ModelCatalogCustomTag extends Model {
 		}
 		$sort_order = (int)($data['sort_order'] ?? $existing['sort_order']);
 		$status     = (int)($data['status'] ?? $existing['status']);
-		$this->db->query("UPDATE " . DB_PREFIX . "custom_tag SET parent_id = '" . $parent_id . "', name = '" . $name . "', field_type = '" . $ft . "', tag_type = '" . $tt . "', is_required = '" . $ir . "', system_column = '" . $sc . "', input_type = '" . $it . "', display_label = '" . $dl . "', is_core = '" . $ic . "', sort_order = '" . $sort_order . "', status = '" . $status . "', date_modified = NOW() WHERE tag_id = '" . (int)$tag_id . "'");
+		$this->db->query("UPDATE " . DB_PREFIX . "custom_tag SET parent_id = '" . $parent_id . "', name = '" . $name . "', field_type = '" . $ft . "', tag_type = '" . $tt . "', is_required = '" . $ir . "', system_column = '" . $sc . "', input_type = '" . $it . "', display_label = '" . $dl . "', is_core = '" . $ic . "', sort_order = '" . $sort_order . "', status = '" . $status . "', show_in_list = '" . (int)($data['show_in_list'] ?? 0) . "', date_modified = NOW() WHERE tag_id = '" . (int)$tag_id . "'");
 	}
 
 	public function deleteTag($tag_id) {
@@ -65,18 +65,17 @@ class ModelCatalogCustomTag extends Model {
 		return in_array((int)$parent_id, $this->getDescendantIds((int)$tag_id));
 	}
 
-	// 供编辑表单父字段下拉。最大层级 1: 父字段只能是顶级 (parent_id=0) 字段,
-	// 故仅返回顶级字段 (排除自身及其后代, 后代本就非顶级, 此处双保险)。
+	// 供编辑表单父字段下拉。最大层级 4: 父字段可为任意非自身后代字段,
+	// 返回全部字段 (排除自身及其后代防成环), 按 depth 缩进前缀体现层级。
 	public function getParentOptions($exclude_tag_id = 0) {
 		$exclude = $exclude_tag_id ? $this->getDescendantIds((int)$exclude_tag_id) : array();
 		$exclude[] = (int)$exclude_tag_id;
 		$options = array();
-		$query = $this->db->query("SELECT tag_id, name FROM " . DB_PREFIX . "custom_tag WHERE parent_id = '0' ORDER BY sort_order ASC");
-		foreach ($query->rows as $row) {
+		foreach ($this->getCustomTagFlat() as $row) {
 			if (in_array((int)$row['tag_id'], $exclude)) { continue; }
 			$options[] = array(
 				'tag_id' => $row['tag_id'],
-				'name'   => $row['name'],
+				'name'   => str_repeat('　', (int)$row['depth']) . $row['name'],
 			);
 		}
 		return $options;
@@ -98,7 +97,7 @@ class ModelCatalogCustomTag extends Model {
 				$depth  = (int)($node['depth'] ?? 0);
 				if (!$tag_id) { continue; }
 				if ($depth < 0) { $depth = 0; }
-				if ($depth > 1) { $depth = 1; }   // 全局上限 1 级: 禁止孙字段
+				if ($depth > 4) { $depth = 4; }   // 全局上限 4 级: 最多 4 层子字段
 				$parent = ($depth <= 0) ? 0 : (isset($stack[$depth - 1]) ? $stack[$depth - 1] : 0);
 				$this->db->query("UPDATE " . DB_PREFIX . "custom_tag SET parent_id = '" . (int)$parent . "', sort_order = '" . (int)$sort . "', date_modified = NOW() WHERE tag_id = '" . $tag_id . "'");
 				$stack[$depth] = $tag_id;

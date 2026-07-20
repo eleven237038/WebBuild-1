@@ -1,0 +1,153 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="submit" form="form-product-detail" data-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary"><i class="fa fa-save"></i> {{ button_save }}</button>
+        <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default"><i class="fa fa-reply"></i> {{ button_cancel }}</a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}<button type="button" class="close" data-dismiss="alert">&times;</button></div>
+    {% endif %}
+    {% if success %}
+    <div class="alert alert-success"><i class="fa fa-check-circle"></i> {{ success }}<button type="button" class="close" data-dismiss="alert">&times;</button></div>
+    {% endif %}
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-file-text-o"></i> {{ text_form }}</h3>
+      </div>
+      <div class="panel-body">
+        <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-product-detail" class="form-horizontal">
+
+          <legend>{{ text_section_toggle }}</legend>
+          <div class="form-group">
+            <label class="col-sm-2 control-label">{{ entry_product_detail_show_breadcrumb }}</label>
+            <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_detail_show_breadcrumb" value="1" {{ product_detail_show_breadcrumb == 1 or product_detail_show_breadcrumb == '1' ? 'checked' }}/> {{ entry_product_detail_show_breadcrumb }}</label></div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label">{{ entry_product_detail_show_gallery }}</label>
+            <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_detail_show_gallery" value="1" {{ product_detail_show_gallery == 1 or product_detail_show_gallery == '1' ? 'checked' }}/> {{ entry_product_detail_show_gallery }}</label></div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label">{{ entry_product_detail_show_badges }}</label>
+            <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_detail_show_badges" value="1" {{ product_detail_show_badges == 1 or product_detail_show_badges == '1' ? 'checked' }}/> {{ entry_product_detail_show_badges }}</label></div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label">{{ entry_product_detail_show_trust_box }}</label>
+            <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_detail_show_trust_box" value="1" {{ product_detail_show_trust_box == 1 or product_detail_show_trust_box == '1' ? 'checked' }}/> {{ entry_product_detail_show_trust_box }}</label></div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label">{{ entry_product_detail_show_tabs }}</label>
+            <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_detail_show_tabs" value="1" {{ product_detail_show_tabs == 1 or product_detail_show_tabs == '1' ? 'checked' }}/> {{ entry_product_detail_show_tabs }}</label></div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label">{{ entry_product_detail_show_related }}</label>
+            <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_detail_show_related" value="1" {{ product_detail_show_related == 1 or product_detail_show_related == '1' ? 'checked' }}/> {{ entry_product_detail_show_related }}</label></div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label">{{ entry_product_detail_show_research }}</label>
+            <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_detail_show_research" value="1" {{ product_detail_show_research == 1 or product_detail_show_research == '1' ? 'checked' }}/> {{ entry_product_detail_show_research }}</label></div>
+          </div>
+
+          <legend>{{ text_section_size }}</legend>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-title-fs">{{ entry_product_detail_title_font_size }}</label>
+            <div class="col-sm-10"><input type="number" name="product_detail_title_font_size" value="{{ product_detail_title_font_size }}" id="input-title-fs" class="form-control" style="max-width:200px;"></div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-body-fs">{{ entry_product_detail_body_font_size }}</label>
+            <div class="col-sm-10"><input type="number" name="product_detail_body_font_size" value="{{ product_detail_body_font_size }}" id="input-body-fs" class="form-control" style="max-width:200px;"></div>
+          </div>
+
+          <legend>{{ text_section_text }}</legend>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-coa-badge">{{ entry_product_detail_coa_badge_text }}</label>
+            <div class="col-sm-10"><input type="text" name="product_detail_coa_badge_text" value="{{ product_detail_coa_badge_text }}" id="input-coa-badge" class="form-control" style="max-width:300px;"></div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-batch-verified">{{ entry_product_detail_batch_verified_text }}</label>
+            <div class="col-sm-10"><input type="text" name="product_detail_batch_verified_text" value="{{ product_detail_batch_verified_text }}" id="input-batch-verified" class="form-control" style="max-width:300px;"></div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-tab-details-label">{{ entry_product_detail_tab_details_label }}</label>
+            <div class="col-sm-10"><input type="text" name="product_detail_tab_details_label" value="{{ product_detail_tab_details_label }}" id="input-tab-details-label" class="form-control" style="max-width:300px;"></div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-tab-coa-label">{{ entry_product_detail_tab_coa_label }}</label>
+            <div class="col-sm-10"><input type="text" name="product_detail_tab_coa_label" value="{{ product_detail_tab_coa_label }}" id="input-tab-coa-label" class="form-control" style="max-width:300px;"></div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-tab-shipping-label">{{ entry_product_detail_tab_shipping_label }}</label>
+            <div class="col-sm-10"><input type="text" name="product_detail_tab_shipping_label" value="{{ product_detail_tab_shipping_label }}" id="input-tab-shipping-label" class="form-control" style="max-width:300px;"></div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-tab-details-body">{{ entry_product_detail_tab_details_body }}</label>
+            <div class="col-sm-10"><textarea name="product_detail_tab_details_body" rows="3" id="input-tab-details-body" class="form-control">{{ product_detail_tab_details_body }}</textarea></div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-tab-coa-body">{{ entry_product_detail_tab_coa_body }}</label>
+            <div class="col-sm-10"><textarea name="product_detail_tab_coa_body" rows="4" id="input-tab-coa-body" class="form-control">{{ product_detail_tab_coa_body }}</textarea></div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-tab-shipping-body">{{ entry_product_detail_tab_shipping_body }}</label>
+            <div class="col-sm-10"><textarea name="product_detail_tab_shipping_body" rows="4" id="input-tab-shipping-body" class="form-control">{{ product_detail_tab_shipping_body }}</textarea></div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-trust-1">{{ entry_product_detail_trust_item_1 }}</label>
+            <div class="col-sm-10"><input type="text" name="product_detail_trust_item_1" value="{{ product_detail_trust_item_1 }}" id="input-trust-1" class="form-control" style="max-width:400px;"></div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-trust-2">{{ entry_product_detail_trust_item_2 }}</label>
+            <div class="col-sm-10"><input type="text" name="product_detail_trust_item_2" value="{{ product_detail_trust_item_2 }}" id="input-trust-2" class="form-control" style="max-width:400px;"></div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-trust-3">{{ entry_product_detail_trust_item_3 }}</label>
+            <div class="col-sm-10"><input type="text" name="product_detail_trust_item_3" value="{{ product_detail_trust_item_3 }}" id="input-trust-3" class="form-control" style="max-width:400px;"></div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-related-title">{{ entry_product_detail_related_title }}</label>
+            <div class="col-sm-10"><input type="text" name="product_detail_related_title" value="{{ product_detail_related_title }}" id="input-related-title" class="form-control" style="max-width:300px;"></div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-research-title">{{ entry_product_detail_research_title }}</label>
+            <div class="col-sm-10"><input type="text" name="product_detail_research_title" value="{{ product_detail_research_title }}" id="input-research-title" class="form-control" style="max-width:300px;"></div>
+          </div>
+
+          {% for i in 1..4 %}
+          <div class="form-group">
+            <label class="col-sm-2 control-label">研究链接 {{ i }}</label>
+            <div class="col-sm-10">
+              <div class="row">
+                <div class="col-sm-6"><input type="text" name="product_detail_research_link_{{ i }}_label" value="{{ _context['product_detail_research_link_' ~ i ~ '_label'] }}" class="form-control" placeholder="文字"></div>
+                <div class="col-sm-6"><input type="text" name="product_detail_research_link_{{ i }}_url" value="{{ _context['product_detail_research_link_' ~ i ~ '_url'] }}" class="form-control" placeholder="地址"></div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+
+          <legend>{{ text_section_color }}</legend>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-pdp-primary">{{ entry_product_detail_primary_color }}</label>
+            <div class="col-sm-10"><input type="color" name="product_detail_primary_color" value="{{ product_detail_primary_color }}" id="input-pdp-primary" class="form-control" style="max-width:80px;height:38px;padding:2px;"></div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-pdp-navy">{{ entry_product_detail_bg_navy }}</label>
+            <div class="col-sm-10"><input type="color" name="product_detail_bg_navy" value="{{ product_detail_bg_navy }}" id="input-pdp-navy" class="form-control" style="max-width:80px;height:38px;padding:2px;"></div>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{{ footer }}

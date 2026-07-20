@@ -193,6 +193,8 @@ class ControllerCatalogProduct extends Controller {
 
 	protected function getList() {
 		$this->document->addScript('view/javascript/jquery/switch/bootstrap-switch.min.js');
+		$this->document->addScript('view/javascript/jquery/jquery-ui/jquery-ui.min.js');
+		$this->document->addStyle('view/javascript/jquery/jquery-ui/jquery-ui.min.css');
 
 		// ── 自定义字段筛选 (filter_cf): session 持久化, cf_apply 时同步, 全新进入则清空 ──
 		$fresh_nav = !isset($this->request->get['sort'])
@@ -304,6 +306,23 @@ class ControllerCatalogProduct extends Controller {
 			);
 		}
 
+		// 可配置列表列: show_in_list=1 的字段 (排除已在表格硬编码的 name/model/price/quantity/status)
+		$hardcoded_cols = array('name', 'model', 'price', 'quantity', 'status');
+		$list_tags = array();
+		foreach ($cf_tag_map as $tid => $t) {
+			if (empty($t['show_in_list']) || empty($t['status'])) { continue; }
+			if (in_array($t['system_column'], $hardcoded_cols, true)) { continue; }
+			$list_tags[$tid] = $t;
+		}
+		$data['list_columns'] = array();
+		foreach ($list_tags as $tid => $t) {
+			$data['list_columns'][] = array(
+				'tag_id'        => $tid,
+				'system_column' => $t['system_column'],
+				'name'          => !empty($t['display_label']) ? $t['display_label'] : $t['name'],
+			);
+		}
+
 		$filter_cf_model = array();
 		$filter_cf_rows  = array();
 		foreach ($filter_cf as $tid => $val) {
@@ -341,6 +360,27 @@ class ControllerCatalogProduct extends Controller {
 
 		$results = $this->model_catalog_product->getProducts($filter_data);
 
+		// 批量取 EAV 列表列的值; 预载 stock_status 名称映射 (system_column=stock_status_id 时用)
+		$list_eav_tag_ids = array();
+		foreach ($list_tags as $tid => $t) {
+			if ($t['system_column'] === '') { $list_eav_tag_ids[] = $tid; }
+		}
+		$cf_values_map = array();
+		if ($results && $list_eav_tag_ids) {
+			$_pids = array();
+			foreach ($results as $r) { $_pids[] = (int)$r['product_id']; }
+			$cf_values_map = $this->model_catalog_product->getProductsTagValues($_pids, $list_eav_tag_ids);
+		}
+		$stock_status_map = array();
+		$need_stock = false;
+		foreach ($list_tags as $t) { if ($t['system_column'] == 'stock_status_id') { $need_stock = true; break; } }
+		if ($need_stock) {
+			$this->load->model('localisation/stock_status');
+			foreach ($this->model_localisation_stock_status->getStockStatuses() as $ss) {
+				$stock_status_map[(int)$ss['stock_status_id']] = $ss['name'];
+			}
+		}
+
 		foreach ($results as $result) {
 			if (is_file(DIR_IMAGE . $result['image'])) {
 				$image = $this->model_tool_image->resize($result['image'], 40, 40);
@@ -360,6 +400,20 @@ class ControllerCatalogProduct extends Controller {
 				}
 			}
 
+			$cf_cols = array();
+			foreach ($list_tags as $tid => $t) {
+				$col = $t['system_column'];
+				if ($col === '') {
+					$cf_cols[$tid] = isset($cf_values_map[(int)$result['product_id']][$tid]) ? $cf_values_map[(int)$result['product_id']][$tid] : '';
+				} elseif ($col == 'stock_status_id') {
+					$cf_cols[$tid] = isset($stock_status_map[(int)$result['stock_status_id']]) ? $stock_status_map[(int)$result['stock_status_id']] : '';
+				} elseif (in_array($col, array('subtract', 'shipping'), true)) {
+					$cf_cols[$tid] = $result[$col] ? '是' : '否';
+				} else {
+					$cf_cols[$tid] = isset($result[$col]) ? $result[$col] : '';
+				}
+			}
+
 			$data['products'][] = array(
 				'product_id' => $result['product_id'],
 				'image'      => $image,
@@ -370,7 +424,8 @@ class ControllerCatalogProduct extends Controller {
 				'quantity'   => $result['quantity'],
 				'status'     => $result['status'],
 				'view'       => $this->front_url->link('product/product', "product_id={$result['product_id']}"),
-				'edit'       => $this->url->link('catalog/product/edit', 'user_token=' . $this->session->data['user_token'] . '&product_id=' . $result['product_id'] . $url)
+				'edit'       => $this->url->link('catalog/product/edit', 'user_token=' . $this->session->data['user_token'] . '&product_id=' . $result['product_id'] . $url),
+				'cf_cols'    => $cf_cols
 			);
 		}
 
@@ -735,13 +790,6 @@ class ControllerCatalogProduct extends Controller {
 			$data['show_on_homepage'] = $product_info['show_on_homepage'];
 		} else {
 			$data['show_on_homepage'] = 0;
-		}
-
-		// Preview URL
-		if (!empty($product_info)) {
-			$data['preview_url'] = HTTP_CATALOG . 'index.php?route=product/product&product_id=' . (int)$product_info['product_id'];
-		} else {
-			$data['preview_url'] = '';
 		}
 
 		// Custom Tags — hierarchical tree + core field config

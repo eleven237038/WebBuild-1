@@ -503,6 +503,26 @@ class ModelCatalogProduct extends Model {
 		}
 	}
 
+	public function getCardConfig() {
+		static $cache = null;
+		if ($cache === null) {
+			$this->load->model('setting/setting');
+			$s = $this->model_setting_setting->getSetting('product_card', 0);
+			$defaults = array(
+				'show_image' => 1, 'show_name' => 1, 'show_description' => 1, 'show_price' => 1,
+				'show_wishlist' => 1, 'show_badges' => 1, 'show_add_button' => 1,
+				'image_height' => 200, 'desc_length' => 100, 'desc_clamp' => 2,
+				'name_font_size' => 15, 'price_font_size' => 22, 'add_btn_text' => '+',
+			);
+			$cache = array();
+			foreach ($defaults as $k => $v) {
+				$key = 'product_card_' . $k;
+				$cache[$k] = array_key_exists($key, $s) ? $s[$key] : $v;
+			}
+		}
+		return $cache;
+	}
+
 	public function handleSingleProduct($product, $thumb_width = 100, $thumb_height = 100, $href = null) {
 		$this->load->model('tool/image');
 		$image = $this->model_tool_image->resize($product['image'], $thumb_width, $thumb_height);
@@ -541,7 +561,8 @@ class ModelCatalogProduct extends Model {
 			'tax'         => $tax,
 			'minimum'     => $product['minimum'] ?: 1,
 			'rating'      => $rating,
-			'href'        => $href ?: $this->url->link('product/product', 'product_id=' . $product['product_id'])
+			'href'        => $href ?: $this->url->link('product/product', 'product_id=' . $product['product_id']),
+			'pcards'       => $this->getCardConfig()
 		);
 	}
 

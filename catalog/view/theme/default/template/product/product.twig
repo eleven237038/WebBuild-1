@@ -1,10 +1,11 @@
 {{ header }}
 <!-- ==========================================================================
- *  GenScript — Product Detail Page (PDP) — Modern 3-Block Layout
+ *  GenScript - Product Detail Page (PDP) - Modern 3-Block Layout
  *  Block 1: Buy Area (Gallery + Info + Options + Trust)
  *  Block 2: Detail Tabs (Description / COA / Shipping)
  *  Block 3: Related Products + Research Library
- *  Brand: --bg-navy #0F172A | --primary-green #10B981
+ *  Appearance configurable from admin > 商品目录 > 商品详情页管理.
+ *  Colors via --pdp-primary / --pdp-bg-navy (injected globally by header.twig).
  * ========================================================================== -->
 <style>
 /* ═══════ Page wrapper ═══════ */
@@ -13,27 +14,27 @@
 
 /* ═══════ Breadcrumb ═══════ */
 .pdp-breadcrumb { font-size: 12px; color: #999; padding: 16px 0 0; }
-.pdp-breadcrumb a { color: var(--primary-green, #10B981); text-decoration: none; }
+.pdp-breadcrumb a { color: var(--pdp-primary, #10B981); text-decoration: none; }
 
 /* ═══════ BLOCK 1: Buy Area (flex 2-column) ═══════ */
 .pdp-buy { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; padding: 32px 0 60px; }
 
 /* --- Left: Image Gallery --- */
 .pdp-gallery { }
-.pdp-main-img { position: relative; background: var(--bg-navy, #0F172A); border-radius: 12px; overflow: hidden; aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center; }
+.pdp-main-img { position: relative; background: var(--pdp-bg-navy, #0F172A); border-radius: 12px; overflow: hidden; aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center; }
 .pdp-main-img img { max-width: 85%; max-height: 85%; object-fit: contain; }
-.pdp-main-img .pdp-badge { position: absolute; top: 16px; left: 16px; background: var(--primary-green, #10B981); color: #fff; font-size: 11px; font-weight: 700; padding: 6px 14px; border-radius: 4px; letter-spacing: 0.5px; }
+.pdp-main-img .pdp-badge { position: absolute; top: 16px; left: 16px; background: var(--pdp-primary, #10B981); color: #fff; font-size: 11px; font-weight: 700; padding: 6px 14px; border-radius: 4px; letter-spacing: 0.5px; }
 .pdp-thumbs { display: flex; gap: 10px; margin-top: 14px; }
 .pdp-thumb { width: 72px; height: 72px; border: 2px solid #eee; border-radius: 8px; cursor: pointer; overflow: hidden; transition: border-color 0.2s; }
-.pdp-thumb:hover, .pdp-thumb.active { border-color: var(--primary-green, #10B981); }
+.pdp-thumb:hover, .pdp-thumb.active { border-color: var(--pdp-primary, #10B981); }
 .pdp-thumb img { width: 100%; height: 100%; object-fit: cover; }
 
 /* --- Right: Product Info & Buy Panel --- */
 .pdp-info { }
-.pdp-cat { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--primary-green, #10B981); margin: 0 0 8px; }
-.pdp-title { font-family: "Figtree",sans-serif; font-weight: 900; font-size: 38px; color: var(--bg-navy, #0F172A); margin: 0 0 14px; line-height: 1.15; }
+.pdp-cat { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--pdp-primary, #10B981); margin: 0 0 8px; }
+.pdp-title { font-family: "Figtree",sans-serif; font-weight: 900; font-size: 38px; color: var(--pdp-bg-navy, #0F172A); margin: 0 0 14px; line-height: 1.15; }
 .pdp-tags { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
-.pdp-tag { display: inline-block; padding: 5px 14px; background: #ecfdf5; color: var(--primary-green, #10B981); font-size: 11px; font-weight: 700; border-radius: 16px; letter-spacing: 0.5px; }
+.pdp-tag { display: inline-block; padding: 5px 14px; background: #ecfdf5; color: var(--pdp-primary, #10B981); font-size: 11px; font-weight: 700; border-radius: 16px; letter-spacing: 0.5px; }
 .pdp-desc { font-size: 14.5px; color: #555; line-height: 1.65; margin: 0 0 22px; }
 
 /* --- Options (SKU blocks) --- */
@@ -41,31 +42,31 @@
 .pdp-option-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #aaa; margin-bottom: 8px; }
 .pdp-option-row { display: flex; gap: 10px; flex-wrap: wrap; }
 .pdp-sku { padding: 10px 22px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 13px; font-weight: 700; color: #333; cursor: pointer; background: #fff; transition: all 0.15s; }
-.pdp-sku:hover { border-color: var(--primary-green, #10B981); }
-.pdp-sku.active { border-color: var(--primary-green, #10B981); color: var(--primary-green, #10B981); background: #ecfdf5; }
+.pdp-sku:hover { border-color: var(--pdp-primary, #10B981); }
+.pdp-sku.active { border-color: var(--pdp-primary, #10B981); color: var(--pdp-primary, #10B981); background: #ecfdf5; }
 
 /* --- Price row --- */
-.pdp-price { font-family: "Figtree",sans-serif; font-size: 34px; font-weight: 900; color: var(--bg-navy, #0F172A); margin: 18px 0 10px; }
+.pdp-price { font-family: "Figtree",sans-serif; font-size: 34px; font-weight: 900; color: var(--pdp-bg-navy, #0F172A); margin: 18px 0 10px; }
 .pdp-price span.old { font-size: 18px; color: #aaa; text-decoration: line-through; font-weight: 500; margin-left: 10px; }
 
 /* --- Quantity + Add to Cart --- */
 .pdp-qty-row { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
 .pdp-qty { width: 52px; height: 48px; text-align: center; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 15px; font-weight: 700; outline: none; }
 .pdp-qty-btn { width: 40px; height: 48px; border: 1px solid #e0e0e0; border-radius: 8px; background: #fff; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #555; }
-.pdp-add-btn { flex: 1; height: 48px; background: var(--primary-green, #10B981); color: #fff; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; max-width: 280px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s; }
+.pdp-add-btn { flex: 1; height: 48px; background: var(--pdp-primary, #10B981); color: #fff; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; max-width: 280px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s; }
 .pdp-add-btn:hover { background: #059669; }
 
 /* --- Trust box --- */
 .pdp-trust { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px 20px; }
 .pdp-trust li { list-style: none; padding: 5px 0; font-size: 13px; color: #555; display: flex; align-items: center; gap: 8px; }
-.pdp-trust li i { color: var(--primary-green, #10B981); font-size: 15px; }
+.pdp-trust li i { color: var(--pdp-primary, #10B981); font-size: 15px; }
 
 /* ═══════ BLOCK 2: Detail Tabs ═══════ */
 .pdp-tabs-section { padding: 0; border-top: 1px solid #e5e7eb; }
 .pdp-tab-nav { display: flex; gap: 0; border-bottom: 1px solid #e5e7eb; }
 .pdp-tab-link { padding: 14px 24px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #999; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -1px; transition: all 0.15s; background: none; border-top: none; border-left: none; border-right: none; }
 .pdp-tab-link:hover { color: #333; }
-.pdp-tab-link.active { color: var(--bg-navy, #0F172A); border-bottom-color: var(--primary-green, #10B981); }
+.pdp-tab-link.active { color: var(--pdp-bg-navy, #0F172A); border-bottom-color: var(--pdp-primary, #10B981); }
 .pdp-tab-panel { display: none; padding: 28px 0 48px; animation: pdpFadeIn 0.25s ease; }
 .pdp-tab-panel.active { display: block; }
 .pdp-tab-panel p { font-size: 14px; color: #555; line-height: 1.7; }
@@ -73,28 +74,32 @@
 /* Spec table */
 .pdp-spec-table { width: 100%; max-width: 500px; border-collapse: collapse; }
 .pdp-spec-table th { text-align: left; font-size: 12px; color: #999; font-weight: 500; padding: 8px 0; width: 40%; }
-.pdp-spec-table td { font-size: 13px; color: var(--bg-navy, #0F172A); font-weight: 700; padding: 8px 0; }
+.pdp-spec-table td { font-size: 13px; color: var(--pdp-bg-navy, #0F172A); font-weight: 700; padding: 8px 0; }
 
 @keyframes pdpFadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
 /* ═══════ BLOCK 3: Related + Research ═══════ */
 .pdp-section { padding: 50px 0; border-top: 1px solid #e5e7eb; }
-.pdp-section-tag { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--primary-green, #10B981); margin: 0 0 6px; }
-.pdp-section-title { font-family: "Figtree",sans-serif; font-weight: 900; font-size: 28px; color: var(--bg-navy, #0F172A); margin: 0 0 28px; text-transform: uppercase; }
+.pdp-section-tag { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--pdp-primary, #10B981); margin: 0 0 6px; }
+.pdp-section-title { font-family: "Figtree",sans-serif; font-weight: 900; font-size: 28px; color: var(--pdp-bg-navy, #0F172A); margin: 0 0 28px; text-transform: uppercase; }
 
-/* Related grid — 4 cols */
+/* Related grid - 4 cols */
 .pdp-related-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
 .pdp-related-card { background: #fff; border: 1px solid #f0f0f0; border-radius: 10px; overflow: hidden; transition: box-shadow 0.2s; }
 .pdp-related-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.06); }
-.pdp-related-card .img-wrap { background: var(--bg-navy, #0F172A); height: 160px; display: flex; align-items: center; justify-content: center; font-size: 48px; }
+.pdp-related-card .img-wrap { background: var(--pdp-bg-navy, #0F172A); height: 160px; display: flex; align-items: center; justify-content: center; font-size: 48px; }
 .pdp-related-card .body { padding: 14px; }
-.pdp-related-card .body h3 { font-size: 14px; font-weight: 700; color: var(--bg-navy, #0F172A); margin: 0 0 4px; }
-.pdp-related-card .body .price { font-size: 18px; font-weight: 800; color: var(--bg-navy, #0F172A); }
+.pdp-related-card .body h3 { font-size: 14px; font-weight: 700; color: var(--pdp-bg-navy, #0F172A); margin: 0 0 4px; }
+.pdp-related-card .body .price { font-size: 18px; font-weight: 800; color: var(--pdp-bg-navy, #0F172A); }
 
 /* Research links */
 .pdp-research-list { }
-.pdp-research-item { display: block; padding: 12px 0; font-size: 15px; font-weight: 700; color: var(--bg-navy, #0F172A); text-decoration: none; border-bottom: 1px solid #f0f0f0; transition: color 0.15s; }
-.pdp-research-item:hover { color: var(--primary-green, #10B981); }
+.pdp-research-item { display: block; padding: 12px 0; font-size: 15px; font-weight: 700; color: var(--pdp-bg-navy, #0F172A); text-decoration: none; border-bottom: 1px solid #f0f0f0; transition: color 0.15s; }
+.pdp-research-item:hover { color: var(--pdp-primary, #10B981); }
+
+/* ═══════ Config-driven overrides (商品详情页管理) ═══════ */
+.pdp-title { font-size: {{ pdp.title_font_size|default(38) }}px; }
+.pdp-tab-panel p, .pdp-desc { font-size: {{ pdp.body_font_size|default(15) }}px; }
 
 /* ═══════ Responsive ═══════ */
 @media (max-width: 1024px) {
@@ -118,16 +123,19 @@
     BLOCK 1: Buy Area
     ════════════════════════════════════════════════════════ -->
   <div class="pdp-wrap">
+    {% if pdp.show_breadcrumb %}
     <p class="pdp-breadcrumb">
       <a href="{{ home }}">HOME</a> / <a href="index.php?route=product/category&path=59">SHOP</a> / <span>{{ heading_title }}</span>
     </p>
+    {% endif %}
 
     <div class="pdp-buy">
 
       <!-- Left: Image Gallery -->
+      {% if pdp.show_gallery %}
       <div class="pdp-gallery">
         <div class="pdp-main-img">
-          <span class="pdp-badge">★ COA ON FILE</span>
+          {% if pdp.show_badges %}<span class="pdp-badge">{{ pdp.coa_badge_text }}</span>{% endif %}
           {% if images %}
             {% set first_img = images|first %}
             <img src="{{ first_img.thumb }}" alt="{{ heading_title }}" id="pdp-main-image">
@@ -147,6 +155,7 @@
         </div>
         {% endif %}
       </div>
+      {% endif %}
 
       <!-- Right: Product Info & Purchase -->
       <div class="pdp-info">
@@ -154,7 +163,7 @@
         <h1 class="pdp-title">{{ heading_title }}</h1>
 
         <div class="pdp-tags">
-          <span class="pdp-tag">BATCH-VERIFIED</span>
+          {% if pdp.show_badges %}<span class="pdp-tag">{{ pdp.batch_verified_text }}</span>{% endif %}
           <span class="pdp-tag">{{ stock is defined ? stock : 'IN STOCK' }}</span>
           {% if manufacturer %}
           <span class="pdp-tag">{{ manufacturer }}</span>
@@ -198,11 +207,13 @@
         </div>
 
         <!-- Trust Box -->
+        {% if pdp.show_trust_box %}
         <ul class="pdp-trust">
-          <li><i class="fa-solid fa-circle-check"></i> 30-day lab-verified guarantee</li>
-          <li><i class="fa-solid fa-circle-check"></i> Free shipping over $150</li>
-          <li><i class="fa-solid fa-circle-check"></i> Certificate of Analysis included</li>
+          {% if pdp.trust_item_1 %}<li><i class="fa-solid fa-circle-check"></i> {{ pdp.trust_item_1 }}</li>{% endif %}
+          {% if pdp.trust_item_2 %}<li><i class="fa-solid fa-circle-check"></i> {{ pdp.trust_item_2 }}</li>{% endif %}
+          {% if pdp.trust_item_3 %}<li><i class="fa-solid fa-circle-check"></i> {{ pdp.trust_item_3 }}</li>{% endif %}
         </ul>
+        {% endif %}
       </div>
 
     </div>
@@ -211,19 +222,20 @@
   <!-- ════════════════════════════════════════════════════════
     BLOCK 2: Detail Tabs
     ════════════════════════════════════════════════════════ -->
+  {% if pdp.show_tabs %}
   <div class="pdp-tabs-section">
     <div class="pdp-wrap">
       <nav class="pdp-tab-nav" id="pdp-tab-nav">
-        <button class="pdp-tab-link active" data-tab="tab-details">DETAILS</button>
-        <button class="pdp-tab-link" data-tab="tab-coa">CERTIFICATE OF ANALYSIS</button>
-        <button class="pdp-tab-link" data-tab="tab-shipping">SHIPPING &amp; RETURNS</button>
+        <button class="pdp-tab-link active" data-tab="tab-details">{{ pdp.tab_details_label }}</button>
+        <button class="pdp-tab-link" data-tab="tab-coa">{{ pdp.tab_coa_label }}</button>
+        <button class="pdp-tab-link" data-tab="tab-shipping">{{ pdp.tab_shipping_label }}</button>
       </nav>
 
       <div class="pdp-tab-panel active" id="tab-details">
         {% if description %}
         <div>{{ description }}</div>
         {% else %}
-        <p>Premium research-grade compound. Third-party HPLC tested with batch-specific Certificate of Analysis. Each order includes full documentation for complete traceability.</p>
+        <p>{{ pdp.tab_details_body }}</p>
         {% endif %}
 
         {% if specifications is defined and specifications is not empty %}
@@ -236,25 +248,24 @@
       </div>
 
       <div class="pdp-tab-panel" id="tab-coa">
-        <p>Every batch of this compound undergoes independent third-party High-Performance Liquid Chromatography (HPLC) and Mass Spectrometry (MS) verification. A Certificate of Analysis (COA) is included with every order, documenting batch-specific purity data, molecular weight confirmation, and analytical methodology.</p>
-        <p style="margin-top:12px;">To request a specific batch COA, <a href="index.php?route=information/contact" style="color:var(--primary-green, #10B981);">contact our support team</a> with your order number.</p>
+        <p>{{ pdp.tab_coa_body|nl2br }}</p>
       </div>
 
       <div class="pdp-tab-panel" id="tab-shipping">
-        <p>Orders placed before 2 PM EST ship same business day via express courier with temperature-controlled packaging. Domestic delivery typically arrives within 2-3 business days. International orders ship within 24 hours and arrive in 5-10 business days depending on customs clearance.</p>
-        <p style="margin-top:12px;">Returns accepted within 30 days for unopened products. If a product does not meet stated purity specifications, a full refund is issued upon verification.</p>
+        <p>{{ pdp.tab_shipping_body|nl2br }}</p>
       </div>
     </div>
   </div>
+  {% endif %}
 
   <!-- ════════════════════════════════════════════════════════
     BLOCK 3: Related Products + Research Library
     ════════════════════════════════════════════════════════ -->
-  {% if products is defined and products is not empty %}
+  {% if pdp.show_related and products is defined and products is not empty %}
   <div class="pdp-section">
     <div class="pdp-wrap">
       <p class="pdp-section-tag">// RELATED</p>
-      <h2 class="pdp-section-title">MORE COMPOUNDS</h2>
+      <h2 class="pdp-section-title">{{ pdp.related_title }}</h2>
       <div class="pdp-related-grid">
         {% for product in products %}
           {% include 'default/template/product/product_card.twig' with {'product': product} %}
@@ -264,18 +275,19 @@
   </div>
   {% endif %}
 
+  {% if pdp.show_research %}
   <div class="pdp-section" style="border-top:1px solid #e5e7eb;">
     <div class="pdp-wrap">
       <p class="pdp-section-tag">// RESEARCH</p>
-      <h2 class="pdp-section-title">RESEARCH LIBRARY</h2>
+      <h2 class="pdp-section-title">{{ pdp.research_title }}</h2>
       <div class="pdp-research-list">
-        <a href="#" class="pdp-research-item">The Complete Guide to HPLC Testing for Research Peptides</a>
-        <a href="#" class="pdp-research-item">Understanding Mass Spectrometry for Peptide Verification</a>
-        <a href="#" class="pdp-research-item">Cold-Chain Logistics: Best Practices for Peptide Storage</a>
-        <a href="#" class="pdp-research-item">Endotoxin Testing in Peptide Research: Why It Matters</a>
+        {% for rl in pdp.research_links %}
+          {% if rl.label %}<a href="{{ rl.url }}" class="pdp-research-item">{{ rl.label }}</a>{% endif %}
+        {% endfor %}
       </div>
     </div>
   </div>
+  {% endif %}
 
 </div>
 
@@ -328,7 +340,7 @@
       var url = 'index.php?route=checkout/cart/add&product_id=' + pid + '&quantity=' + qty;
       options.forEach(function(oid, i) { url += '&option[' + i + ']=' + oid; });
 
-      // OpenCart default method — trigger native cart.add
+      // OpenCart default method - trigger native cart.add
       if (typeof cart !== 'undefined' && cart.add) {
         cart.add(pid, qty);
       } else {

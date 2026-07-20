@@ -7,7 +7,7 @@
  *    1. 扁平 DOM: 所有字段为 #tag-menu 下的同级 <li>, 层级 = margin-left/30px
  *       (depthToPx/pxToDepth), 并挂 .tag-depth-N 类。
  *    2. jQuery UI sortable (helper:'original'), 拖动时鼠标 X 实时决定深度。
- *    3. 深度约束: minDepth=下一项深度, maxDepth=上一项深度+1, 且全局上限 1 级 (禁止孙字段)。
+ *    3. 深度约束: minDepth=下一项深度, maxDepth=上一项深度+1, 且全局上限 4 级 (最多 4 层子字段)。
  *    4. 子字段跟随: start 时把子字段移入 .tag-transport, 并执行 WordPress 的
  *       "tempHolder margin-top 吸收 + sortable('refresh')" 技巧, 让 jQuery UI
  *       在子字段离开列表后重新计算, 避免占位符错位/抖动 (旧实现漏掉的关键)。
@@ -150,7 +150,7 @@ var wpTagNav = (function($) {
 
   api.options = {
     menuItemDepthPerLevel: 30,   // 每级缩进像素 (勿直接用, 走 depthToPx/pxToDepth)
-    globalMaxDepth: 1,           // 最大层级 1: 子字段仅比父字段低 1 级, 禁止孙字段 (depth>=2)
+    globalMaxDepth: 4,           // 最大层级 4: 最多 4 层子字段 (父->子->孙->曾孙->曾曾孙, depth 0..4)
     sortableItems: '> .tag-item:not(.tag-hidden)',
     targetTolerance: 0
   };

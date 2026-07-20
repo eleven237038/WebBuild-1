@@ -96,6 +96,7 @@ class ControllerCatalogCustomTag extends Controller {
 		if (isset($this->request->post['is_required'])) { $data['is_required'] = $this->request->post['is_required']; } elseif (!empty($tag_info)) { $data['is_required'] = $tag_info['is_required']; } else { $data['is_required'] = 0; }
 		if (isset($this->request->post['display_label'])) { $data['display_label'] = $this->request->post['display_label']; } elseif (!empty($tag_info)) { $data['display_label'] = $tag_info['display_label']; } else { $data['display_label'] = ''; }
 		if (isset($this->request->post['status']))      { $data['status']      = $this->request->post['status'];      } elseif (!empty($tag_info)) { $data['status']      = $tag_info['status'];      } else { $data['status'] = 1; }
+		if (isset($this->request->post['show_in_list'])) { $data['show_in_list'] = $this->request->post['show_in_list']; } elseif (!empty($tag_info)) { $data['show_in_list'] = $tag_info['show_in_list']; } else { $data['show_in_list'] = 0; }
 		if (isset($this->request->post['parent_id']))   { $data['parent_id']   = $this->request->post['parent_id'];   } elseif (!empty($tag_info)) { $data['parent_id']   = $tag_info['parent_id'];   } else { $data['parent_id'] = 0; }
 
 		$data['parent_options'] = $this->model_catalog_custom_tag->getParentOptions($tag_id);

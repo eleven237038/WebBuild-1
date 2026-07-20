@@ -1,0 +1,109 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="submit" form="form-product-card" data-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary"><i class="fa fa-save"></i> {{ button_save }}</button>
+        <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default"><i class="fa fa-reply"></i> {{ button_cancel }}</a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}<button type="button" class="close" data-dismiss="alert">&times;</button></div>
+    {% endif %}
+    {% if success %}
+    <div class="alert alert-success"><i class="fa fa-check-circle"></i> {{ success }}<button type="button" class="close" data-dismiss="alert">&times;</button></div>
+    {% endif %}
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-id-card-o"></i> {{ text_form }}</h3>
+      </div>
+      <div class="panel-body">
+        <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-product-card" class="form-horizontal">
+
+          <legend>{{ text_section_toggle }}</legend>
+          <div class="form-group">
+            <label class="col-sm-2 control-label">{{ entry_product_card_show_image }}</label>
+            <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_card_show_image" value="1" {{ product_card_show_image == 1 or product_card_show_image == '1' ? 'checked' }}/> {{ entry_product_card_show_image }}</label></div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label">{{ entry_product_card_show_name }}</label>
+            <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_card_show_name" value="1" {{ product_card_show_name == 1 or product_card_show_name == '1' ? 'checked' }}/> {{ entry_product_card_show_name }}</label></div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label">{{ entry_product_card_show_description }}</label>
+            <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_card_show_description" value="1" {{ product_card_show_description == 1 or product_card_show_description == '1' ? 'checked' }}/> {{ entry_product_card_show_description }}</label></div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label">{{ entry_product_card_show_price }}</label>
+            <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_card_show_price" value="1" {{ product_card_show_price == 1 or product_card_show_price == '1' ? 'checked' }}/> {{ entry_product_card_show_price }}</label></div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label">{{ entry_product_card_show_wishlist }}</label>
+            <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_card_show_wishlist" value="1" {{ product_card_show_wishlist == 1 or product_card_show_wishlist == '1' ? 'checked' }}/> {{ entry_product_card_show_wishlist }}</label></div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label">{{ entry_product_card_show_badges }}</label>
+            <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_card_show_badges" value="1" {{ product_card_show_badges == 1 or product_card_show_badges == '1' ? 'checked' }}/> {{ entry_product_card_show_badges }}</label></div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label">{{ entry_product_card_show_add_button }}</label>
+            <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_card_show_add_button" value="1" {{ product_card_show_add_button == 1 or product_card_show_add_button == '1' ? 'checked' }}/> {{ entry_product_card_show_add_button }}</label></div>
+          </div>
+
+          <legend>{{ text_section_size }}</legend>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-image-height">{{ entry_product_card_image_height }}</label>
+            <div class="col-sm-10"><input type="number" name="product_card_image_height" value="{{ product_card_image_height }}" id="input-image-height" class="form-control" style="max-width:200px;"></div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-desc-length">{{ entry_product_card_desc_length }}</label>
+            <div class="col-sm-10"><input type="number" name="product_card_desc_length" value="{{ product_card_desc_length }}" id="input-desc-length" class="form-control" style="max-width:200px;"></div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-desc-clamp">{{ entry_product_card_desc_clamp }}</label>
+            <div class="col-sm-10"><input type="number" name="product_card_desc_clamp" value="{{ product_card_desc_clamp }}" id="input-desc-clamp" class="form-control" style="max-width:200px;"></div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-name-fs">{{ entry_product_card_name_font_size }}</label>
+            <div class="col-sm-10"><input type="number" name="product_card_name_font_size" value="{{ product_card_name_font_size }}" id="input-name-fs" class="form-control" style="max-width:200px;"></div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-price-fs">{{ entry_product_card_price_font_size }}</label>
+            <div class="col-sm-10"><input type="number" name="product_card_price_font_size" value="{{ product_card_price_font_size }}" id="input-price-fs" class="form-control" style="max-width:200px;"></div>
+          </div>
+
+          <legend>{{ text_section_text }}</legend>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-add-btn">{{ entry_product_card_add_btn_text }}</label>
+            <div class="col-sm-10"><input type="text" name="product_card_add_btn_text" value="{{ product_card_add_btn_text }}" id="input-add-btn" class="form-control" style="max-width:200px;"></div>
+          </div>
+
+          <legend>{{ text_section_color }}</legend>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-primary-color">{{ entry_product_card_primary_color }}</label>
+            <div class="col-sm-10"><input type="color" name="product_card_primary_color" value="{{ product_card_primary_color }}" id="input-primary-color" class="form-control" style="max-width:80px;height:38px;padding:2px;"></div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-name-color">{{ entry_product_card_name_color }}</label>
+            <div class="col-sm-10"><input type="color" name="product_card_name_color" value="{{ product_card_name_color }}" id="input-name-color" class="form-control" style="max-width:80px;height:38px;padding:2px;"></div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-price-color">{{ entry_product_card_price_color }}</label>
+            <div class="col-sm-10"><input type="color" name="product_card_price_color" value="{{ product_card_price_color }}" id="input-price-color" class="form-control" style="max-width:80px;height:38px;padding:2px;"></div>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{{ footer }}

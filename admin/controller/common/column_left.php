@@ -35,6 +35,22 @@ class ControllerCommonColumnLeft extends Controller {
 			);
 		}
 
+		if ($this->user->hasPermission('access', 'catalog/product_card')) {
+			$catalog[] = array(
+				'name'     => '商品卡片管理',
+				'href'     => $this->url->link('catalog/product_card', 'user_token=' . $this->session->data['user_token']),
+				'children' => array()
+			);
+		}
+
+		if ($this->user->hasPermission('access', 'catalog/product_detail')) {
+			$catalog[] = array(
+				'name'     => '商品详情页管理',
+				'href'     => $this->url->link('catalog/product_detail', 'user_token=' . $this->session->data['user_token']),
+				'children' => array()
+			);
+		}
+
 		if ($catalog) {
 			$data['menus'][] = array(
 				'id'       => 'menu-catalog',

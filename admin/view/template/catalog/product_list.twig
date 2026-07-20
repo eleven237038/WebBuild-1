@@ -36,7 +36,6 @@
             <div class="row">
               <div class="col-sm-12">
                 <div class="form-group">
-                  <label class="control-label" style="margin-bottom:6px;">字段筛选</label>
                   <div id="cf-filter-rows">
                     {% for cf in filter_cf %}
                       <div class="cf-row form-inline" style="margin-bottom:6px;" data-tid="{{ cf.tag_id }}">
@@ -52,12 +51,7 @@
                     {% endfor %}
                   </div>
                   <div style="margin-top:4px;">
-                    <select id="cf-add-select" class="form-control" style="display:inline-block;width:280px;">
-                      <option value="">+ 添加筛选字段…</option>
-                      {% for t in cf_tags %}
-                        <option value="{{ t.tag_id }}" data-system="{{ t.system_column }}">{{ t.label }}</option>
-                      {% endfor %}
-                    </select>
+                    <input id="cf-add-input" type="text" class="form-control" placeholder="+ 添加筛选字段…" autocomplete="off" style="display:inline-block;width:280px;" />
                     <button type="button" id="button-filter" class="btn btn-primary"><i class="fa fa-filter"></i> {{ button_filter }}</button>
                   </div>
                 </div>
@@ -85,6 +79,9 @@
                       <td class="text-right">{% if sort == 'p.price' %}<a href="{{ sort_price }}" class="{{ order|lower }}">{{ column_price }}</a>{% else %}<a href="{{ sort_price }}">{{ column_price }}</a> {% endif %}</td>
                       <td class="text-right">{% if sort == 'p.quantity' %}<a href="{{ sort_quantity }}" class="{{ order|lower }}">{{ column_quantity }}</a>{% else %}<a href="{{ sort_quantity }}">{{ column_quantity }}</a> {% endif %}</td>
                       <td class="text-left">{% if sort == 'p.status' %}<a href="{{ sort_status }}" class="{{ order|lower }}">{{ column_status }}</a>{% else %}<a href="{{ sort_status }}">{{ column_status }}</a> {% endif %}</td>
+                      {% for col in list_columns %}
+                        <td class="text-left">{{ col.name }}</td>
+                      {% endfor %}
                       <td class="text-right">{{ column_action }}</td>
                     </tr>
                   </thead>
@@ -113,12 +110,15 @@
                           <td class="text-left">
                             <input type="checkbox" name="product-status-toggle" data-id="{{ product.product_id }}" {{ product.status ? 'checked' : '' }}>
                           </td>
+                          {% for col in list_columns %}
+                            <td class="text-left">{{ product.cf_cols[col.tag_id]|default('') }}</td>
+                          {% endfor %}
                           <td class="text-right"><a href="{{ product.edit }}" data-toggle="tooltip" title="{{ button_edit }}" class="btn btn-primary"><i class="fa fa-pencil"></i></a> <a href="{{ product.view }}" target="_blank" data-toggle="tooltip" title="{{ button_view }}" class="btn btn-default"><i class="fa fa-search"></i></a></td>
                         </tr>
                       {% endfor %}
                     {% else %}
                       <tr>
-                        <td class="text-center" colspan="9">{{ text_no_results }}</td>
+                        <td class="text-center" colspan="{{ (list_columns|length) + 9 }}">{{ text_no_results }}</td>
                       </tr>
                     {% endif %}
                   </tbody>
@@ -153,42 +153,54 @@ $('#button-filter').on('click', function() {
 });
 //--></script>
 <script type="text/javascript"><!--
-// 字段筛选: 添加/移除行, AJAX 取值
-$('#cf-add-select').on('change', function() {
-	var sel = $(this);
-	var tid = sel.val();
-	if (!tid) {
-		return;
-	}
-	if ($('#cf-filter-rows .cf-row[data-tid="' + tid + '"]').length) {
-		sel.val('');
-		return;
-	}
-	var label = sel.find('option:selected').text();
-	$.ajax({
-		url: 'index.php?route=catalog/product/cfValues&user_token={{ user_token }}&tag_id=' + tid,
-		dataType: 'json',
-		success: function(opts) {
-			var html = '<div class="cf-row form-inline" style="margin-bottom:6px;" data-tid="' + tid + '">' +
-				'<label class="cf-label" style="min-width:150px;">' + label + '</label> ' +
-				'<select name="filter_cf[' + tid + ']" class="form-control cf-val" style="width:260px;"><option value="">-- 全部 --</option>';
-			$.each(opts, function(i, o) {
-				html += '<option value="' + $('<div>').text(o.value).html() + '">' + $('<div>').text(o.text).html() + '</option>';
-			});
-			html += '</select> ' +
-				'<button type="button" class="btn btn-danger btn-xs cf-remove" data-tid="' + tid + '" title="移除"><i class="fa fa-times"></i></button>' +
-				'</div>';
-			$('#cf-filter-rows').append(html);
-		},
-		error: function() {
-			alert('取值失败,请重试');
-		}
-	});
-	sel.val('');
+// 字段筛选: 打字搜索添加 + 移除行, AJAX 取值
+window.cfTags = {{ cf_tags|json_encode|raw }};
+$('#cf-add-input').autocomplete({
+    minLength: 0,
+    source: function(request, response) {
+        var term = request.term.toLowerCase();
+        var list = $.map(window.cfTags, function(t) {
+            return { label: t.label, value: t.label, tag_id: t.tag_id };
+        });
+        list = $.grep(list, function(t) {
+            return t.label.toLowerCase().indexOf(term) > -1;
+        });
+        response(list);
+    },
+    select: function(event, ui) {
+        var tid = ui.item.tag_id;
+        var label = ui.item.label;
+        $(this).val('');
+        if (!tid || $('#cf-filter-rows .cf-row[data-tid="' + tid + '"]').length) {
+            return false;
+        }
+        $.ajax({
+            url: 'index.php?route=catalog/product/cfValues&user_token={{ user_token }}&tag_id=' + tid,
+            dataType: 'json',
+            success: function(opts) {
+                var html = '<div class="cf-row form-inline" style="margin-bottom:6px;" data-tid="' + tid + '">' +
+                    '<label class="cf-label" style="min-width:150px;">' + $('<div>').text(label).html() + '</label> ' +
+                    '<select name="filter_cf[' + tid + ']" class="form-control cf-val" style="width:260px;"><option value="">-- 全部 --</option>';
+                $.each(opts, function(i, o) {
+                    html += '<option value="' + $('<div>').text(o.value).html() + '">' + $('<div>').text(o.text).html() + '</option>';
+                });
+                html += '</select> ' +
+                    '<button type="button" class="btn btn-danger btn-xs cf-remove" data-tid="' + tid + '" title="移除"><i class="fa fa-times"></i></button>' +
+                    '</div>';
+                $('#cf-filter-rows').append(html);
+            },
+            error: function() {
+                alert('取值失败,请重试');
+            }
+        });
+        return false;
+    }
+}).focus(function() {
+    $(this).autocomplete('search', '');
 });
 
 $(document).on('click', '.cf-remove', function() {
-	$(this).closest('.cf-row').remove();
+    $(this).closest('.cf-row').remove();
 });
 //--></script>
 <script type="text/javascript"><!--

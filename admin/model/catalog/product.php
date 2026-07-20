@@ -757,6 +757,20 @@ class ModelCatalogProduct extends Model {
 		return $values;
 	}
 
+	public function getProductsTagValues($product_ids, $tag_ids) {
+		$out = array();
+		if (!$product_ids || !$tag_ids) {
+			return $out;
+		}
+		$pid_list = implode(',', array_map('intval', $product_ids));
+		$tid_list = implode(',', array_map('intval', $tag_ids));
+		$q = $this->db->query("SELECT product_id, tag_id, `value` FROM " . DB_PREFIX . "product_to_custom_tag WHERE product_id IN (" . $pid_list . ") AND tag_id IN (" . $tid_list . ")");
+		foreach ($q->rows as $r) {
+			$out[(int)$r['product_id']][(int)$r['tag_id']] = $r['value'];
+		}
+		return $out;
+	}
+
 	public function getTotalProductsByTaxClassId($tax_class_id) {
 		$query = $this->db->query("SELECT COUNT(*) AS total FROM " . DB_PREFIX . "product WHERE tax_class_id = '" . (int)$tax_class_id . "'");
 

@@ -14,6 +14,16 @@ class ControllerCommonHeader extends Controller {
 			}
 		}
 
+		// 商品卡片/详情页 配色 (oc_setting 仅 'config' 命名空间在启动时载入, 故主动读取)
+		$this->load->model('setting/setting');
+		$_pc = $this->model_setting_setting->getSetting('product_card', 0);
+		$_pd = $this->model_setting_setting->getSetting('product_detail', 0);
+		$data['pcard_primary_color'] = isset($_pc['product_card_primary_color']) ? $_pc['product_card_primary_color'] : '#10B981';
+		$data['pcard_name_color']    = isset($_pc['product_card_name_color'])    ? $_pc['product_card_name_color']    : '#0F172A';
+		$data['pcard_price_color']   = isset($_pc['product_card_price_color'])   ? $_pc['product_card_price_color']   : '#10B981';
+		$data['pdp_primary_color']   = isset($_pd['product_detail_primary_color']) ? $_pd['product_detail_primary_color'] : '#10B981';
+		$data['pdp_bg_navy']         = isset($_pd['product_detail_bg_navy'])       ? $_pd['product_detail_bg_navy']       : '#0F172A';
+
 		if (is_file(DIR_IMAGE . $this->config->get('config_icon'))) {
 			$this->document->addLink($this->config->get('config_url') . 'image/' . $this->config->get('config_icon'), 'icon');
 		}
