@@ -1003,6 +1003,7 @@ class ControllerCatalogProduct extends Controller {
 		$data['core_fields']   = array();
 		$data['system_fields'] = array();
 		$data['custom_fields'] = array();
+		$data['form_fields']   = array();
 		foreach ($all_tags as $t) {
 			if (!empty($t['system_column'])) {
 				// Attach picker options for known system select columns
@@ -1017,6 +1018,8 @@ class ControllerCatalogProduct extends Controller {
 			} else {
 				$data['custom_fields'][] = $t;
 			}
+			// 统一字段列表 (按 sort_order, 不区分系统/自定义), 供表单统一渲染
+			$data['form_fields'][] = $t;
 		}
 		if (isset($this->request->post['product_custom_tag'])) {
 			$data['product_custom_tag'] = $this->request->post['product_custom_tag'];

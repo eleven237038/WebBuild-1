@@ -8,7 +8,7 @@ class ControllerCatalogCustomTag extends Controller {
 			return;
 		}
 		$this->load->language('catalog/category');
-		$this->document->setTitle('自定义字段');
+		$this->document->setTitle('字段管理');
 		$this->load->model('catalog/custom_tag');
 		$this->getList();
 	}

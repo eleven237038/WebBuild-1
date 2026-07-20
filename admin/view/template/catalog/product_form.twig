@@ -40,11 +40,12 @@
           {# 整个表单内容完全由 custom_tag (自定义字段) 驱动, 按 sort_order 顺序渲染;
              添加商品 / 编辑商品 共用同一 getForm(), 已统一。原 General / Image 硬编码标签页已删除,
              其字段 (商品描述 / Meta / 标签 / 主图) 迁移为带 system_column 的 custom_tag 记录, 可拖拽排序。 #}
-          {% if system_fields is not empty %}
+          {# 统一渲染所有字段 (按 sort_order, 不区分系统/自定义): 有 system_column 走真实列, 否则走 EAV #}
+          {% if form_fields is not empty %}
             <fieldset>
-              <legend>系统字段</legend>
               {% set image_row = 0 %}
-              {% for field in system_fields %}
+              {% for field in form_fields %}
+                {% if field.system_column is not empty %}
                 {% if field.field_type == 'core_text_ml' %}
                   {# 多语言系统字段 (商品名称/描述/Meta标题/Meta描述/Meta关键字/商品标签):
                      修复"中英重复输入两次"bug: 详情页仅保留中文(zh-cn)输入框, 不再堆叠 en-gb。
@@ -112,15 +113,11 @@
                 {% else %}
                   {{ eav.renderField(field, _context[field.system_column] is defined ? _context[field.system_column] : '', field.system_column, product_images, field.system_column, eav_ui) }}
                 {% endif %}
-              {% endfor %}
-            </fieldset>
-          {% endif %}
-          {% if custom_fields is not empty %}
-            <fieldset>
-              <legend>自定义字段</legend>
-              {% for field in custom_fields %}
-                {% set pcv = product_custom_tag[field.tag_id] is defined ? product_custom_tag[field.tag_id].value : '' %}
-                {{ eav.renderField(field, pcv, 'product_custom_tag[' ~ field.tag_id ~ '][value]', [], 'cf_' ~ field.tag_id, eav_ui) }}
+                {% else %}
+                  {# 无 system_column: 走 product_to_custom_tag EAV #}
+                  {% set pcv = product_custom_tag[field.tag_id] is defined ? product_custom_tag[field.tag_id].value : '' %}
+                  {{ eav.renderField(field, pcv, 'product_custom_tag[' ~ field.tag_id ~ '][value]', [], 'cf_' ~ field.tag_id, eav_ui) }}
+                {% endif %}
               {% endfor %}
             </fieldset>
           {% endif %}

@@ -29,7 +29,7 @@ class ControllerCommonColumnLeft extends Controller {
 
 		if ($this->user->hasPermission('access', 'catalog/custom_tag')) {
 			$catalog[] = array(
-				'name'     => '自定义字段',
+				'name'     => '字段管理',
 				'href'     => $this->url->link('catalog/custom_tag', 'user_token=' . $this->session->data['user_token']),
 				'children' => array()
 			);
