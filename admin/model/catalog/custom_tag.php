@@ -65,25 +65,20 @@ class ModelCatalogCustomTag extends Model {
 		return in_array((int)$parent_id, $this->getDescendantIds((int)$tag_id));
 	}
 
-	// 供编辑表单父字段下拉:扁平+缩进,排除自身及后代
+	// 供编辑表单父字段下拉。最大层级 1: 父字段只能是顶级 (parent_id=0) 字段,
+	// 故仅返回顶级字段 (排除自身及其后代, 后代本就非顶级, 此处双保险)。
 	public function getParentOptions($exclude_tag_id = 0) {
 		$exclude = $exclude_tag_id ? $this->getDescendantIds((int)$exclude_tag_id) : array();
 		$exclude[] = (int)$exclude_tag_id;
-		$tree = $this->getCustomTagTree();
 		$options = array();
-		$walk = function($nodes, $depth) use (&$walk, &$options, $exclude) {
-			foreach ($nodes as $node) {
-				if (in_array((int)$node['tag_id'], $exclude)) { continue; }
-				$options[] = array(
-					'tag_id' => $node['tag_id'],
-					'name'   => str_repeat('　', $depth) . $node['name'],
-				);
-				if (!empty($node['children'])) {
-					$walk($node['children'], $depth + 1);
-				}
-			}
-		};
-		$walk($tree, 0);
+		$query = $this->db->query("SELECT tag_id, name FROM " . DB_PREFIX . "custom_tag WHERE parent_id = '0' ORDER BY sort_order ASC");
+		foreach ($query->rows as $row) {
+			if (in_array((int)$row['tag_id'], $exclude)) { continue; }
+			$options[] = array(
+				'tag_id' => $row['tag_id'],
+				'name'   => $row['name'],
+			);
+		}
 		return $options;
 	}
 
@@ -103,6 +98,7 @@ class ModelCatalogCustomTag extends Model {
 				$depth  = (int)($node['depth'] ?? 0);
 				if (!$tag_id) { continue; }
 				if ($depth < 0) { $depth = 0; }
+				if ($depth > 1) { $depth = 1; }   // 全局上限 1 级: 禁止孙字段
 				$parent = ($depth <= 0) ? 0 : (isset($stack[$depth - 1]) ? $stack[$depth - 1] : 0);
 				$this->db->query("UPDATE " . DB_PREFIX . "custom_tag SET parent_id = '" . (int)$parent . "', sort_order = '" . (int)$sort . "', date_modified = NOW() WHERE tag_id = '" . $tag_id . "'");
 				$stack[$depth] = $tag_id;

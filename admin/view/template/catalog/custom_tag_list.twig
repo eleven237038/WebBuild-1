@@ -7,7 +7,7 @@
  *    1. 扁平 DOM: 所有字段为 #tag-menu 下的同级 <li>, 层级 = margin-left/30px
  *       (depthToPx/pxToDepth), 并挂 .tag-depth-N 类。
  *    2. jQuery UI sortable (helper:'original'), 拖动时鼠标 X 实时决定深度。
- *    3. 深度约束: minDepth=下一项深度, maxDepth=上一项深度+1, 防止非法树。
+ *    3. 深度约束: minDepth=下一项深度, maxDepth=上一项深度+1, 且全局上限 1 级 (禁止孙字段)。
  *    4. 子字段跟随: start 时把子字段移入 .tag-transport, 并执行 WordPress 的
  *       "tempHolder margin-top 吸收 + sortable('refresh')" 技巧, 让 jQuery UI
  *       在子字段离开列表后重新计算, 避免占位符错位/抖动 (旧实现漏掉的关键)。
@@ -49,9 +49,8 @@
 
 .field-name { font-weight: 600; flex: 1; display: flex; align-items: center; gap: 6px; min-width: 0; }
 .field-meta { display: flex; gap: 4px; align-items: center; }
-.badge-type { font-size: 10px; background: #64748b; color: #fff; padding: 1px 6px; border-radius: 3px; }
+.badge-type { font-size: 11px; background: #64748b; color: #fff; padding: 2px 8px; border-radius: 3px; }
 .badge-required { font-size: 10px; background: #ef4444; color: #fff; padding: 1px 6px; border-radius: 3px; }
-.field-id { font-size: 10px; color: #aaa; }
 .field-actions { display: flex; gap: 6px; white-space: nowrap; align-items: center; }
 .field-actions .btn { font-size: 11px; padding: 2px 8px; }
 
@@ -83,7 +82,7 @@
       <div class="pull-right">
         <a href="{{ add }}" class="btn btn-primary btn-lg" style="margin-right:8px;"><i class="fa fa-plus"></i> 添加字段</a>
         <button onclick="saveTree()" class="btn btn-success btn-lg" id="btn-save-tree" style="margin-right:8px;"><i class="fa fa-save"></i> 保存排序</button>
-        <button type="button" onclick="deleteSelected()" class="btn btn-danger"><i class="fa fa-trash-o"></i> 批量删除</button>
+        <button type="button" onclick="deleteSelected()" class="btn btn-danger btn-lg"><i class="fa fa-trash-o"></i> 批量删除</button>
       </div>
       <h1>字段管理 (拖拽排序)</h1>
     </div>
@@ -118,7 +117,6 @@
                           <span class="badge-type" data-type="{{ field.tag_type }}">{{ field.tag_type }}</span>
                           {% if field.is_required == 1 %}<span class="badge-required">必填</span>{% endif %}
                         </span>
-                        <span class="field-id tag-nodrag">ID:{{ field.tag_id }}</span>
                         <a href="index.php?route=catalog/custom_tag/edit&user_token={{ user_token }}&tag_id={{ field.tag_id }}" class="btn btn-default btn-xs tag-nodrag" data-toggle="tooltip" title="编辑"><i class="fa fa-pencil"></i></a>
                         <button type="button" class="btn btn-danger btn-xs tag-nodrag" data-toggle="tooltip" title="删除" onclick="deleteField({{ field.tag_id }})"><i class="fa fa-trash"></i></button>
                       </span>
@@ -152,7 +150,7 @@ var wpTagNav = (function($) {
 
   api.options = {
     menuItemDepthPerLevel: 30,   // 每级缩进像素 (勿直接用, 走 depthToPx/pxToDepth)
-    globalMaxDepth: 11,          // 最大层级 (与 CSS 生成的 .tag-depth-0..11 对应)
+    globalMaxDepth: 1,           // 最大层级 1: 子字段仅比父字段低 1 级, 禁止孙字段 (depth>=2)
     sortableItems: '> .tag-item:not(.tag-hidden)',
     targetTolerance: 0
   };
