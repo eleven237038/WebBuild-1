@@ -302,47 +302,6 @@ a:hover, a:focus {
   }
 }
 
-
-.feature-pro-wrapper {
-  display: none;
-
-  .list {
-    margin-bottom: 10px;
-    border: 1px solid #e3e3e3;
-    padding: 10px;
-    transition: all 0.3s ease-out;
-    cursor: pointer;
-    &:hover {
-      border-color: #4748e0;
-    }
-
-    .title {
-      font-size: 16px;
-      margin-bottom: 8px;
-      color: #000;
-      text-overflow: ellipsis;
-      overflow: hidden;
-      white-space: nowrap;
-    }
-
-    .inner {
-      text-overflow: ellipsis;
-      overflow: hidden;
-      white-space: nowrap;
-    }
-  }
-}
-
-.pro-wrapper-img {
-  .layui-layer-content {
-    padding: 20px;
-
-    img {
-      max-width: 300px;
-    }
-  }
-}
-
 #header #header-logo .logo {
   padding: 11px 0 0 0;
 

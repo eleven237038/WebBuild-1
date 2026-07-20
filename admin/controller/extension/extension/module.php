@@ -1,28 +1,5 @@
 <?php
 class ControllerExtensionExtensionModule extends Controller {
-	const FEATURE_PRO = array(
-		'module' => array(
-				array('name' => '拼团', 'description' => '参考拼多多。可通过朋友圈分享邀请，成团后按照拼团价格，不成团超时系统自动取消并退款', 'href' => 'https://mall.opencart.cn/'),
-				array('name' => '砍价', 'description' => '每砍一次，可优惠相应金额；优惠金额随机', 'href' => 'https://mall.opencart.cn/'),
-				array('name' => '秒杀', 'description' => '增加秒杀功能模块，显示距离结束还有XX天XX小时XX秒，可按时间段设置商品', 'href' => 'https://mall.opencart.cn/'),
-				array('name' => '凑单', 'description' => '提示消费增加购买相关商品，会减少 x 费用', 'href' => 'https://mall.opencart.cn/'),
-				array('name' => '满件减额', 'description' => '将现有 购买x件优惠y元，前端展示', 'href' => 'https://mall.opencart.cn/'),
-				array('name' => '降价提醒', 'description' => '商品售价下降时邮件/短信提醒', 'href' => 'https://mall.opencart.cn/'),
-				array('name' => '套装商品组合', 'description' => '将多个商品组合成一个套装购买，可设置金额折扣', 'href' => 'https://mall.opencart.cn/'),
-				array('name' => '添加订单号Order Number', 'description' => '用于外部API对接, 譬如 2019021500001', 'href' => 'https://mall.opencart.cn/admin/index.php?route=sale/order'),
-				array('name' => '商品采集', 'description' => '第三方平台数据如京东,天猫,淘宝,Ebay,AliExpress,1688, 苏宁易购, 唯品会，简单操作采集', 'href' => 'https://mall.opencart.cn/admin/index.php?route=catalog/collector'),
-				array('name' => '第三方登录注册绑定老用户', 'description' => '后台增加开关是否强制绑定', 'href' => 'https://mall.opencart.cn/account/login'),
-				array('name' => '产品名称描述自动翻译', 'description' => '一键式翻译, 采用 google translate', 'href' => 'https://mall.opencart.cn/admin/index.php?route=catalog/product/edit&product_id=42'),
-				array('name' => '产品分类页高级筛选', 'description' => '后台可以指定筛选条件(品牌, 属性, 选项, 类型)', 'href' => 'https://mall.opencart.cn/index.php?route=product/category&path=59'),
-		 ),
-		'shipping' => array(
-				array('name' => 'FlexShipping 功能优化提升,可以参考 XShippingPro', 'description' => '', 'href' => 'https://mall.opencart.cn/admin/index.php?route=extension/shipping/flex'),
-		 ),
-		'payment' => array(
-				array('name' => '虚拟货币支付', 'description' => '添加 BTC, ETH, XRP, 本阶段只添加 XRP，集成了支付平台 coinpayments', 'href' => 'https://mall.opencart.cn/admin/index.php?route=extension/payment/coinpayments'),
-		 )
-	);
-
 	private $error = array();
 
 	public function index() {
@@ -147,8 +124,6 @@ class ControllerExtensionExtensionModule extends Controller {
 
 		$data['extensions'] = array();
 
-		$data['feature_pro'] = self::FEATURE_PRO;
-
 		// Create a new language container so we don't pollute the current one
 		$language = new Language($this->config->get('config_language'));
 
@@ -210,10 +185,5 @@ class ControllerExtensionExtensionModule extends Controller {
 		}
 
 		return !$this->error;
-	}
-
-	public function feature_pro_msg() {
-		$data = self::FEATURE_PRO;
-		$this->json_output($data);
 	}
 }

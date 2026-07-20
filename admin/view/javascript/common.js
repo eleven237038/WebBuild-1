@@ -81,19 +81,27 @@ $(document).ready(function() {
 		$('body > .tooltip').remove();
 	});
 
-    if ($(window).width() >= 768) {
-        if (localStorage.getItem('menu_active') === 'false') {
-    		$('#column-left').removeClass('active');
+    // Sidebar breakpoint: below 1024px the sidebar becomes an overlay (full width for content)
+    var sidebarBp = 1024;
+    var sidebarResizeTimer;
+    function syncSidebar() {
+        if ($(window).width() >= sidebarBp) {
+            $('#column-left').toggleClass('active', localStorage.getItem('menu_active') !== 'false');
         } else {
-            $('#column-left').addClass('active');
+            $('#column-left').removeClass('active');
         }
     }
+    syncSidebar();
+    $(window).on('resize', function() {
+        clearTimeout(sidebarResizeTimer);
+        sidebarResizeTimer = setTimeout(syncSidebar, 150);
+    });
 
     $('#button-menu').on('click', function(e) {
         e.preventDefault();
 
         $('#column-left').toggleClass('active');
-		if ($(window).width() >= 768) {
+		if ($(window).width() >= sidebarBp) {
             localStorage.setItem('menu_active', $('#column-left').hasClass('active'));
         }
     });

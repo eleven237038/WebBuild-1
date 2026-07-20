@@ -32,11 +32,6 @@
             </div>
           </div>
         </fieldset>
-        <fieldset class="feature-pro-wrapper">
-        	<legend>更多特色功能</legend>
-          <div class="row"></div>
-        </fieldset>
-        <div class="hidden pro-36-img"><img src="https://www.opencart.cn/images/products/oc38_pro.png" class="img-responsive"></div>
         <div id="extension"></div>
       </div>
     </div>
@@ -45,26 +40,6 @@
 {% if categories %}
   <script type="text/javascript"><!--
   $('select[name="type"]').on('change', function() {
-  	var code = $(this).find("option:selected").data("code"), html = '';
-  	$('.feature-pro-wrapper').hide().find('.row').html('');
-
-    $.ajax({
-  	  url: 'index.php?route=extension/extension/module/feature_pro_msg&user_token={{ user_token }}',
-  	  dataType: 'json',
-  	  type: 'post',
-  	  success: function(data) {
-  	  	if (typeof data[code] != 'undefined') {
-            for (var i=0; i < data[code].length; i++) {
-		  	  	html += '<div class="col-sm-4"><div class="list" data-href="' + data[code][i].href + '" data-btn="' + data[code][i].btn + '"><div class="title">' + data[code][i].name + '</div><div class="inner" title=' + data[code][i].description + '>' + data[code][i].description + '</div></div></div>'
-  	  		}
-	  	  	$('.feature-pro-wrapper').show().find('.row').html(html);
-  	  	}
-  	  },
-  	  error: function(xhr, ajaxOptions, thrownError) {
-  		  alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
-  	  }
-    });
-
 	  $.ajax({
 		  url: $('select[name="type"]').val(),
 		  dataType: 'html',
@@ -86,28 +61,6 @@
 
 		  }
 	  });
-  });
-
-  $(document).on('click', '.feature-pro-wrapper .list', function(event) {
-    var href = $(this).data('href'), btn = $(this).data('btn') != 'undefined' ? $(this).data('btn') : '查看 DEMO';
-  	layer.open({
-  	  type: 1,
-  	  title: '{{ text_shop_pro36 }}',
-  	  skin: 'pro-wrapper-img',
-  	  shadeClose: true,
-  	  area: ['340px', '440px'],
-  	  btn: ['购买专业版', btn],
-      btnAlign: 'c',
-  	  content: $('.pro-36-img').html(),
-  	  yes: function(index, layero) {
-        window.open("https://www.opencart.cn/products/opencart_pro");
-        layer.closeAll();
-      },
-      btn2: function(index, layero) {
-        layer.closeAll();
-        if (href != '') return window.open(href);
-      }
-  	});
   });
 
   $('select[name="type"]').trigger('change');
