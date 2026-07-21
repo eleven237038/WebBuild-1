@@ -16,7 +16,7 @@ class ControllerCommonColumnLeft extends Controller {
 				'children' => array()
 			);
 
-				// 商品目录子菜单顺序: 商品类型 / 商品管理 / 商品卡片设置 / 商品详情页设置
+		// 前端内容管理: 商品目录 / 文章目录 / 评价目录 / 联系方式目录
 		$catalog = array();
 
 		if ($this->user->hasPermission('access', 'catalog/custom_tag')) {
@@ -51,50 +51,55 @@ class ControllerCommonColumnLeft extends Controller {
 			);
 		}
 
+		// 前端内容管理子项 (商品目录保留为可展开子项, 含原4个子项)
+		$frontend_content = array();
+
 		if ($catalog) {
-			$data['menus'][] = array(
-				'id'       => 'menu-catalog',
-				'icon'     => 'fa-tags',
+			$frontend_content[] = array(
 				'name'     => '商品目录',
 				'href'     => '',
 				'children' => $catalog
 			);
 		}
 
-		// 评价目录 - 直链到商品评价列表
-		if ($this->user->hasPermission('access', 'catalog/review')) {
-			$data['menus'][] = array(
-				'id'       => 'menu-review',
-				'icon'     => 'fa-comments',
-				'name'     => '评价目录',
-				'href'     => $this->url->link('catalog/review', 'user_token=' . $this->session->data['user_token']),
-				'children' => array()
-			);
-		}
-
 		// 文章目录 - 直链到信息/文章列表
 		if ($this->user->hasPermission('access', 'catalog/information')) {
-			$data['menus'][] = array(
-				'id'       => 'menu-information',
-				'icon'     => 'fa-file-text-o',
+			$frontend_content[] = array(
 				'name'     => '文章目录',
 				'href'     => $this->url->link('catalog/information', 'user_token=' . $this->session->data['user_token']),
 				'children' => array()
 			);
 		}
 
-		// 联系方式管理（含邮件管理子组）
-		$contact = array();
+		// 评价目录 - 直链到商品评价列表
+		if ($this->user->hasPermission('access', 'catalog/review')) {
+			$frontend_content[] = array(
+				'name'     => '评价目录',
+				'href'     => $this->url->link('catalog/review', 'user_token=' . $this->session->data['user_token']),
+				'children' => array()
+			);
+		}
 
+		// 联系方式目录 (原"联系方式设置"+"联系方式管理"合并, 直链到 catalog/contact)
 		if ($this->user->hasPermission('access', 'catalog/contact')) {
-			$contact[] = array(
-				'name'     => '联系方式设置',
+			$frontend_content[] = array(
+				'name'     => '联系方式目录',
 				'href'     => $this->url->link('catalog/contact', 'user_token=' . $this->session->data['user_token']),
 				'children' => array()
 			);
 		}
 
-		// 邮件管理（作为联系方式管理的子组）
+		if ($frontend_content) {
+			$data['menus'][] = array(
+				'id'       => 'menu-frontend-content',
+				'icon'     => 'fa-newspaper-o',
+				'name'     => '前端内容',
+				'href'     => '',
+				'children' => $frontend_content
+			);
+		}
+
+		// 邮件管理 (从联系方式管理迁出, 升为顶级; 含邮件群发[定时/单次] + 触发邮件)
 		$email_mgmt = array();
 
 		$mail_blast = array();
@@ -129,20 +134,12 @@ class ControllerCommonColumnLeft extends Controller {
 		}
 
 		if ($email_mgmt) {
-			$contact[] = array(
+			$data['menus'][] = array(
+				'id'       => 'menu-email',
+				'icon'     => 'fa-envelope',
 				'name'     => '邮件管理',
 				'href'     => '',
 				'children' => $email_mgmt
-			);
-		}
-
-		if ($contact) {
-			$data['menus'][] = array(
-				'id'       => 'menu-contact',
-				'icon'     => 'fa-envelope',
-				'name'     => '联系方式管理',
-				'href'     => '',
-				'children' => $contact
 			);
 		}
 
@@ -227,7 +224,7 @@ class ControllerCommonColumnLeft extends Controller {
 
 			if ($this->user->hasPermission('access', 'customer/customer')) {
 				$customer[] = array(
-					'name'	   => $this->language->get('text_customer'),
+					'name'	   => '账号目录',
 					'href'     => $this->url->link('customer/customer', 'user_token=' . $this->session->data['user_token']),
 					'children' => array()
 				);
@@ -235,7 +232,7 @@ class ControllerCommonColumnLeft extends Controller {
 
 			if ($this->user->hasPermission('access', 'customer/customer_group')) {
 				$customer[] = array(
-					'name'	   => $this->language->get('text_customer_group'),
+					'name'	   => '账号类型',
 					'href'     => $this->url->link('customer/customer_group', 'user_token=' . $this->session->data['user_token']),
 					'children' => array()
 				);
@@ -514,14 +511,6 @@ class ControllerCommonColumnLeft extends Controller {
 
 			// Tools
 			$maintenance = array();
-
-			if ($this->user->hasPermission('access', 'tool/upgrade')) {
-				$maintenance[] = array(
-					'name'	   => $this->language->get('text_upgrade'),
-					'href'     => $this->url->link('tool/upgrade', 'user_token=' . $this->session->data['user_token']),
-					'children' => array()
-				);
-			}
 
 			if ($this->user->hasPermission('access', 'tool/backup')) {
 				$maintenance[] = array(
