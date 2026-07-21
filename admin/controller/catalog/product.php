@@ -1075,6 +1075,9 @@ class ControllerCatalogProduct extends Controller {
 
 		$data['placeholder'] = $this->model_tool_image->resize('no_image.png', 100, 100);
 
+		// 图片字段缩略图显示用的原始图 URL 前缀 (单张/多张图片 EAV 字段)
+		$data['image_base'] = HTTP_CATALOG . 'image/';
+
 		// Images
 		if (isset($this->request->post['product_image'])) {
 			$product_images = $this->request->post['product_image'];

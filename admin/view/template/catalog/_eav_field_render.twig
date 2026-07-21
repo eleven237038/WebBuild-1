@@ -57,32 +57,35 @@
       <label class="radio-inline"><input type="radio" name="{{ name }}" value="1" {{ val == 1 ? 'checked' }}> {{ l_yes }}</label>
       <label class="radio-inline"><input type="radio" name="{{ name }}" value="0" {{ val != 1 ? 'checked' }}> {{ l_no }}</label>
 
-    {# --- 图像上传 (OpenCart Image Manager) --- #}
-    {% elseif field.tag_type is defined and field.tag_type == 'image' %}
-      <a href="" id="thumb-{{ idk }}" data-toggle="image" class="img-thumbnail" style="display:inline-block;">
-        <img src="{{ val ? val : ph }}" alt="" title="" data-placeholder="{{ ph }}"/>
+    {# --- 单张图片 (头像式裁剪, 服务端强制 1:1 输出) --- #}
+    {% elseif field.tag_type is defined and field.tag_type == 'image_single' %}
+      {% set img_base = ui.image_base is defined ? ui.image_base : '' %}
+      <a href="" id="thumb-{{ idk }}" data-toggle="crop" data-crop-mode="single" class="img-thumbnail" style="display:inline-block;">
+        <img src="{{ val ? img_base ~ val : ph }}" alt="" title="" data-placeholder="{{ ph }}" style="max-width:100px;max-height:100px;"/>
       </a>
       <input type="hidden" name="{{ name }}" value="{{ val }}" id="input-{{ idk }}"/>
-      {% if productImages is defined and productImages is not empty %}
-      <table id="images" class="table table-striped table-bordered table-hover">
-        <thead><tr><td class="text-left">{{ l_ai }}</td><td class="text-right">{{ l_so }}</td></tr></thead>
-        <tbody>
-          {% for img in productImages %}
-          <tr id="image-row{{ loop.index0 }}">
-            <td class="text-left">
-              <a href="" id="thumb-image{{ loop.index0 }}" data-toggle="image" class="img-thumbnail">
-                <img src="{{ img.thumb }}" alt="" title="" data-placeholder="{{ ph }}"/>
-              </a>
-              <input type="hidden" name="product_image[{{ loop.index0 }}][image]" value="{{ img.image }}" id="input-image{{ loop.index0 }}"/>
-            </td>
-            <td class="text-right">
-              <input type="text" name="product_image[{{ loop.index0 }}][sort_order]" value="{{ img.sort_order }}" class="form-control"/>
-            </td>
-          </tr>
+
+    {# --- 多张图片 (每张头像式裁剪, 逗号分隔存入 EAV value) --- #}
+    {% elseif field.tag_type is defined and field.tag_type == 'image_multi' %}
+      {% set img_base = ui.image_base is defined ? ui.image_base : '' %}
+      {% set paths = val ? val|split(',') : [] %}
+      <div class="img-multi-group" id="multi-{{ idk }}">
+        <input type="hidden" name="{{ name }}" value="{{ val }}" id="input-{{ idk }}"/>
+        <div class="img-multi-list" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px;">
+          {% for p in paths %}
+            {% set pt = p|trim %}
+            {% if pt %}
+              <span class="img-multi-item" style="display:inline-block;position:relative;">
+                <a href="" data-toggle="crop" data-crop-mode="multi" class="img-thumbnail" data-path="{{ pt }}">
+                  <img src="{{ img_base ~ pt }}" alt="" title="" style="max-width:100px;max-height:100px;"/>
+                </a>
+                <button type="button" class="btn btn-danger btn-xs img-multi-remove" style="position:absolute;top:-6px;right:-6px;border-radius:50%;padding:0 5px;line-height:1.2;"><i class="fa fa-times"></i></button>
+              </span>
+            {% endif %}
           {% endfor %}
-        </tbody>
-      </table>
-      {% endif %}
+        </div>
+        <button type="button" class="btn btn-primary btn-sm img-multi-add" data-toggle="crop" data-crop-mode="multi-add"><i class="fa fa-plus-circle"></i> 添加图片</button>
+      </div>
 
     {# --- 日期选择 (原生日历) --- #}
     {% elseif field.tag_type is defined and field.tag_type == 'date' %}

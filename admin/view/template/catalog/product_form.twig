@@ -27,6 +27,7 @@
           {% import "catalog/_eav_field_render.twig" as eav %}
           {% set eav_ui = {
             placeholder: placeholder|default(''),
+            image_base: image_base|default(''),
             yes: text_yes|default('是'),
             no: text_no|default('否'),
             select: text_select|default('-- 请选择 --'),
@@ -40,7 +41,6 @@
           {# 统一渲染所有字段 (按 sort_order, 不区分系统/自定义): 有 system_column 走真实列, 否则走 EAV #}
           {% if form_fields is not empty %}
             <fieldset>
-              {% set image_row = 0 %}
               {% for field in form_fields %}
                 {% if field.system_column is not empty %}
                 {% if field.field_type == 'core_text_ml' %}
@@ -71,40 +71,12 @@
                     </div>
                   </div>
                 {% elseif field.system_column == 'image' %}
-                  {# 商品主图 + 附加图片: 保留原 Image 标签页的完整表格 (含 添加/删除 按钮, addImage() 依赖 #images)。
-                     主图 input name="image" -> oc_product.image; 附加图 product_image[row][image|sort_order] -> oc_product_image。 #}
+                  {# 商品主图 (单张图片, 头像式裁剪): input name="image" -> oc_product.image。附加图功能已移除。 #}
                   <div class="form-group">
                     <label class="col-md-2 control-label">{{ field.display_label is defined and field.display_label is not empty ? field.display_label : field.name }}</label>
                     <div class="col-md-10">
                       <a href="" id="thumb-image" data-toggle="crop" class="img-thumbnail"><img src="{{ thumb }}" alt="" title="" data-placeholder="{{ placeholder }}"/></a>
                       <input type="hidden" name="image" value="{{ image }}" id="input-image"/>
-                      <div class="table-responsive" style="margin-top:10px;">
-                        <table id="images" class="table table-striped table-bordered table-hover">
-                          <thead>
-                            <tr>
-                              <td class="text-left">{{ entry_additional_image }}</td>
-                              <td class="text-right">{{ entry_sort_order }}</td>
-                              <td></td>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {% for product_image in product_images %}
-                              <tr id="image-row{{ image_row }}">
-                                <td class="text-left"><a href="" id="thumb-image{{ image_row }}" data-toggle="image" class="img-thumbnail"><img src="{{ product_image.thumb }}" alt="" title="" data-placeholder="{{ placeholder }}"/></a> <input type="hidden" name="product_image[{{ image_row }}][image]" value="{{ product_image.image }}" id="input-image{{ image_row }}"/></td>
-                                <td class="text-right"><input type="text" name="product_image[{{ image_row }}][sort_order]" value="{{ product_image.sort_order }}" placeholder="{{ entry_sort_order }}" class="form-control"/></td>
-                                <td class="text-left"><button type="button" onclick="$('#image-row{{ image_row }}').remove();" data-toggle="tooltip" title="{{ button_remove }}" class="btn btn-danger"><i class="fa fa-minus-circle"></i></button></td>
-                              </tr>
-                              {% set image_row = image_row + 1 %}
-                            {% endfor %}
-                          </tbody>
-                          <tfoot>
-                            <tr>
-                              <td colspan="2"></td>
-                              <td class="text-left"><button type="button" onclick="addImage();" data-toggle="tooltip" title="{{ button_image_add }}" class="btn btn-primary"><i class="fa fa-plus-circle"></i></button></td>
-                            </tr>
-                          </tfoot>
-                        </table>
-                      </div>
                     </div>
                   </div>
                 {% else %}
@@ -274,22 +246,6 @@ $('#product-related').delegate('.fa-minus-circle', 'click', function() {
 });
 //--></script>
 <script type="text/javascript"><!--
-var image_row = {{ image_row|default(0) }};
-
-function addImage() {
-	html = '<tr id="image-row' + image_row + '">';
-	html += '  <td class="text-left"><a href="" id="thumb-image' + image_row + '"data-toggle="image" class="img-thumbnail"><img src="{{ placeholder }}" alt="" title="" data-placeholder="{{ placeholder }}" /></a><input type="hidden" name="product_image[' + image_row + '][image]" value="" id="input-image' + image_row + '" /></td>';
-	html += '  <td class="text-right"><input type="text" name="product_image[' + image_row + '][sort_order]" value="" placeholder="{{ entry_sort_order }}" class="form-control" /></td>';
-	html += '  <td class="text-left"><button type="button" onclick="$(\'#image-row' + image_row + '\').remove();" data-toggle="tooltip" title="{{ button_remove }}" class="btn btn-danger"><i class="fa fa-minus-circle"></i></button></td>';
-	html += '</tr>';
-
-	$('#images tbody').append(html);
-
-	image_row++;
-}
-//--></script>
-
-<script type="text/javascript"><!--
 $('.date').datetimepicker({
 	language: '{{ datepicker }}',
 	pickTime: false
@@ -337,7 +293,7 @@ $(function () {
   var cropTarget = null;
 
   // 点击主图缩略图 -> 打开裁剪弹窗 (头像式上传)
-  $(document).on('click', 'a[data-toggle="crop"]', function (e) {
+  $(document).on('click', '[data-toggle="crop"]', function (e) {
     e.preventDefault();
     cropTarget = $(this);
     if (cropper) { cropper.destroy(); cropper = null; }
@@ -385,8 +341,27 @@ $(function () {
       success: function (json) {
         if (json['code'] == 1 && json['result']) {
           var r = json['result'][0];
-          cropTarget.find('img').attr('src', r['thumb']);
-          cropTarget.next('input').val(r['image']);
+          var mode = cropTarget.attr('data-crop-mode') || 'single';
+          if (mode === 'multi-add') {
+            // 多张图片: 新增图位, 追加到图位列表末尾
+            var slot = $('<span class="img-multi-item" style="display:inline-block;position:relative;">' +
+              '<a href="" data-toggle="crop" data-crop-mode="multi" class="img-thumbnail" data-path="' + r['image'] + '">' +
+              '<img src="' + r['thumb'] + '" alt="" title="" style="max-width:100px;max-height:100px;"/>' +
+              '</a>' +
+              '<button type="button" class="btn btn-danger btn-xs img-multi-remove" style="position:absolute;top:-6px;right:-6px;border-radius:50%;padding:0 5px;line-height:1.2;"><i class="fa fa-times"></i></button>' +
+              '</span>');
+            cropTarget.closest('.img-multi-group').find('.img-multi-list').append(slot);
+            rebuildMulti(cropTarget.closest('.img-multi-group'));
+          } else if (mode === 'multi') {
+            // 多张图片: 替换当前图位
+            cropTarget.find('img').attr('src', r['thumb']);
+            cropTarget.attr('data-path', r['image']);
+            rebuildMulti(cropTarget.closest('.img-multi-group'));
+          } else {
+            // 单张图片 / 主图: 替换缩略图与隐藏域
+            cropTarget.find('img').attr('src', r['thumb']);
+            cropTarget.next('input').val(r['image']);
+          }
           $('#modal-crop').modal('hide');
         } else {
           alert(json['error'] ? json['error'] : '保存失败');
@@ -395,6 +370,25 @@ $(function () {
       error: function () { alert('网络错误, 保存失败'); }
     });
   });
+
+  // 多张图片: 删除某个图位
+  $(document).on('click', '.img-multi-remove', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    var group = $(this).closest('.img-multi-group');
+    $(this).closest('.img-multi-item').remove();
+    rebuildMulti(group);
+  });
+
+  // 多张图片: 根据所有图位 data-path 重建隐藏域 (逗号分隔)
+  function rebuildMulti(group) {
+    var paths = [];
+    group.find('.img-multi-list .img-multi-item a').each(function () {
+      var p = $(this).attr('data-path');
+      if (p) { paths.push(p); }
+    });
+    group.find('input[type=hidden]').val(paths.join(','));
+  }
 
   // 关闭弹窗时清理 Cropper 实例
   $('#modal-crop').on('hidden.bs.modal', function () {
