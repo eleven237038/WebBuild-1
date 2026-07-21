@@ -22,88 +22,247 @@
     <div class="alert alert-success"><i class="fa fa-check-circle"></i> {{ success }}<button type="button" class="close" data-dismiss="alert">&times;</button></div>
     {% endif %}
 
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h3 class="panel-title"><i class="fa fa-id-card-o"></i> {{ text_form }}</h3>
+    {# 实时预览样式 + 复用前台 product-card.css (相对 admin 页面路径 ../catalog/...) #}
+    <link rel="stylesheet" href="../catalog/view/theme/default/stylesheet/genscript/product-card.css">
+    <style>
+      .pcard-admin-layout { display: flex; gap: 20px; align-items: flex-start; }
+      .pcard-admin-form { flex: 1 1 auto; min-width: 0; }
+      .pcard-admin-preview { flex: 0 0 380px; max-width: 380px; position: sticky; top: 20px; }
+      .pcard-admin-preview .panel-body { background: #f5f6f8; }
+      .pcard-preview-hint { font-size: 12px; color: #888; margin: 0 0 12px; }
+      {# 预览画布: 居中展示一张卡片, 隔离配色变量 (不污染后台 :root) #}
+      #pcard-preview-frame {
+        --bg-navy: #0F172A;
+        background: #ffffff;
+        padding: 18px;
+        border-radius: 10px;
+        border: 1px solid #e8e8e8;
+        min-height: 120px;
+      }
+      #pcard-preview-frame .product-card { max-width: 320px; margin: 0 auto; }
+      #pcard-preview-frame .pcard-add:hover,
+      #pcard-preview-frame .pcard-var:hover { background: var(--pcard-primary); }
+      @media (max-width: 1280px) {
+        .pcard-admin-layout { flex-direction: column; }
+        .pcard-admin-preview { flex: 0 0 auto; max-width: none; width: 100%; position: static; }
+        #pcard-preview-frame .product-card { max-width: 360px; }
+      }
+    </style>
+
+    <div class="pcard-admin-layout">
+      <div class="pcard-admin-form">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-id-card-o"></i> {{ text_form }}</h3>
+          </div>
+          <div class="panel-body">
+            <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-product-card" class="form-horizontal">
+
+              <legend>{{ text_section_toggle }}</legend>
+              <div class="form-group">
+                <label class="col-sm-2 control-label">{{ entry_product_card_show_image }}</label>
+                <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_card_show_image" value="1" {{ product_card_show_image == 1 or product_card_show_image == '1' ? 'checked' }}/> {{ entry_product_card_show_image }}</label></div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label">{{ entry_product_card_show_name }}</label>
+                <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_card_show_name" value="1" {{ product_card_show_name == 1 or product_card_show_name == '1' ? 'checked' }}/> {{ entry_product_card_show_name }}</label></div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label">{{ entry_product_card_show_description }}</label>
+                <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_card_show_description" value="1" {{ product_card_show_description == 1 or product_card_show_description == '1' ? 'checked' }}/> {{ entry_product_card_show_description }}</label></div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label">{{ entry_product_card_show_price }}</label>
+                <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_card_show_price" value="1" {{ product_card_show_price == 1 or product_card_show_price == '1' ? 'checked' }}/> {{ entry_product_card_show_price }}</label></div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label">{{ entry_product_card_show_wishlist }}</label>
+                <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_card_show_wishlist" value="1" {{ product_card_show_wishlist == 1 or product_card_show_wishlist == '1' ? 'checked' }}/> {{ entry_product_card_show_wishlist }}</label></div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label">{{ entry_product_card_show_badges }}</label>
+                <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_card_show_badges" value="1" {{ product_card_show_badges == 1 or product_card_show_badges == '1' ? 'checked' }}/> {{ entry_product_card_show_badges }}</label></div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label">{{ entry_product_card_show_add_button }}</label>
+                <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_card_show_add_button" value="1" {{ product_card_show_add_button == 1 or product_card_show_add_button == '1' ? 'checked' }}/> {{ entry_product_card_show_add_button }}</label></div>
+              </div>
+
+              <legend>{{ text_section_size }}</legend>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-image-height">{{ entry_product_card_image_height }}</label>
+                <div class="col-sm-10"><input type="number" name="product_card_image_height" value="{{ product_card_image_height }}" id="input-image-height" class="form-control" style="max-width:200px;"></div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-desc-length">{{ entry_product_card_desc_length }}</label>
+                <div class="col-sm-10"><input type="number" name="product_card_desc_length" value="{{ product_card_desc_length }}" id="input-desc-length" class="form-control" style="max-width:200px;"></div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-desc-clamp">{{ entry_product_card_desc_clamp }}</label>
+                <div class="col-sm-10"><input type="number" name="product_card_desc_clamp" value="{{ product_card_desc_clamp }}" id="input-desc-clamp" class="form-control" style="max-width:200px;"></div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-name-fs">{{ entry_product_card_name_font_size }}</label>
+                <div class="col-sm-10"><input type="number" name="product_card_name_font_size" value="{{ product_card_name_font_size }}" id="input-name-fs" class="form-control" style="max-width:200px;"></div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-price-fs">{{ entry_product_card_price_font_size }}</label>
+                <div class="col-sm-10"><input type="number" name="product_card_price_font_size" value="{{ product_card_price_font_size }}" id="input-price-fs" class="form-control" style="max-width:200px;"></div>
+              </div>
+
+              <legend>{{ text_section_text }}</legend>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-add-btn">{{ entry_product_card_add_btn_text }}</label>
+                <div class="col-sm-10"><input type="text" name="product_card_add_btn_text" value="{{ product_card_add_btn_text }}" id="input-add-btn" class="form-control" style="max-width:200px;"></div>
+              </div>
+
+              <legend>{{ text_section_color }}</legend>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-primary-color">{{ entry_product_card_primary_color }}</label>
+                <div class="col-sm-10"><input type="color" name="product_card_primary_color" value="{{ product_card_primary_color }}" id="input-primary-color" class="form-control" style="max-width:80px;height:38px;padding:2px;"></div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-name-color">{{ entry_product_card_name_color }}</label>
+                <div class="col-sm-10"><input type="color" name="product_card_name_color" value="{{ product_card_name_color }}" id="input-name-color" class="form-control" style="max-width:80px;height:38px;padding:2px;"></div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-price-color">{{ entry_product_card_price_color }}</label>
+                <div class="col-sm-10"><input type="color" name="product_card_price_color" value="{{ product_card_price_color }}" id="input-price-color" class="form-control" style="max-width:80px;height:38px;padding:2px;"></div>
+              </div>
+
+            </form>
+          </div>
+        </div>
       </div>
-      <div class="panel-body">
-        <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-product-card" class="form-horizontal">
 
-          <legend>{{ text_section_toggle }}</legend>
-          <div class="form-group">
-            <label class="col-sm-2 control-label">{{ entry_product_card_show_image }}</label>
-            <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_card_show_image" value="1" {{ product_card_show_image == 1 or product_card_show_image == '1' ? 'checked' }}/> {{ entry_product_card_show_image }}</label></div>
+      {# ===== 实时预览面板 ===== #}
+      <div class="pcard-admin-preview">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-eye"></i> {{ text_preview }}</h3>
           </div>
-          <div class="form-group">
-            <label class="col-sm-2 control-label">{{ entry_product_card_show_name }}</label>
-            <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_card_show_name" value="1" {{ product_card_show_name == 1 or product_card_show_name == '1' ? 'checked' }}/> {{ entry_product_card_show_name }}</label></div>
+          <div class="panel-body">
+            <p class="pcard-preview-hint">{{ text_preview_hint }}</p>
+            <div id="pcard-preview-frame"></div>
           </div>
-          <div class="form-group">
-            <label class="col-sm-2 control-label">{{ entry_product_card_show_description }}</label>
-            <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_card_show_description" value="1" {{ product_card_show_description == 1 or product_card_show_description == '1' ? 'checked' }}/> {{ entry_product_card_show_description }}</label></div>
-          </div>
-          <div class="form-group">
-            <label class="col-sm-2 control-label">{{ entry_product_card_show_price }}</label>
-            <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_card_show_price" value="1" {{ product_card_show_price == 1 or product_card_show_price == '1' ? 'checked' }}/> {{ entry_product_card_show_price }}</label></div>
-          </div>
-          <div class="form-group">
-            <label class="col-sm-2 control-label">{{ entry_product_card_show_wishlist }}</label>
-            <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_card_show_wishlist" value="1" {{ product_card_show_wishlist == 1 or product_card_show_wishlist == '1' ? 'checked' }}/> {{ entry_product_card_show_wishlist }}</label></div>
-          </div>
-          <div class="form-group">
-            <label class="col-sm-2 control-label">{{ entry_product_card_show_badges }}</label>
-            <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_card_show_badges" value="1" {{ product_card_show_badges == 1 or product_card_show_badges == '1' ? 'checked' }}/> {{ entry_product_card_show_badges }}</label></div>
-          </div>
-          <div class="form-group">
-            <label class="col-sm-2 control-label">{{ entry_product_card_show_add_button }}</label>
-            <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_card_show_add_button" value="1" {{ product_card_show_add_button == 1 or product_card_show_add_button == '1' ? 'checked' }}/> {{ entry_product_card_show_add_button }}</label></div>
-          </div>
-
-          <legend>{{ text_section_size }}</legend>
-          <div class="form-group">
-            <label class="col-sm-2 control-label" for="input-image-height">{{ entry_product_card_image_height }}</label>
-            <div class="col-sm-10"><input type="number" name="product_card_image_height" value="{{ product_card_image_height }}" id="input-image-height" class="form-control" style="max-width:200px;"></div>
-          </div>
-          <div class="form-group">
-            <label class="col-sm-2 control-label" for="input-desc-length">{{ entry_product_card_desc_length }}</label>
-            <div class="col-sm-10"><input type="number" name="product_card_desc_length" value="{{ product_card_desc_length }}" id="input-desc-length" class="form-control" style="max-width:200px;"></div>
-          </div>
-          <div class="form-group">
-            <label class="col-sm-2 control-label" for="input-desc-clamp">{{ entry_product_card_desc_clamp }}</label>
-            <div class="col-sm-10"><input type="number" name="product_card_desc_clamp" value="{{ product_card_desc_clamp }}" id="input-desc-clamp" class="form-control" style="max-width:200px;"></div>
-          </div>
-          <div class="form-group">
-            <label class="col-sm-2 control-label" for="input-name-fs">{{ entry_product_card_name_font_size }}</label>
-            <div class="col-sm-10"><input type="number" name="product_card_name_font_size" value="{{ product_card_name_font_size }}" id="input-name-fs" class="form-control" style="max-width:200px;"></div>
-          </div>
-          <div class="form-group">
-            <label class="col-sm-2 control-label" for="input-price-fs">{{ entry_product_card_price_font_size }}</label>
-            <div class="col-sm-10"><input type="number" name="product_card_price_font_size" value="{{ product_card_price_font_size }}" id="input-price-fs" class="form-control" style="max-width:200px;"></div>
-          </div>
-
-          <legend>{{ text_section_text }}</legend>
-          <div class="form-group">
-            <label class="col-sm-2 control-label" for="input-add-btn">{{ entry_product_card_add_btn_text }}</label>
-            <div class="col-sm-10"><input type="text" name="product_card_add_btn_text" value="{{ product_card_add_btn_text }}" id="input-add-btn" class="form-control" style="max-width:200px;"></div>
-          </div>
-
-          <legend>{{ text_section_color }}</legend>
-          <div class="form-group">
-            <label class="col-sm-2 control-label" for="input-primary-color">{{ entry_product_card_primary_color }}</label>
-            <div class="col-sm-10"><input type="color" name="product_card_primary_color" value="{{ product_card_primary_color }}" id="input-primary-color" class="form-control" style="max-width:80px;height:38px;padding:2px;"></div>
-          </div>
-          <div class="form-group">
-            <label class="col-sm-2 control-label" for="input-name-color">{{ entry_product_card_name_color }}</label>
-            <div class="col-sm-10"><input type="color" name="product_card_name_color" value="{{ product_card_name_color }}" id="input-name-color" class="form-control" style="max-width:80px;height:38px;padding:2px;"></div>
-          </div>
-          <div class="form-group">
-            <label class="col-sm-2 control-label" for="input-price-color">{{ entry_product_card_price_color }}</label>
-            <div class="col-sm-10"><input type="color" name="product_card_price_color" value="{{ product_card_price_color }}" id="input-price-color" class="form-control" style="max-width:80px;height:38px;padding:2px;"></div>
-          </div>
-
-        </form>
+        </div>
       </div>
     </div>
   </div>
 </div>
+
+<script>
+(function () {
+  // 示例商品数据 (用于预览渲染; 与前台 product_card.twig 结构保持一致)
+  var SAMPLE = {
+    name: 'BPC-157 高纯度合成多肽试剂',
+    description: '本品为实验室级高纯度合成多肽试剂，纯度≥99%，适用于细胞培养与体外研究实验。每瓶5mg装量，-20°C避光保存，长期稳定性经验证。支持定制规格与批量订购，提供完整COA分析报告与质控数据，欢迎咨询客服获取技术资料。',
+    price: '¥299.00',
+    thumb: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'><g fill='none' stroke='%23ffffff' stroke-width='3.5' stroke-linecap='round'><circle cx='42' cy='42' r='13'/><circle cx='82' cy='42' r='13'/><circle cx='62' cy='82' r='13'/><line x1='42' y1='42' x2='82' y2='42'/><line x1='42' y1='42' x2='62' y2='82'/><line x1='82' y1='42' x2='62' y2='82'/></g></svg>",
+    tags: [
+      { parent: '类别', name: '多肽试剂' },
+      { parent: '纯度', name: '≥99%' }
+    ]
+  };
+
+  var form = document.getElementById('form-product-card');
+  var frame = document.getElementById('pcard-preview-frame');
+  if (!form || !frame) return;
+
+  function chk(name) {
+    var el = form.querySelector('input[name="' + name + '"]');
+    return el && el.checked ? 1 : 0;
+  }
+  function num(name, def) {
+    var el = form.querySelector('input[name="' + name + '"]');
+    var v = el ? parseInt(el.value, 10) : NaN;
+    return isNaN(v) ? def : v;
+  }
+  function val(name, def) {
+    var el = form.querySelector('input[name="' + name + '"]');
+    return el && el.value !== '' ? el.value : def;
+  }
+
+  function read() {
+    return {
+      show_image: chk('product_card_show_image'),
+      show_name: chk('product_card_show_name'),
+      show_description: chk('product_card_show_description'),
+      show_price: chk('product_card_show_price'),
+      show_wishlist: chk('product_card_show_wishlist'),
+      show_badges: chk('product_card_show_badges'),
+      show_add_button: chk('product_card_show_add_button'),
+      image_height: num('product_card_image_height', 200),
+      desc_length: num('product_card_desc_length', 100),
+      desc_clamp: num('product_card_desc_clamp', 2),
+      name_font_size: num('product_card_name_font_size', 15),
+      price_font_size: num('product_card_price_font_size', 22),
+      add_btn_text: val('product_card_add_btn_text', '+'),
+      primary_color: val('product_card_primary_color', '#10B981'),
+      name_color: val('product_card_name_color', '#0F172A'),
+      price_color: val('product_card_price_color', '#10B981')
+    };
+  }
+
+  function esc(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  // 构建卡片 HTML - 严格对应 catalog/.../product/product_card.twig 的渲染分支
+  function build(s) {
+    var html = '<div class="product-card">';
+    // 动态标签徽章
+    if (s.show_badges) {
+      for (var i = 0; i < SAMPLE.tags.length; i++) {
+        var t = SAMPLE.tags[i];
+        html += '<span class="pcard-badge-dynamic">' + esc((t.parent ? t.parent + ': ' : '') + t.name) + '</span>';
+      }
+    }
+    // 图片区
+    if (s.show_image) {
+      html += '<a href="#" class="pcard-img-wrap" style="text-decoration:none;display:flex;align-items:center;justify-content:center;height:' + s.image_height + 'px;" onclick="return false;">';
+      if (s.show_wishlist) {
+        html += '<button class="pcard-wishlist" type="button" aria-label="Wishlist" onclick="event.preventDefault();event.stopPropagation();"><i class="fa-regular fa-heart">&#9825;</i></button>';
+      }
+      html += '<img src="' + SAMPLE.thumb + '" alt="' + esc(SAMPLE.name) + '" loading="lazy">';
+      html += '</a>';
+    }
+    // 卡片正文
+    html += '<div class="pcard-body">';
+    if (s.show_name) {
+      html += '<a href="#" style="text-decoration:none;color:inherit;" onclick="return false;"><h3 class="pcard-name" style="font-size:' + s.name_font_size + 'px;">' + esc(SAMPLE.name) + '</h3></a>';
+    }
+    if (s.show_description) {
+      var desc = SAMPLE.description.substr(0, s.desc_length) + '...';
+      html += '<p class="pcard-desc" style="-webkit-line-clamp:' + s.desc_clamp + ';">' + esc(desc) + '</p>';
+    }
+    if (s.show_price || s.show_add_button) {
+      html += '<div class="pcard-bottom">';
+      if (s.show_price) {
+        html += '<p class="pcard-price" style="font-size:' + s.price_font_size + 'px;">' + esc(SAMPLE.price) + '</p>';
+      }
+      if (s.show_add_button) {
+        html += '<button class="pcard-add" type="button">' + esc(s.add_btn_text) + '</button>';
+      }
+      html += '</div>';
+    }
+    html += '</div></div>';
+    return html;
+  }
+
+  function render() {
+    var s = read();
+    // 配色作用域化到预览画布 (不写 :root, 避免污染后台整体配色)
+    frame.style.setProperty('--pcard-primary', s.primary_color);
+    frame.style.setProperty('--pcard-name-color', s.name_color);
+    frame.style.setProperty('--pcard-price-color', s.price_color);
+    frame.style.setProperty('--bg-navy', '#0F172A');
+    frame.innerHTML = build(s);
+  }
+
+  form.addEventListener('input', render);
+  form.addEventListener('change', render);
+  render();
+})();
+</script>
 {{ footer }}

@@ -10,6 +10,8 @@ $_['text_section_toggle'] = '显示开关';
 $_['text_section_size']   = '尺寸';
 $_['text_section_text']   = '文案';
 $_['text_section_color']  = '配色';
+$_['text_preview']        = '实时预览';
+$_['text_preview_hint']   = '修改左侧任意设置，此处实时显示商品卡片效果（示例数据，保存后全站生效）。';
 
 // Entry
 $_['entry_product_card_show_image']      = '显示图片';

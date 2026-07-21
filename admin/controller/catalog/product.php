@@ -99,6 +99,17 @@ class ControllerCatalogProduct extends Controller {
 		if (!isset($this->request->post['product_filter'])) { $this->request->post['product_filter'] = array(); }
 		if (!isset($this->request->post['product_layout'])) { $this->request->post['product_layout'] = array(); }
 		$this->mirrorChineseToAllLanguages();
+		// Preserve scalar system columns absent from POST (form is custom_tag-driven; fields without a custom_tag
+		// would otherwise be wiped to 0/'' by editProduct's whitelist SET). status is the critical one (auto-delist bug).
+		$existing = $this->model_catalog_product->getProduct($this->request->get['product_id']);
+		if ($existing) {
+			$preserve = array('model','sku','upc','ean','jan','isbn','mpn','location','quantity','minimum','subtract','stock_status_id','date_available','manufacturer_id','shipping','price','points','weight','weight_class_id','length','width','height','length_class_id','status','show_on_homepage','tax_class_id','sort_order');
+			foreach ($preserve as $pf) {
+				if (!isset($this->request->post[$pf]) && isset($existing[$pf])) {
+					$this->request->post[$pf] = $existing[$pf];
+				}
+			}
+		}
 		$this->model_catalog_product->editProduct($this->request->get['product_id'], $this->request->post);
 
 			$this->session->data['success'] = $this->language->get('text_success');
@@ -810,6 +821,13 @@ class ControllerCatalogProduct extends Controller {
 					foreach ($data['stock_statuses'] as $ss) {
 						$t['options'][] = array('value' => $ss['stock_status_id'], 'text' => $ss['name']);
 					}
+				}
+				// 状态: 启用/禁用 单选 (修复编辑商品后自动下架 bug - status 必须始终提交)
+				if ($t['system_column'] == 'status') {
+					$t['options'] = array(
+						array('value' => 1, 'text' => $this->language->get('text_enabled')),
+						array('value' => 0, 'text' => $this->language->get('text_disabled'))
+					);
 				}
 				$data['system_fields'][] = $t;
 				$data['core_fields'][$t['name']] = !empty($t['display_label']) ? $t['display_label'] : $t['name'];

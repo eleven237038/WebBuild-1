@@ -10,6 +10,8 @@ $_['text_section_toggle'] = 'Display Toggles';
 $_['text_section_size']   = 'Sizing';
 $_['text_section_text']   = 'Text';
 $_['text_section_color']  = 'Colors';
+$_['text_preview']        = 'Live Preview';
+$_['text_preview_hint']   = 'Change any setting on the left to see the product card update in real time (sample data; saved settings apply site-wide).';
 
 // Entry
 $_['entry_product_card_show_image']      = 'Show Image';
