@@ -598,7 +598,8 @@ class ModelCatalogProduct extends Model {
 	}
 
 	public function getProductCustomTags($product_id) {
-		$query = $this->db->query("SELECT t.tag_id, t.name, t.tag_type, t.parent_id, IFNULL(p.name, '') AS parent_name, pt.`value` FROM " . DB_PREFIX . "custom_tag t INNER JOIN " . DB_PREFIX . "product_to_custom_tag pt ON t.tag_id = pt.tag_id LEFT JOIN " . DB_PREFIX . "custom_tag p ON t.parent_id = p.tag_id WHERE pt.product_id = '" . (int)$product_id . "' AND t.status = 1 ORDER BY t.parent_id ASC, t.sort_order ASC");
+		// 排除结构体 (无值); select/radio 把存储 value 解析为选项 label (显示"启用"而非"1")
+		$query = $this->db->query("SELECT t.tag_id, t.name, t.tag_type, t.parent_id, IFNULL(p.name, '') AS parent_name, IFNULL(o.label, pt.`value`) AS `value` FROM " . DB_PREFIX . "custom_tag t INNER JOIN " . DB_PREFIX . "product_to_custom_tag pt ON t.tag_id = pt.tag_id LEFT JOIN " . DB_PREFIX . "custom_tag p ON t.parent_id = p.tag_id LEFT JOIN " . DB_PREFIX . "custom_tag_option o ON t.tag_id = o.tag_id AND o.value = pt.`value` WHERE pt.product_id = '" . (int)$product_id . "' AND t.status = 1 AND t.tag_type <> 'struct' ORDER BY t.parent_id ASC, t.sort_order ASC");
 		return $query->rows;
 	}
 }

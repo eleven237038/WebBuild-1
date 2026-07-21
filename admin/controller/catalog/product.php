@@ -812,8 +812,31 @@ class ControllerCatalogProduct extends Controller {
 		$data['core_fields']   = array();
 		$data['system_fields'] = array();
 		$data['custom_fields'] = array();
-		$data['form_fields']   = array();
+		// 预序重排: 顶级(parent_id=0)按 sort_order, 每个结构体(struct)后紧跟其子字段
+		// (parent_id=该struct), 保证结构体与子字段在表单中连续, 便于 fieldset 分组渲染。
+		$top_level   = array();
+		$children_of = array();   // parent_id => [tag, ...]
 		foreach ($all_tags as $t) {
+			$pid = (int)$t['parent_id'];
+			if ($pid === 0) {
+				$top_level[] = $t;
+			} else {
+				if (!isset($children_of[$pid])) { $children_of[$pid] = array(); }
+				$children_of[$pid][] = $t;
+			}
+		}
+		$ordered = array();
+		foreach ($top_level as $t) {
+			$ordered[] = $t;
+			$tid = (int)$t['tag_id'];
+			if (!empty($children_of[$tid])) {
+				foreach ($children_of[$tid] as $child) {
+					$ordered[] = $child;
+				}
+			}
+		}
+		$data['form_fields'] = array();
+		foreach ($ordered as $t) {
 			if (!empty($t['system_column'])) {
 				// Attach picker options for known system select columns
 				if ($t['system_column'] == 'stock_status_id' && !empty($data['stock_statuses'])) {
@@ -834,7 +857,14 @@ class ControllerCatalogProduct extends Controller {
 			} else {
 				$data['custom_fields'][] = $t;
 			}
-			// 统一字段列表 (按 sort_order, 不区分系统/自定义), 供表单统一渲染
+			// 非 system_column 的 select/radio: 从 DB 载入选项; number/text/textarea/image_multi: 载入 config
+			if (empty($t['system_column']) && in_array($t['tag_type'], array('select', 'radio'), true)) {
+				$t['options'] = $this->model_catalog_custom_tag->getTagOptions((int)$t['tag_id']);
+			}
+			if (empty($t['system_column']) && in_array($t['tag_type'], array('number', 'text', 'textarea', 'image_multi'), true)) {
+				$t['config'] = $this->model_catalog_custom_tag->getTagConfig((int)$t['tag_id']);
+			}
+			// 统一字段列表 (预序: 结构体紧跟子字段), 供表单统一渲染
 			$data['form_fields'][] = $t;
 		}
 		if (isset($this->request->post['product_custom_tag'])) {

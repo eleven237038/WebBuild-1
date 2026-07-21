@@ -67,6 +67,8 @@ class ControllerCatalogCustomTag extends Controller {
 			$this->request->post['status']      = isset($this->request->post['status']) ? 1 : 0;
 			$this->request->post['parent_id']   = (int)($this->request->post['parent_id'] ?? 0);
 			$this->request->post['product_type_id'] = (int)($this->request->post['product_type_id'] ?? $this->request->get['product_type_id'] ?? 0);
+			$this->request->post['options'] = $this->collectTagOptions();
+			$this->request->post['config']  = $this->collectTagConfig((string)($this->request->post['tag_type'] ?? 'text'));
 			$this->model_catalog_custom_tag->addTag($this->request->post);
 			$this->session->data['success'] = '字段已添加';
 			// If AJAX (from drag-drop UI), return JSON; else redirect
@@ -94,6 +96,8 @@ class ControllerCatalogCustomTag extends Controller {
 			$this->request->post['is_required'] = isset($this->request->post['is_required']) ? 1 : 0;
 			$this->request->post['status']      = isset($this->request->post['status']) ? 1 : 0;
 			$this->request->post['parent_id']   = (int)($this->request->post['parent_id'] ?? 0);
+			$this->request->post['options'] = $this->collectTagOptions();
+			$this->request->post['config']  = $this->collectTagConfig((string)($this->request->post['tag_type'] ?? 'text'));
 			$this->model_catalog_custom_tag->editTag($this->request->get['tag_id'], $this->request->post);
 			$this->session->data['success'] = '字段已更新';
 			// 回列表时保留所属商品类型
@@ -142,6 +146,29 @@ class ControllerCatalogCustomTag extends Controller {
 		}
 		$data['product_type_id'] = $product_type_id;
 		$data['parent_options'] = $this->model_catalog_custom_tag->getParentOptions($tag_id, $product_type_id);
+
+		// select/radio 已有选项 (回填选项编辑器)
+		$data['tag_options'] = $tag_id ? $this->model_catalog_custom_tag->getTagOptions($tag_id) : array();
+		// 类型专属配置回填 (POST 优先 - 校验失败重显)
+		$cfg_defaults = array(
+			'config_unit' => '', 'config_min' => '', 'config_max' => '', 'config_step' => '',
+			'config_placeholder' => '', 'config_maxlength' => '', 'config_max_count' => '',
+		);
+		foreach ($cfg_defaults as $k => $def) {
+			if (isset($this->request->post[$k])) {
+				$data[$k] = $this->request->post[$k];
+			} elseif ($tag_id) {
+				$saved = $this->model_catalog_custom_tag->getTagConfig($tag_id);
+				$map = array(
+					'config_unit' => 'unit', 'config_min' => 'min', 'config_max' => 'max', 'config_step' => 'step',
+					'config_placeholder' => 'placeholder', 'config_maxlength' => 'maxlength', 'config_max_count' => 'max_count',
+				);
+				$key = $map[$k];
+				$data[$k] = isset($saved[$key]) ? $saved[$key] : $def;
+			} else {
+				$data[$k] = $def;
+			}
+		}
 
 		// 只读系统字段(供表单展示)
 		if (!empty($tag_info)) {
@@ -240,6 +267,48 @@ class ControllerCatalogCustomTag extends Controller {
 		}
 		$this->model_catalog_custom_tag->deleteProductType($id);
 		$this->response->setOutput(json_encode(['success' => true]));
+	}
+
+	// 把 POST 里并行的 options[value][] / options[label][] 组装成 [{value,text}, ...]
+	protected function collectTagOptions() {
+		$values = $this->request->post['options']['value'] ?? array();
+		$labels = $this->request->post['options']['label'] ?? array();
+		$out = array();
+		$max = max(count($values), count($labels));
+		for ($i = 0; $i < $max; $i++) {
+			$v = isset($values[$i]) ? trim((string)$values[$i]) : '';
+			$l = isset($labels[$i]) ? trim((string)$labels[$i]) : '';
+			if ($v === '' && $l === '') { continue; }
+			$out[] = array('value' => $v, 'text' => ($l !== '') ? $l : $v);
+		}
+		return $out;
+	}
+
+	// 按 tag_type 收集类型专属配置 -> JSON 串 (空配置返 '')
+	protected function collectTagConfig($tag_type) {
+		$cfg = array();
+		switch ($tag_type) {
+			case 'number':
+				foreach (array('unit', 'min', 'max', 'step') as $k) {
+					$cfg[$k] = trim((string)($this->request->post['config_' . $k] ?? ''));
+				}
+				break;
+			case 'text':
+				$cfg['placeholder'] = trim((string)($this->request->post['config_placeholder'] ?? ''));
+				$ml = (int)($this->request->post['config_maxlength'] ?? 0);
+				if ($ml > 0) { $cfg['maxlength'] = $ml; }
+				break;
+			case 'textarea':
+				$cfg['placeholder'] = trim((string)($this->request->post['config_placeholder'] ?? ''));
+				break;
+			case 'image_multi':
+				$mc = (int)($this->request->post['config_max_count'] ?? 0);
+				if ($mc > 0) { $cfg['max_count'] = $mc; }
+				break;
+		}
+		// 过滤空值; 全空则存 ''
+		$cfg = array_filter($cfg, function($v) { return (string)$v !== ''; });
+		return $cfg ? json_encode($cfg, JSON_UNESCAPED_UNICODE) : '';
 	}
 
 	protected function validateForm() {

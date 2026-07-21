@@ -26,18 +26,23 @@
 {% set l_sn  = ui.summernote is defined and ui.summernote is not empty ? ui.summernote : 'en-gb' %}
 {% set l_ai  = ui.entry_additional_image is defined and ui.entry_additional_image is not empty ? ui.entry_additional_image : '附加图片' %}
 {% set l_so  = ui.entry_sort_order is defined and ui.entry_sort_order is not empty ? ui.entry_sort_order : '排序' %}
+{% set cfg   = field.config is defined and field.config is not empty ? field.config : [] %}
 
 <div class="form-group{% if field.is_required is defined and field.is_required == 1 %} required{% endif %}">
   <label class="col-md-2 control-label" for="input-{{ idk }}">{{ label }}</label>
   <div class="col-md-6">
 
+    {# --- 结构体: 容器字段不产输入 (商品表单由外层 fieldset 处理, 此处防御性留空) --- #}
+    {% if field.tag_type is defined and field.tag_type == 'struct' %}
+      {# 不渲染输入 #}
+
     {# --- 单行文本 --- #}
-    {% if field.tag_type is defined and field.tag_type == 'text' %}
-      <input type="text" name="{{ name }}" value="{{ val }}" id="input-{{ idk }}" class="form-control" placeholder="{{ label }}"/>
+    {% elseif field.tag_type is defined and field.tag_type == 'text' %}
+      <input type="text" name="{{ name }}" value="{{ val }}" id="input-{{ idk }}" class="form-control" placeholder="{{ cfg.placeholder is defined and cfg.placeholder is not empty ? cfg.placeholder : label }}"{% if cfg.maxlength is defined and cfg.maxlength > 0 %} maxlength="{{ cfg.maxlength }}"{% endif %}/>
 
     {# --- 多行文本 (Summernote 富文本) --- #}
     {% elseif field.tag_type is defined and field.tag_type == 'textarea' %}
-      <textarea name="{{ name }}" id="input-{{ idk }}" data-toggle="summernote" data-lang="{{ l_sn }}" class="form-control tinymce">{{ val }}</textarea>
+      <textarea name="{{ name }}" id="input-{{ idk }}" data-toggle="summernote" data-lang="{{ l_sn }}" class="form-control tinymce" placeholder="{{ cfg.placeholder is defined and cfg.placeholder is not empty ? cfg.placeholder : '' }}">{{ val }}</textarea>
 
     {# --- 下拉选择 (有选项时渲染 select；无选项时退化为文本输入，避免空下拉) --- #}
     {% elseif field.tag_type is defined and field.tag_type == 'select' %}
@@ -75,7 +80,7 @@
     {% elseif field.tag_type is defined and field.tag_type == 'image_multi' %}
       {% set img_base = ui.image_base is defined ? ui.image_base : '' %}
       {% set paths = val ? val|split(',') : [] %}
-      <div class="img-multi-group" id="multi-{{ idk }}">
+      <div class="img-multi-group" id="multi-{{ idk }}" {% if cfg.max_count is defined and cfg.max_count > 0 %}data-max-count="{{ cfg.max_count }}"{% endif %}>
         <input type="hidden" name="{{ name }}" value="{{ val }}" id="input-{{ idk }}"/>
         <div class="img-multi-list" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px;">
           {% for p in paths %}
@@ -100,9 +105,17 @@
         <div class="input-group-btn"><button class="btn btn-default" type="button"><i class="fa fa-calendar"></i></button></div>
       </div>
 
-    {# --- 数字输入 --- #}
+    {# --- 数字输入 (带单位后缀 + min/max/step 约束) --- #}
     {% elseif field.tag_type is defined and field.tag_type == 'number' %}
-      <input type="number" name="{{ name }}" value="{{ val }}" id="input-{{ idk }}" class="form-control"/>
+      {% set has_unit = cfg.unit is defined and cfg.unit is not empty %}
+      {% if has_unit %}
+      <div class="input-group">
+      {% endif %}
+        <input type="number" name="{{ name }}" value="{{ val }}" id="input-{{ idk }}" class="form-control"{% if cfg.min is defined and cfg.min != '' %} min="{{ cfg.min }}"{% endif %}{% if cfg.max is defined and cfg.max != '' %} max="{{ cfg.max }}"{% endif %}{% if cfg.step is defined and cfg.step != '' %} step="{{ cfg.step }}"{% endif %}/>
+      {% if has_unit %}
+        <span class="input-group-addon">{{ cfg.unit }}</span>
+      </div>
+      {% endif %}
 
     {% else %}
       <input type="text" name="{{ name }}" value="{{ val }}" id="input-{{ idk }}" class="form-control"/>

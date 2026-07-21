@@ -9,8 +9,17 @@ class ModelCatalogCustomTag extends Model {
 		$dl  = $this->db->escape((string)($data['display_label'] ?? ''));
 		$ic  = (int)($data['is_core'] ?? 0);
 		$ptid = (int)($data['product_type_id'] ?? 0);
-		$this->db->query("INSERT INTO " . DB_PREFIX . "custom_tag SET parent_id = '" . (int)($data['parent_id'] ?? 0) . "', name = '" . $this->db->escape($data['name']) . "', field_type = '" . $ft . "', tag_type = '" . $tt . "', is_required = '" . $ir . "', system_column = '" . $sc . "', input_type = '" . $it . "', display_label = '" . $dl . "', is_core = '" . $ic . "', product_type_id = '" . $ptid . "', sort_order = '" . (int)($data['sort_order'] ?? 0) . "', status = '" . (int)($data['status'] ?? 1) . "', show_in_list = '" . (int)($data['show_in_list'] ?? 0) . "', date_added = NOW(), date_modified = NOW()");
-		return $this->db->getLastId();
+		// 结构体始终顶级, 不能作子字段
+		$parent_id = ($tt === 'struct') ? 0 : (int)($data['parent_id'] ?? 0);
+		// 类型专属配置 (number/text/textarea/image_multi): JSON 文本列
+		$cfg = $this->db->escape((string)($data['config'] ?? ''));
+		$this->db->query("INSERT INTO " . DB_PREFIX . "custom_tag SET parent_id = '" . $parent_id . "', name = '" . $this->db->escape($data['name']) . "', field_type = '" . $ft . "', tag_type = '" . $tt . "', is_required = '" . $ir . "', system_column = '" . $sc . "', input_type = '" . $it . "', display_label = '" . $dl . "', is_core = '" . $ic . "', product_type_id = '" . $ptid . "', sort_order = '" . (int)($data['sort_order'] ?? 0) . "', status = '" . (int)($data['status'] ?? 1) . "', show_in_list = '" . (int)($data['show_in_list'] ?? 0) . "', config = '" . $cfg . "', date_added = NOW(), date_modified = NOW()");
+		$tag_id = $this->db->getLastId();
+		// select/radio 选项持久化
+		if (!empty($data['options']) && is_array($data['options'])) {
+			$this->setTagOptions($tag_id, $data['options']);
+		}
+		return $tag_id;
 	}
 
 	public function editTag($tag_id, $data) {
@@ -27,13 +36,25 @@ class ModelCatalogCustomTag extends Model {
 		$ic         = (int)($data['is_core'] ?? $existing['is_core']);
 		$ptid       = (int)($data['product_type_id'] ?? $existing['product_type_id']);
 		$parent_id  = (int)($data['parent_id'] ?? $existing['parent_id']);
+		// 结构体始终顶级, 不能作子字段
+		if ($tt === 'struct') { $parent_id = 0; }
 		// 成环防御:父级不能是自身或自身后代
 		if ($parent_id && $this->wouldCreateCycle((int)$tag_id, $parent_id)) {
 			$parent_id = (int)$existing['parent_id'];
 		}
 		$sort_order = (int)($data['sort_order'] ?? $existing['sort_order']);
 		$status     = (int)($data['status'] ?? $existing['status']);
-		$this->db->query("UPDATE " . DB_PREFIX . "custom_tag SET parent_id = '" . $parent_id . "', name = '" . $name . "', field_type = '" . $ft . "', tag_type = '" . $tt . "', is_required = '" . $ir . "', system_column = '" . $sc . "', input_type = '" . $it . "', display_label = '" . $dl . "', is_core = '" . $ic . "', product_type_id = '" . $ptid . "', sort_order = '" . $sort_order . "', status = '" . $status . "', show_in_list = '" . (int)($data['show_in_list'] ?? 0) . "', date_modified = NOW() WHERE tag_id = '" . (int)$tag_id . "'");
+		// 类型专属配置: 优先用提交值, 否则保留旧值
+		if (array_key_exists('config', $data)) {
+			$cfg = $this->db->escape((string)$data['config']);
+		} else {
+			$cfg = $this->db->escape((string)($existing['config'] ?? ''));
+		}
+		$this->db->query("UPDATE " . DB_PREFIX . "custom_tag SET parent_id = '" . $parent_id . "', name = '" . $name . "', field_type = '" . $ft . "', tag_type = '" . $tt . "', is_required = '" . $ir . "', system_column = '" . $sc . "', input_type = '" . $it . "', display_label = '" . $dl . "', is_core = '" . $ic . "', product_type_id = '" . $ptid . "', sort_order = '" . $sort_order . "', status = '" . $status . "', show_in_list = '" . (int)($data['show_in_list'] ?? 0) . "', config = '" . $cfg . "', date_modified = NOW() WHERE tag_id = '" . (int)$tag_id . "'");
+		// select/radio 选项: 总是用提交值覆盖 (控制器永远会传 options, 即使为空)
+		if (array_key_exists('options', $data)) {
+			$this->setTagOptions((int)$tag_id, is_array($data['options']) ? $data['options'] : array());
+		}
 	}
 
 	public function deleteTag($tag_id) {
@@ -42,7 +63,50 @@ class ModelCatalogCustomTag extends Model {
 		$ids[] = (int)$tag_id;
 		$id_list = implode(',', array_map('intval', $ids));
 		$this->db->query("DELETE FROM " . DB_PREFIX . "product_to_custom_tag WHERE tag_id IN (" . $id_list . ")");
+		$this->db->query("DELETE FROM " . DB_PREFIX . "custom_tag_option WHERE tag_id IN (" . $id_list . ")");
 		$this->db->query("DELETE FROM " . DB_PREFIX . "custom_tag WHERE tag_id IN (" . $id_list . ")");
+	}
+
+	// ── 类型专属配置 / 选项 (select/radio) ──
+	// 读 select/radio 选项; 返回 [{value,text}], 与 system_column 注入的 options 形状一致。
+	public function getTagOptions($tag_id) {
+		$q = $this->db->query("SELECT * FROM " . DB_PREFIX . "custom_tag_option WHERE tag_id = '" . (int)$tag_id . "' ORDER BY sort_order ASC, option_id ASC");
+		$out = array();
+		foreach ($q->rows as $r) {
+			$out[] = array('value' => $r['value'], 'text' => $r['label']);
+		}
+		return $out;
+	}
+
+	// 写 select/radio 选项: $options = [{value,text}, ...] 或并行数组形式。
+	public function setTagOptions($tag_id, $options) {
+		$tag_id = (int)$tag_id;
+		$this->db->query("DELETE FROM " . DB_PREFIX . "custom_tag_option WHERE tag_id = '" . $tag_id . "'");
+		$sort = 0;
+		foreach ($options as $opt) {
+			$value = '';
+			$text  = '';
+			if (is_array($opt)) {
+				$value = (string)($opt['value'] ?? '');
+				$text  = (string)($opt['text'] ?? ($opt['label'] ?? ''));
+			} else {
+				$value = (string)$opt;
+				$text  = (string)$opt;
+			}
+			// 跳过完全空行
+			if ($value === '' && $text === '') { continue; }
+			$this->db->query("INSERT INTO " . DB_PREFIX . "custom_tag_option SET tag_id = '" . $tag_id . "', value = '" . $this->db->escape($value) . "', label = '" . $this->db->escape($text) . "', sort_order = '" . (int)$sort . "'");
+			$sort++;
+		}
+	}
+
+	// 读类型专属配置 JSON (number 的 unit/min/max/step, text 的 placeholder/maxlength,
+	// textarea 的 placeholder, image_multi 的 max_count); 失败/空返 []。
+	public function getTagConfig($tag_id) {
+		$tag = $this->getTag($tag_id);
+		if (!$tag || empty($tag['config'])) { return array(); }
+		$cfg = json_decode($tag['config'], true);
+		return is_array($cfg) ? $cfg : array();
 	}
 
 	// 递归收集某字段的所有后代 tag_id(含去重与基本防环)
@@ -67,19 +131,23 @@ class ModelCatalogCustomTag extends Model {
 		return in_array((int)$parent_id, $this->getDescendantIds((int)$tag_id));
 	}
 
-	// 供编辑表单父字段下拉。最大层级 4: 父字段可为任意非自身后代字段,
-	// 返回全部字段 (排除自身及其后代防成环), 按 depth 缩进前缀体现层级。
-	// $product_type_id 非零时仅返回同类型字段 (父字段必须同属一个商品类型)。
+	// 供编辑表单父字段下拉。规则: 仅结构体 (tag_type='struct') 可作父字段;
+	// 结构体始终顶级, 单层分组 (子字段不能再有子), 故只列顶级结构体, 排除自身。
+	// $product_type_id 非零时仅返回同类型结构体。
 	public function getParentOptions($exclude_tag_id = 0, $product_type_id = 0) {
-		$exclude = $exclude_tag_id ? $this->getDescendantIds((int)$exclude_tag_id) : array();
-		$exclude[] = (int)$exclude_tag_id;
+		$sql = "SELECT tag_id, name, sort_order FROM " . DB_PREFIX . "custom_tag WHERE tag_type = 'struct' AND parent_id = 0";
+		if ($exclude_tag_id) {
+			$sql .= " AND tag_id <> '" . (int)$exclude_tag_id . "'";
+		}
+		if ($product_type_id) {
+			$sql .= " AND product_type_id = '" . (int)$product_type_id . "'";
+		}
+		$sql .= " ORDER BY sort_order ASC, tag_id ASC";
 		$options = array();
-		$flat = $product_type_id ? $this->getCustomTagFlatByType((int)$product_type_id) : $this->getCustomTagFlat();
-		foreach ($flat as $row) {
-			if (in_array((int)$row['tag_id'], $exclude)) { continue; }
+		foreach ($this->db->query($sql)->rows as $row) {
 			$options[] = array(
 				'tag_id' => $row['tag_id'],
-				'name'   => str_repeat('　', (int)$row['depth']) . $row['name'],
+				'name'   => $row['name'],
 			);
 		}
 		return $options;
@@ -89,22 +157,57 @@ class ModelCatalogCustomTag extends Model {
 	// in display order: depth encodes the hierarchy and the parent is reconstructed
 	// via a depth stack (mirrors WP's wp_save_nav_menu_items). Falls back to the
 	// legacy nested [{id, children:[...]}] shape (Nestable2) for backward compat.
+	//
+	// 结构体规则: 仅 tag_type='struct' 可作父; struct 始终顶级 (depth=0); 子字段只能挂在
+	// struct 下 (单层分组, 无孙)。客户端拖拽引擎已限制, 此处服务端兜底校正防绕过。
 	public function saveTree($tree, $parent_id = 0) {
 		if (empty($tree) || !is_array($tree)) { return; }
 
 		$is_flat = isset($tree[0]) && array_key_exists('depth', $tree[0]);
 		if ($is_flat) {
+			// 预读所有节点的 tag_type, 用于校正非结构体节点能否成为前一结构体的子字段
+			$type_map = array();
+			foreach ($tree as $node) {
+				$tid = (int)($node['id'] ?? 0);
+				if ($tid) {
+					$tag = $this->getTag($tid);
+					$type_map[$tid] = $tag ? $tag['tag_type'] : '';
+				}
+			}
 			$stack = array(0 => 0); // depth => parent_id (depth 0 -> parent 0)
 			$sort  = 0;
 			foreach ($tree as $node) {
 				$tag_id = (int)($node['id'] ?? 0);
 				$depth  = (int)($node['depth'] ?? 0);
 				if (!$tag_id) { continue; }
-				if ($depth < 0) { $depth = 0; }
-				if ($depth > 4) { $depth = 4; }   // 全局上限 4 级: 最多 4 层子字段
-				$parent = ($depth <= 0) ? 0 : (isset($stack[$depth - 1]) ? $stack[$depth - 1] : 0);
+				$tt = $type_map[$tag_id] ?? '';
+				// 结构体永远顶级
+				if ($tt === 'struct') {
+					$depth  = 0;
+					$parent = 0;
+				} else {
+					if ($depth < 0) { $depth = 0; }
+					if ($depth > 1) { $depth = 1; }  // 单层: 顶级=0, struct子=1, 无孙
+					// depth=1 要求父是结构体; 否则降回顶级
+					$candidate_parent = isset($stack[0]) ? $stack[0] : 0;
+					if ($depth === 1) {
+						if ($candidate_parent && ($type_map[$candidate_parent] ?? '') === 'struct') {
+							$parent = $candidate_parent;
+						} else {
+							$depth  = 0;
+							$parent = 0;
+						}
+					} else {
+						$parent = 0;
+					}
+				}
 				$this->db->query("UPDATE " . DB_PREFIX . "custom_tag SET parent_id = '" . (int)$parent . "', sort_order = '" . (int)$sort . "', date_modified = NOW() WHERE tag_id = '" . $tag_id . "'");
-				$stack[$depth] = $tag_id;
+				// 仅结构体会被推入 stack[0] 作为子字段的候选父; 非结构体不充当当项的父
+				if ($tt === 'struct') {
+					$stack[0] = $tag_id;
+				} elseif (isset($stack[0])) {
+					// 非结构体节点不改变当前 struct 候选父 (其后的字段仍可挂到同一 struct 下)
+				}
 				$sort++;
 			}
 		} else {
@@ -176,9 +279,24 @@ class ModelCatalogCustomTag extends Model {
 	}
 
 	// ── Product-tag associations (EAV: stores per-product value) ──
+	// 结构体无值, 不进规格; select/radio 把存储的 value 解析成选项 label 显示
+	// (前台显示"启用"而非"1")。
 	public function getProductTags($product_id) {
-		$query = $this->db->query("SELECT t.tag_id, t.name, t.tag_type, t.is_required, t.display_label, pt.`value` FROM " . DB_PREFIX . "custom_tag t INNER JOIN " . DB_PREFIX . "product_to_custom_tag pt ON t.tag_id = pt.tag_id WHERE pt.product_id = '" . (int)$product_id . "' AND t.status = 1 ORDER BY t.sort_order ASC");
-		return $query->rows;
+		$query = $this->db->query("SELECT t.tag_id, t.name, t.tag_type, t.is_required, t.display_label, pt.`value` FROM " . DB_PREFIX . "custom_tag t INNER JOIN " . DB_PREFIX . "product_to_custom_tag pt ON t.tag_id = pt.tag_id WHERE pt.product_id = '" . (int)$product_id . "' AND t.status = 1 AND t.tag_type <> 'struct' ORDER BY t.sort_order ASC");
+		$rows = $query->rows;
+		// select/radio: 把 value 映射为选项 label
+		foreach ($rows as &$r) {
+			if (($r['tag_type'] === 'select' || $r['tag_type'] === 'radio') && $r['value'] !== '') {
+				foreach ($this->getTagOptions((int)$r['tag_id']) as $opt) {
+					if ((string)$opt['value'] === (string)$r['value']) {
+						$r['value'] = $opt['text'];
+						break;
+					}
+				}
+			}
+		}
+		unset($r);
+		return $rows;
 	}
 
 	/**

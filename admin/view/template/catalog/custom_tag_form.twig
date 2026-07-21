@@ -17,22 +17,23 @@
           <input type="hidden" name="product_type_id" value="{{ product_type_id }}"/>
 
           <div class="form-group required">
-            <label class="col-sm-2 control-label" for="input-name">字段名称</label>
+            <label class="col-sm-2 control-label" for="input-name">前端显示</label>
             <div class="col-sm-10">
               <input type="text" name="name" value="{{ name }}" id="input-name" class="form-control" maxlength="64"/>
+              <div class="help-block">前台 (商品卡片/规格列表/筛选) 显示的字段名称</div>
               {% if error_name %}<div class="text-danger">{{ error_name }}</div>{% endif %}
             </div>
           </div>
 
           <div class="form-group">
-            <label class="col-sm-2 control-label" for="input-display-label">显示标签</label>
+            <label class="col-sm-2 control-label" for="input-display-label">后端显示</label>
             <div class="col-sm-10">
               <input type="text" name="display_label" value="{{ display_label }}" id="input-display-label" class="form-control" maxlength="128"/>
-              <div class="help-block">用户可见的标签文字,留空则使用字段名称</div>
+              <div class="help-block">后台商品表单显示的标签,留空则使用前端显示</div>
             </div>
           </div>
 
-          <div class="form-group">
+          <div class="form-group" id="fg-parent">
             <label class="col-sm-2 control-label" for="input-parent">父字段</label>
             <div class="col-sm-10">
               <select name="parent_id" id="input-parent" class="form-control">
@@ -41,7 +42,7 @@
                 <option value="{{ opt.tag_id }}" {{ parent_id == opt.tag_id ? 'selected' }}>{{ opt.name }}</option>
                 {% endfor %}
               </select>
-              <div class="help-block">调整层级关系(也可在列表页拖拽排序)。不能设为自身或自身的子字段。</div>
+              <div class="help-block">仅"结构体"类型的字段可作为父字段(将本字段归入某个结构体分组)。也可在列表页拖拽调整。</div>
               {% if error_parent %}<div class="text-danger">{{ error_parent }}</div>{% endif %}
             </div>
           </div>
@@ -58,25 +59,102 @@
                 <option value="image_multi"  {{ tag_type == 'image_multi'  ? 'selected' }}>多张图片</option>
                 <option value="select"   {{ tag_type == 'select'   ? 'selected' }}>下拉选择</option>
                 <option value="radio"    {{ tag_type == 'radio'    ? 'selected' }}>单选</option>
+                <option value="struct"   {{ tag_type == 'struct'   ? 'selected' }}>结构体</option>
               </select>
+              <div class="help-block" id="type-hint-struct" style="display:none;">结构体是容器字段,本身不存值;在列表页拖拽其它字段到其下即建立父子分组。结构体始终为顶级,不可嵌套。</div>
             </div>
           </div>
 
-          <div class="form-group">
+          {# ── 类型专属配置区 (JS 按 tag_type 显隐) ── #}
+          <div class="form-group type-config" data-for="select" style="display:none;">
+            <label class="col-sm-2 control-label">下拉选项</label>
+            <div class="col-sm-10">
+              <div id="option-rows" style="margin-bottom:8px;">
+                {% for opt in tag_options %}
+                <div class="opt-row" style="display:flex;gap:6px;margin-bottom:6px;">
+                  <input type="text" name="options[value][]" value="{{ opt.value }}" class="form-control" placeholder="选项值 (存库)" style="flex:0 0 30%;"/>
+                  <input type="text" name="options[label][]" value="{{ opt.text }}" class="form-control" placeholder="显示文字 (留空则用选项值)" style="flex:1;"/>
+                  <button type="button" class="btn btn-danger opt-remove"><i class="fa fa-times"></i></button>
+                </div>
+                {% endfor %}
+              </div>
+              <button type="button" class="btn btn-default btn-sm" id="opt-add"><i class="fa fa-plus"></i> 添加选项</button>
+              <div class="help-block">"选项值"是存入数据库的值,"显示文字"是商品表单与前台规格中展示的文字。下拉选择至少需要 1 个选项。</div>
+            </div>
+          </div>
+
+          <div class="form-group type-config" data-for="radio" style="display:none;">
+            <label class="col-sm-2 control-label">单选选项</label>
+            <div class="col-sm-10">
+              <div id="option-rows-radio" style="margin-bottom:8px;">
+                {% for opt in tag_options %}
+                <div class="opt-row" style="display:flex;gap:6px;margin-bottom:6px;">
+                  <input type="text" name="options[value][]" value="{{ opt.value }}" class="form-control" placeholder="选项值 (存库)" style="flex:0 0 30%;"/>
+                  <input type="text" name="options[label][]" value="{{ opt.text }}" class="form-control" placeholder="显示文字 (留空则用选项值)" style="flex:1;"/>
+                  <button type="button" class="btn btn-danger opt-remove"><i class="fa fa-times"></i></button>
+                </div>
+                {% endfor %}
+              </div>
+              <button type="button" class="btn btn-default btn-sm" id="opt-add-radio"><i class="fa fa-plus"></i> 添加选项</button>
+              <div class="help-block">单选至少需要 1 个选项。如"上架/下架"对应值 1/0。</div>
+            </div>
+          </div>
+
+          <div class="form-group type-config" data-for="number" style="display:none;">
+            <label class="col-sm-2 control-label">数字配置</label>
+            <div class="col-sm-10">
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <div style="flex:1;min-width:120px;"><input type="text" name="config_unit" value="{{ config_unit }}" class="form-control" placeholder="单位 (如 mg)"/></div>
+                <div style="flex:1;min-width:100px;"><input type="number" name="config_min" value="{{ config_min }}" class="form-control" placeholder="最小值" step="any"/></div>
+                <div style="flex:1;min-width:100px;"><input type="number" name="config_max" value="{{ config_max }}" class="form-control" placeholder="最大值" step="any"/></div>
+                <div style="flex:1;min-width:100px;"><input type="number" name="config_step" value="{{ config_step }}" class="form-control" placeholder="步长" step="any"/></div>
+              </div>
+              <div class="help-block">单位会作为后缀显示在输入框旁;最小/最大/步长约束商品表单的数字输入。全部可选。</div>
+            </div>
+          </div>
+
+          <div class="form-group type-config" data-for="text" style="display:none;">
+            <label class="col-sm-2 control-label">文本配置</label>
+            <div class="col-sm-10">
+              <div style="display:flex;gap:8px;">
+                <input type="text" name="config_placeholder" value="{{ config_placeholder }}" class="form-control" placeholder="占位符 (输入框灰字提示)" style="flex:1;"/>
+                <input type="number" name="config_maxlength" value="{{ config_maxlength }}" class="form-control" placeholder="最大长度" min="0" style="flex:0 0 140px;"/>
+              </div>
+              <div class="help-block">占位符显示在输入框内作为提示;最大长度为 0 或留空表示不限制。全部可选。</div>
+            </div>
+          </div>
+
+          <div class="form-group type-config" data-for="textarea" style="display:none;">
+            <label class="col-sm-2 control-label">多行文本配置</label>
+            <div class="col-sm-10">
+              <input type="text" name="config_placeholder" value="{{ config_placeholder }}" class="form-control" placeholder="占位符 (输入框灰字提示)"/>
+              <div class="help-block">占位符显示在编辑器上方作为输入提示。可选。</div>
+            </div>
+          </div>
+
+          <div class="form-group type-config" data-for="image_multi" style="display:none;">
+            <label class="col-sm-2 control-label">多图配置</label>
+            <div class="col-sm-10">
+              <input type="number" name="config_max_count" value="{{ config_max_count }}" class="form-control" placeholder="最大数量 (0 或留空表示不限)" min="0" style="max-width:240px;"/>
+              <div class="help-block">商品表单添加图片时不超过此数量。可选。</div>
+            </div>
+          </div>
+
+          <div class="form-group" id="fg-required">
             <label class="col-sm-2 control-label">是否必填</label>
             <div class="col-sm-10">
               <label class="checkbox-inline"><input type="checkbox" name="is_required" value="1" {{ is_required == 1 ? 'checked' }}/> 启用必填校验</label>
             </div>
           </div>
 
-          <div class="form-group">
-            <label class="col-sm-2 control-label">状态</label>
+          <div class="form-group" id="fg-status">
+            <label class="col-sm-2 control-label">是否启用</label>
             <div class="col-sm-10">
               <label class="checkbox-inline"><input type="checkbox" name="status" value="1" {{ status == 1 ? 'checked' }}/> 启用(取消则前台不显示该字段)</label>
             </div>
           </div>
 
-          <div class="form-group">
+          <div class="form-group" id="fg-list">
             <label class="col-sm-2 control-label">列表显示</label>
             <div class="col-sm-10">
               <label class="checkbox-inline"><input type="checkbox" name="show_in_list" value="1" {{ show_in_list == 1 ? 'checked' }}/> 在商品列表表格中显示该字段列</label>
@@ -101,4 +179,48 @@
     </div>
   </div>
 </div>
+<script type="text/javascript"><!--
+$(function () {
+  var $type = $('#input-tag-type');
+
+  // 按 tag_type 显隐类型专属配置 + 父字段/必填/列表 (结构体隐藏)
+  // 隐藏块的 input 必须 disable, 否则仍会随表单提交 (select/radio 同名数组会重复)
+  function syncTypeUI() {
+    var t = $type.val();
+    $('.type-config').each(function () {
+      var show = ($(this).data('for') === t);
+      $(this).toggle(show);
+      $(this).find('input, select, textarea').prop('disabled', !show);
+    });
+    var isStruct = (t === 'struct');
+    $('#fg-parent').toggle(!isStruct);
+    $('#fg-required').toggle(!isStruct);
+    $('#fg-list').toggle(!isStruct);
+    $('#type-hint-struct').toggle(isStruct);
+  }
+
+  // select / radio 共用的选项行增删
+  function bindOptionRows(containerSel, addBtnSel) {
+    var $cont = $(containerSel);
+    $(addBtnSel).on('click', function () {
+      var row = '<div class="opt-row" style="display:flex;gap:6px;margin-bottom:6px;">' +
+        '<input type="text" name="options[value][]" class="form-control" placeholder="选项值 (存库)" style="flex:0 0 30%;"/>' +
+        '<input type="text" name="options[label][]" class="form-control" placeholder="显示文字 (留空则用选项值)" style="flex:1;"/>' +
+        '<button type="button" class="btn btn-danger opt-remove"><i class="fa fa-times"></i></button>' +
+        '</div>';
+      $cont.append(row);
+    });
+  }
+  bindOptionRows('#option-rows', '#opt-add');
+  bindOptionRows('#option-rows-radio', '#opt-add-radio');
+
+  // 删除选项行 (至少保留 1 行? 不强求, 空选项会被服务端忽略)
+  $(document).on('click', '.opt-remove', function () {
+    $(this).closest('.opt-row').remove();
+  });
+
+  $type.on('change', syncTypeUI);
+  syncTypeUI();
+});
+//--></script>
 {{ footer }}
