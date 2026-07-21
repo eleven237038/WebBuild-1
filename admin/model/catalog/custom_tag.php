@@ -15,7 +15,7 @@ class ModelCatalogCustomTag extends Model {
 		$cfg = $this->db->escape((string)($data['config'] ?? ''));
 		$this->db->query("INSERT INTO " . DB_PREFIX . "custom_tag SET parent_id = '" . $parent_id . "', name = '" . $this->db->escape($data['name']) . "', field_type = '" . $ft . "', tag_type = '" . $tt . "', is_required = '" . $ir . "', system_column = '" . $sc . "', input_type = '" . $it . "', display_label = '" . $dl . "', is_core = '" . $ic . "', product_type_id = '" . $ptid . "', sort_order = '" . (int)($data['sort_order'] ?? 0) . "', status = '" . (int)($data['status'] ?? 1) . "', show_in_list = '" . (int)($data['show_in_list'] ?? 0) . "', config = '" . $cfg . "', date_added = NOW(), date_modified = NOW()");
 		$tag_id = $this->db->getLastId();
-		// select/radio 选项持久化
+		// select 选项持久化
 		if (!empty($data['options']) && is_array($data['options'])) {
 			$this->setTagOptions($tag_id, $data['options']);
 		}
@@ -48,8 +48,8 @@ class ModelCatalogCustomTag extends Model {
 		} else {
 			$cfg = $this->db->escape((string)($existing['config'] ?? ''));
 		}
-		$this->db->query("UPDATE " . DB_PREFIX . "custom_tag SET parent_id = '" . $parent_id . "', name = '" . $name . "', field_type = '" . $ft . "', tag_type = '" . $tt . "', is_required = '" . $ir . "', system_column = '" . $sc . "', input_type = '" . $it . "', display_label = '" . $dl . "', is_core = '" . $ic . "', product_type_id = '" . $ptid . "', sort_order = '" . $sort_order . "', status = '" . $status . "', show_in_list = '" . (int)($data['show_in_list'] ?? 0) . "', config = '" . $cfg . "', date_modified = NOW() WHERE tag_id = '" . (int)$tag_id . "'");
-		// select/radio 选项: 总是用提交值覆盖 (控制器永远会传 options, 即使为空)
+		$this->db->query("UPDATE " . DB_PREFIX . "custom_tag SET parent_id = '" . $parent_id . "', name = '" . $name . "', field_type = '" . $ft . "', tag_type = '" . $tt . "', is_required = '" . $ir . "', system_column = '" . $sc . "', input_type = '" . $it . "', display_label = '" . $dl . "', is_core = '" . $ic . "', product_type_id = '" . $ptid . "', sort_order = '" . $sort_order . "', status = '" . $status . "', show_in_list = '" . (int)($data['show_in_list'] ?? $existing['show_in_list']) . "', config = '" . $cfg . "', date_modified = NOW() WHERE tag_id = '" . (int)$tag_id . "'");
+		// select 选项: 总是用提交值覆盖 (控制器永远会传 options, 即使为空)
 		if (array_key_exists('options', $data)) {
 			$this->setTagOptions((int)$tag_id, is_array($data['options']) ? $data['options'] : array());
 		}
@@ -65,8 +65,8 @@ class ModelCatalogCustomTag extends Model {
 		$this->db->query("DELETE FROM " . DB_PREFIX . "custom_tag WHERE tag_id IN (" . $id_list . ")");
 	}
 
-	// ── 类型专属配置 / 选项 (select/radio) ──
-	// 读 select/radio 选项; 返回 [{value,text}], 与 system_column 注入的 options 形状一致。
+	// ── 类型专属配置 / 选项 (select) ──
+	// 读 select 选项; 返回 [{value,text}], 与 system_column 注入的 options 形状一致。
 	public function getTagOptions($tag_id) {
 		$q = $this->db->query("SELECT * FROM " . DB_PREFIX . "custom_tag_option WHERE tag_id = '" . (int)$tag_id . "' ORDER BY sort_order ASC, option_id ASC");
 		$out = array();
@@ -76,7 +76,7 @@ class ModelCatalogCustomTag extends Model {
 		return $out;
 	}
 
-	// 写 select/radio 选项: $options = [{value,text}, ...] 或并行数组形式。
+	// 写 select 选项: $options = [{value,text}, ...] 或并行数组形式。
 	public function setTagOptions($tag_id, $options) {
 		$tag_id = (int)$tag_id;
 		$this->db->query("DELETE FROM " . DB_PREFIX . "custom_tag_option WHERE tag_id = '" . $tag_id . "'");
@@ -292,14 +292,14 @@ class ModelCatalogCustomTag extends Model {
 	}
 
 	// ── Product-tag associations (EAV: stores per-product value) ──
-	// 结构体无值, 不进规格; select/radio 把存储的 value 解析成选项 label 显示
+	// 结构体无值, 不进规格; select 把存储的 value 解析成选项 label 显示
 	// (前台显示"启用"而非"1")。
 	public function getProductTags($product_id) {
 		$query = $this->db->query("SELECT t.tag_id, t.name, t.tag_type, t.is_required, t.display_label, pt.`value` FROM " . DB_PREFIX . "custom_tag t INNER JOIN " . DB_PREFIX . "product_to_custom_tag pt ON t.tag_id = pt.tag_id WHERE pt.product_id = '" . (int)$product_id . "' AND t.status = 1 AND t.tag_type <> 'struct' ORDER BY t.sort_order ASC");
 		$rows = $query->rows;
-		// select/radio: 把 value 映射为选项 label
+		// select: 把 value 映射为选项 label
 		foreach ($rows as &$r) {
-			if (($r['tag_type'] === 'select' || $r['tag_type'] === 'radio') && $r['value'] !== '') {
+			if ($r['tag_type'] === 'select' && $r['value'] !== '') {
 				foreach ($this->getTagOptions((int)$r['tag_id']) as $opt) {
 					if ((string)$opt['value'] === (string)$r['value']) {
 						$r['value'] = $opt['text'];

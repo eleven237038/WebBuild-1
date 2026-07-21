@@ -140,7 +140,7 @@
           <div class="panel-heading">
             <span class="panel-title"><i class="fa fa-cubes"></i> 类型</span>
             <div class="type-field-actions">
-              <a href="{{ add }}" class="btn btn-primary btn-sm"><i class="fa fa-plus"></i> 添加字段</a>
+              <a href="{{ add }}" class="btn btn-primary btn-sm mfo-add-field"><i class="fa fa-plus"></i> 添加字段</a>
               <button onclick="saveTree()" class="btn btn-success btn-sm" id="btn-save-tree"><i class="fa fa-save"></i> 保存排序</button>
               <button type="button" onclick="deleteSelected()" class="btn btn-danger btn-sm"><i class="fa fa-trash-o"></i> 批量删除</button>
             </div>
@@ -206,7 +206,7 @@
                           <span class="badge-type" data-type="{{ field.tag_type }}">{{ field.tag_type }}</span>
                           {% if field.is_required == 1 %}<span class="badge-required">必填</span>{% endif %}
                         </span>
-                        <a href="index.php?route=catalog/custom_tag/edit&user_token={{ user_token }}&tag_id={{ field.tag_id }}&product_type_id={{ product_type_id }}" class="btn btn-default btn-xs tag-nodrag" data-toggle="tooltip" title="编辑"><i class="fa fa-pencil"></i></a>
+                        <a href="index.php?route=catalog/custom_tag/edit&user_token={{ user_token }}&tag_id={{ field.tag_id }}&product_type_id={{ product_type_id }}" class="btn btn-default btn-xs tag-nodrag mfo-edit-field" data-toggle="tooltip" title="编辑"><i class="fa fa-pencil"></i></a>
                         <button type="button" class="btn btn-danger btn-xs tag-nodrag" data-toggle="tooltip" title="删除" onclick="deleteField({{ field.tag_id }})"><i class="fa fa-trash"></i></button>
                       </span>
                     </div>
@@ -234,7 +234,7 @@ var addTypeUrl = decodeUrl('{{ add_type|raw }}');
 var renameTypeUrl = decodeUrl('{{ rename_type|raw }}');
 var deleteTypeUrl = decodeUrl('{{ delete_type|raw }}');
 var listBaseUrl = decodeUrl('{{ list_base|raw }}');
-var typeLabels = {text:'文本',textarea:'多行文本',number:'数字',date:'日期',image_single:'单张图片',image_multi:'多张图片',select:'下拉选择',radio:'单选',struct:'结构体'};
+var typeLabels = {text:'文本',textarea:'多行文本',number:'数字',date:'日期',image_single:'单张图片',image_multi:'多张图片',select:'下拉选择',struct:'结构体'};
 
 /* =============================================================================
  *  WordPress nav-menu 拖拽引擎 (移植自 wp-admin/js/nav-menu.js)
@@ -641,6 +641,10 @@ $(function() {
   wpTagNav.onChange = scheduleSave;   // 把拖拽/键盘变更接到自动保存 (修复旧版 autosave 从不触发的 bug)
   $('body').tooltip({ selector: '[data-toggle="tooltip"]' });
 
+  // ── 添加字段 / 编辑字段 走模态弹窗 (不再跳整页) ──
+  $(document).on('click', '.mfo-add-field', function(e) { e.preventDefault(); openModalForm(this.href, '添加字段'); });
+  $(document).on('click', '.mfo-edit-field', function(e) { e.preventDefault(); openModalForm(this.href, '编辑字段'); });
+
   // ── 类型下拉: 悬停为主交互 (CSS), 点击切换 .open 做触屏兜底, 点外部收起 ──
   (function() {
     var $dd = $('#type-dropdown');
@@ -757,4 +761,5 @@ $(function() {
   }
 });
 </script>
+{% include 'common/modal_form_overlay.twig' %}
 {{ footer }}

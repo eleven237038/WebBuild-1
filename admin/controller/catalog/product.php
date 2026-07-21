@@ -75,6 +75,12 @@ class ControllerCatalogProduct extends Controller {
 				$url .= '&page=' . $this->request->get['page'];
 			}
 
+			// 模态弹窗保存成功: 渲染微型信号页, 由父页 iframe load 处理器检测后关闭弹窗并刷新列表
+			if (!empty($this->request->post['modal']) || !empty($this->request->get['modal'])) {
+				$this->renderModalSaved();
+				return;
+			}
+
 			$this->response->redirect($this->url->link('catalog/product', 'user_token=' . $this->session->data['user_token'] . $url));
 		}
 
@@ -126,6 +132,12 @@ class ControllerCatalogProduct extends Controller {
 
 			if (isset($this->request->get['page'])) {
 				$url .= '&page=' . $this->request->get['page'];
+			}
+
+			// 模态弹窗保存成功: 渲染微型信号页 (见 add() 注释)
+			if (!empty($this->request->post['modal']) || !empty($this->request->get['modal'])) {
+				$this->renderModalSaved();
+				return;
 			}
 
 			$this->response->redirect($this->url->link('catalog/product', 'user_token=' . $this->session->data['user_token'] . $url));
@@ -1254,7 +1266,14 @@ class ControllerCatalogProduct extends Controller {
 		$data['column_left'] = $this->load->controller('common/column_left');
 		$data['footer'] = $this->load->controller('common/footer');
 
+		$data['modal'] = !empty($this->request->get['modal']) || !empty($this->request->post['modal']);
 		$this->response->setOutput($this->load->view('catalog/product_form', $data));
+	}
+
+	// 模态保存成功信号页: <body data-modal-result="success"> 由父页 iframe load 处理器检测。
+	protected function renderModalSaved() {
+		$this->response->addHeader('Content-Type: text/html; charset=utf-8');
+		$this->response->setOutput('<!DOCTYPE html><html><head><meta charset="utf-8"></head><body data-modal-result="success">OK</body></html>');
 	}
 
 	protected function validateForm() {

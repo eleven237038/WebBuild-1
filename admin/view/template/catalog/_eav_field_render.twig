@@ -1,7 +1,8 @@
 {# ==========================================================================
  *  EAV Field Render Macro - Dynamic Form Engine
  *  Renders native OpenCart components based on tag_type
- *  Supported: text, textarea (Summernote), select, radio, image (Image Manager), date (Datepicker), number
+ *  Supported: text, textarea (Summernote), select, image (Image Manager), date (Datepicker), number
+ *  (radio 已合并入 select: 有选项 -> 下拉; 无选项 -> 是/否 布尔下拉)
  *
  *  Macros run in isolated scope and cannot see the caller's template context,
  *  so all UI strings / placeholder URL are passed explicitly via the `ui` map.
@@ -44,7 +45,7 @@
     {% elseif field.tag_type is defined and field.tag_type == 'textarea' %}
       <textarea name="{{ name }}" id="input-{{ idk }}" data-toggle="summernote" data-lang="{{ l_sn }}" class="form-control tinymce" placeholder="{{ cfg.placeholder is defined and cfg.placeholder is not empty ? cfg.placeholder : '' }}">{{ val }}</textarea>
 
-    {# --- 下拉选择 (有选项时渲染 select；无选项时退化为文本输入，避免空下拉) --- #}
+    {# --- 下拉选择 (有选项时渲染 select; 无选项时退化为 是/否 布尔下拉, 原 radio 合并至此) --- #}
     {% elseif field.tag_type is defined and field.tag_type == 'select' %}
       {% if field.options is defined and field.options is not empty %}
         <select name="{{ name }}" id="input-{{ idk }}" class="form-control">
@@ -54,18 +55,10 @@
           {% endfor %}
         </select>
       {% else %}
-        <input type="text" name="{{ name }}" value="{{ val }}" id="input-{{ idk }}" class="form-control" placeholder="{{ label }}"/>
-      {% endif %}
-
-    {# --- 单选按钮 (有选项时渲染注入选项, 如状态 启用/禁用; 无选项时退化为 是/否) --- #}
-    {% elseif field.tag_type is defined and field.tag_type == 'radio' %}
-      {% if field.options is defined and field.options is not empty %}
-        {% for opt in field.options %}
-          <label class="radio-inline"><input type="radio" name="{{ name }}" value="{{ opt.value }}" {{ val == opt.value ? 'checked' }}> {{ opt.text }}</label>
-        {% endfor %}
-      {% else %}
-        <label class="radio-inline"><input type="radio" name="{{ name }}" value="1" {{ val == 1 ? 'checked' }}> {{ l_yes }}</label>
-        <label class="radio-inline"><input type="radio" name="{{ name }}" value="0" {{ val != 1 ? 'checked' }}> {{ l_no }}</label>
+        <select name="{{ name }}" id="input-{{ idk }}" class="form-control">
+          <option value="1" {{ val == 1 ? 'selected' }}>{{ l_yes }}</option>
+          <option value="0" {{ val != 1 ? 'selected' }}>{{ l_no }}</option>
+        </select>
       {% endif %}
 
     {# --- 单张图片 (头像式裁剪, 服务端强制 1:1 输出) --- #}

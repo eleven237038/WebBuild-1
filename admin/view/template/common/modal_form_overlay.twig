@@ -1,0 +1,80 @@
+{# ==========================================================================
+ *  Modal Form Overlay - 在原页面中心弹出窗口加载另一个管理表单页 (iframe)。
+ *  用法: openModalForm(url, title)  —— url 可含 &amp; (自动解码), 自动补 &modal=1。
+ *  iframe 加载完整表单页 (含 header 资源), 注入 CSS 隐藏 #header/#column-left 等 chrome;
+ *  表单提交成功后控制器渲染 <body data-modal-result="success">, 本脚本检测后关闭弹窗并刷新父页。
+ *  添加字段 / 编辑字段 / 新建商品 共用此弹窗。
+ * ========================================================================== #}
+<style>
+#mfo-overlay { position:fixed; inset:0; background:rgba(15,23,42,.55); z-index:9999; display:none; align-items:flex-start; justify-content:center; padding:20px; box-sizing:border-box; overflow:auto; }
+#mfo-overlay .mfo-wrap { background:#fff; border-radius:8px; box-shadow:0 20px 60px rgba(0,0,0,.3); width:96vw; max-width:1180px; height:92vh; display:flex; flex-direction:column; overflow:hidden; }
+#mfo-overlay .mfo-head { display:flex; align-items:center; justify-content:space-between; padding:10px 16px; background:#1e293b; color:#fff; flex-shrink:0; }
+#mfo-overlay .mfo-title { font-size:14px; font-weight:600; }
+#mfo-overlay .mfo-close { background:none; border:none; color:#fff; font-size:24px; line-height:1; cursor:pointer; padding:0 6px; }
+#mfo-overlay .mfo-close:hover { color:#fca5a5; }
+#mfo-overlay .mfo-body { flex:1; position:relative; overflow:hidden; background:#fff; }
+#mfo-overlay .mfo-body iframe { width:100%; height:100%; border:0; display:block; background:#fff; }
+#mfo-overlay .mfo-loading::after { content:'加载中…'; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#94a3b8; font-size:13px; }
+</style>
+<div id="mfo-overlay">
+  <div class="mfo-wrap">
+    <div class="mfo-head">
+      <span class="mfo-title" id="mfo-title"></span>
+      <button type="button" class="mfo-close" id="mfo-close" title="关闭">&times;</button>
+    </div>
+    <div class="mfo-body mfo-loading" id="mfo-body">
+      <iframe id="mfo-frame" name="mfo-frame"></iframe>
+    </div>
+  </div>
+</div>
+<script type="text/javascript"><!--
+$(function () {
+  var $ov = $('#mfo-overlay');
+  var $frame = $('#mfo-frame');
+  var $body = $('#mfo-body');
+  var $title = $('#mfo-title');
+
+  // 隐藏表单页的管理 chrome (顶栏/侧栏/页脚), 让表单在弹窗里干净显示。
+  function injectChromeCSS(doc) {
+    if (!doc || doc.getElementById('mfo-chrome-hide')) { return; }
+    var s = doc.createElement('style');
+    s.id = 'mfo-chrome-hide';
+    s.textContent = '#header,#column-left,#footer{display:none !important;} #content{margin-left:0 !important; margin-top:0 !important; padding:0 0 12px !important;} body{background:#fff !important; padding-top:0 !important;} .page-header{margin-top:0 !important;}';
+    (doc.head || doc.documentElement).appendChild(s);
+  }
+
+  window.openModalForm = function (url, title) {
+    url = String(url).replace(/&amp;/g, '&');
+    if (url.indexOf('modal=') === -1) {
+      url += (url.indexOf('?') === -1 ? '?modal=1' : '&modal=1');
+    }
+    $title.text(title || '');
+    $body.addClass('mfo-loading');
+    $frame.on('load.mfo', function () {
+      $body.removeClass('mfo-loading');
+      try {
+        var doc = this.contentDocument || this.contentWindow.document;
+        if (doc && doc.body && doc.body.getAttribute('data-modal-result') === 'success') {
+          closeModalForm();
+          location.reload();   // 刷新父页列表, 显示新增/改后的字段或商品
+          return;
+        }
+        injectChromeCSS(doc);
+      } catch (e) { /* 跨域 (理论不会发生, 同源) */ }
+    });
+    $frame.attr('src', url);
+    $ov.show();
+  };
+
+  function closeModalForm() {
+    $ov.hide();
+    $frame.off('load.mfo').attr('src', 'about:blank');
+    $body.addClass('mfo-loading');
+  }
+  window.closeModalForm = closeModalForm;
+
+  $('#mfo-close').on('click', closeModalForm);
+  $ov.on('click', function (e) { if (e.target === this) { closeModalForm(); } });   // 点遮罩关闭
+  $(document).on('keydown.mfo', function (e) { if (e.which === 27 && $ov.is(':visible')) { closeModalForm(); } });   // ESC
+});
+//--></script>

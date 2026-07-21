@@ -4,7 +4,7 @@
     <div class="container-fluid">
       <div class="pull-right">
         <button type="button" data-toggle="tooltip" title="{{ button_filter }}" onclick="$('#filter-product').toggleClass('hidden-sm hidden-xs');" class="btn btn-default hidden-md hidden-lg"><i class="fa fa-filter"></i></button>
-        <a href="{{ add }}" data-toggle="tooltip" title="{{ button_add }}" class="btn btn-primary"><i class="fa fa-plus"></i></a>
+        <a href="{{ add }}" data-toggle="tooltip" title="{{ button_add }}" class="btn btn-primary mfo-add-product"><i class="fa fa-plus"></i></a>
         <button type="submit" form="form-product" formaction="{{ copy }}" data-toggle="tooltip" title="{{ button_copy }}" class="btn btn-default"><i class="fa fa-copy"></i></button>
         <button type="button" form="form-product" formaction="{{ delete }}" data-toggle="tooltip" title="{{ button_delete }}" class="btn btn-danger" onclick="confirm('{{ text_confirm }}') ? $('#form-product').submit() : false;"><i class="fa fa-trash-o"></i></button>
       </div>
@@ -242,4 +242,11 @@ $('input[name="product-status-toggle"]').on('switchChange.bootstrapSwitch', func
   });
 });
 //--></script>
+<script type="text/javascript"><!--
+$(function() {
+  // ── 新建商品 走模态弹窗 (不再跳整页) ──
+  $(document).on('click', '.mfo-add-product', function(e) { e.preventDefault(); openModalForm(this.href, '新建商品'); });
+});
+//--></script>
+{% include 'common/modal_form_overlay.twig' %}
 {{ footer }}

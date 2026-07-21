@@ -78,6 +78,11 @@ class ControllerCatalogCustomTag extends Controller {
 				$this->response->setOutput(json_encode(['success' => true]));
 				return;
 			}
+			// 模态弹窗保存成功: 渲染微型信号页, 由父页 iframe load 处理器检测后关闭弹窗并刷新列表
+			if (!empty($this->request->post['modal']) || !empty($this->request->get['modal'])) {
+				$this->renderModalSaved();
+				return;
+			}
 			$pt = (int)$this->request->post['product_type_id'];
 			$pt_query = $pt ? '&product_type_id=' . $pt : '';
 			$this->response->redirect($this->url->link('catalog/custom_tag', 'user_token=' . $this->session->data['user_token'] . $pt_query));
@@ -101,6 +106,11 @@ class ControllerCatalogCustomTag extends Controller {
 			$this->request->post['config']  = $this->collectTagConfig((string)($this->request->post['tag_type'] ?? 'text'));
 			$this->model_catalog_custom_tag->editTag($this->request->get['tag_id'], $this->request->post);
 			$this->session->data['success'] = '字段已更新';
+			// 模态弹窗保存成功: 渲染微型信号页 (见 add() 注释)
+			if (!empty($this->request->post['modal']) || !empty($this->request->get['modal'])) {
+				$this->renderModalSaved();
+				return;
+			}
 			// 回列表时保留所属商品类型
 			$tag_info = $this->model_catalog_custom_tag->getTag((int)$this->request->get['tag_id']);
 			$pt = (int)($tag_info['product_type_id'] ?? 0);
@@ -187,7 +197,14 @@ class ControllerCatalogCustomTag extends Controller {
 		$data['header'] = $this->load->controller('common/header');
 		$data['column_left'] = $this->load->controller('common/column_left');
 		$data['footer'] = $this->load->controller('common/footer');
+		$data['modal'] = !empty($this->request->get['modal']) || !empty($this->request->post['modal']);
 		$this->response->setOutput($this->load->view('catalog/custom_tag_form', $data));
+	}
+
+	// 模态保存成功信号页: <body data-modal-result="success"> 由父页 iframe load 处理器检测。
+	protected function renderModalSaved() {
+		$this->response->addHeader('Content-Type: text/html; charset=utf-8');
+		$this->response->setOutput('<!DOCTYPE html><html><head><meta charset="utf-8"></head><body data-modal-result="success">OK</body></html>');
 	}
 
 	public function delete() {
