@@ -221,7 +221,7 @@ $(document).ready(function() {
                         var file = evt.data;
                         console.log(file['resizedUrl']);
                         $.ajax({
-                            url: 'index.php?route=common/filemanager/ckfinder&token=' + getURLVar('token') + '&restore=1&target=' + $element.parent().find('input').attr('id') + '&thumb=' + $element.attr('id'),
+                            url: 'index.php?route=common/filemanager/ckfinder&user_token=' + getURLVar('user_token') + '&restore=1&target=' + $element.parent().find('input').attr('id') + '&thumb=' + $element.attr('id'),
                             data : 'files=' + file['resizedUrl'],
                             type : 'post',
                             dataType : 'json',

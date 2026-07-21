@@ -436,4 +436,110 @@ class ControllerCommonFileManager extends Controller {
         $this->response->addHeader('Content-Type: application/json');
         $this->response->setOutput(json_encode($json));
     }
+
+    /**
+     * 头像式图片上传 + 裁剪
+     * 接收 canvas data URL (data:image/<ext>;base64,...), 服务端用 GD 强制重绘为
+     * 600x600 正方形, 保证保存的图片宽高永远一致 (1:1). 返回与 ckfinder() 同结构的 JSON.
+     */
+    public function crop() {
+        $this->load->language('common/filemanager');
+
+        $json = array();
+
+        if (!$this->user->hasPermission('modify', 'common/filemanager')) {
+            $json['error'] = $this->language->get('error_permission');
+        }
+
+        $data_url = isset($this->request->post['file']) ? $this->request->post['file'] : '';
+
+        if (!$json && !$data_url) {
+            $json['error'] = $this->language->get('error_upload');
+        }
+
+        if (!$json) {
+            // 解析 data URL: data:image/<ext>;base64,<payload>
+            if (!preg_match('/^data:image\/([a-zA-Z0-9]+);base64,(.+)$/s', $data_url, $m)) {
+                $json['error'] = $this->language->get('error_filetype');
+            } else {
+                $ext_raw = strtolower($m[1]);
+
+                if ($ext_raw == 'jpeg') {
+                    $ext = 'jpg';
+                } elseif (in_array($ext_raw, array('jpg', 'png', 'gif'))) {
+                    $ext = $ext_raw;
+                } else {
+                    $ext = 'jpg';
+                }
+
+                $blob = base64_decode($m[2]);
+                $source = @imagecreatefromstring($blob);
+
+                if ($source === false) {
+                    $json['error'] = $this->language->get('error_upload');
+                } else {
+                    $sw = imagesx($source);
+                    $sh = imagesy($source);
+
+                    $side = 600; // 固定输出 600x600 正方形
+
+                    $canvas = imagecreatetruecolor($side, $side);
+
+                    if ($ext == 'png') {
+                        imagealphablending($canvas, false);
+                        imagesavealpha($canvas, true);
+                        $transparent = imagecolorallocatealpha($canvas, 0, 0, 0, 127);
+                        imagefilledrectangle($canvas, 0, 0, $side, $side, $transparent);
+                    } else {
+                        // jpg / gif: 白色底
+                        $bg = imagecolorallocate($canvas, 255, 255, 255);
+                        imagefilledrectangle($canvas, 0, 0, $side, $side, $bg);
+                    }
+
+                    imagecopyresampled($canvas, $source, 0, 0, 0, 0, $side, $side, $sw, $sh);
+                    imagedestroy($source);
+
+                    $dir = DIR_IMAGE . 'catalog/cropped/';
+
+                    if (!is_dir($dir)) {
+                        @mkdir($dir, 0777, true);
+                    }
+
+                    $filename = date('Ymd_His') . '_' . substr(md5($blob), 0, 8) . '.' . $ext;
+                    $path = $dir . $filename;
+
+                    if ($ext == 'png') {
+                        imagepng($canvas, $path, 6);
+                    } elseif ($ext == 'gif') {
+                        imagegif($canvas, $path);
+                    } else {
+                        imagejpeg($canvas, $path, 90);
+                    }
+
+                    imagedestroy($canvas);
+
+                    $rel = 'catalog/cropped/' . $filename;
+
+                    $this->load->model('tool/image');
+
+                    $json = array(
+                        'code'   => 1,
+                        'result' => array(
+                            array(
+                                'thumb' => $this->model_tool_image->resize($rel, 100, 100),
+                                'image' => $rel
+                            )
+                        )
+                    );
+                }
+            }
+        }
+
+        if (isset($json['error'])) {
+            $json['code'] = 0;
+        }
+
+        $this->response->addHeader('Content-Type: application/json');
+        $this->response->setOutput(json_encode($json));
+    }
 }
