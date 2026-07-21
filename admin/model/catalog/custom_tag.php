@@ -9,8 +9,8 @@ class ModelCatalogCustomTag extends Model {
 		$dl  = $this->db->escape((string)($data['display_label'] ?? ''));
 		$ic  = (int)($data['is_core'] ?? 0);
 		$ptid = (int)($data['product_type_id'] ?? 0);
-		// 结构体始终顶级, 不能作子字段
-		$parent_id = ($tt === 'struct') ? 0 : (int)($data['parent_id'] ?? 0);
+		// 结构体现可嵌套子结构体 (最多 3 层); 父级须为结构体, 深度由 validateForm/saveTree 兜底
+		$parent_id = (int)($data['parent_id'] ?? 0);
 		// 类型专属配置 (number/text/textarea/image_multi): JSON 文本列
 		$cfg = $this->db->escape((string)($data['config'] ?? ''));
 		$this->db->query("INSERT INTO " . DB_PREFIX . "custom_tag SET parent_id = '" . $parent_id . "', name = '" . $this->db->escape($data['name']) . "', field_type = '" . $ft . "', tag_type = '" . $tt . "', is_required = '" . $ir . "', system_column = '" . $sc . "', input_type = '" . $it . "', display_label = '" . $dl . "', is_core = '" . $ic . "', product_type_id = '" . $ptid . "', sort_order = '" . (int)($data['sort_order'] ?? 0) . "', status = '" . (int)($data['status'] ?? 1) . "', show_in_list = '" . (int)($data['show_in_list'] ?? 0) . "', config = '" . $cfg . "', date_added = NOW(), date_modified = NOW()");
@@ -36,8 +36,6 @@ class ModelCatalogCustomTag extends Model {
 		$ic         = (int)($data['is_core'] ?? $existing['is_core']);
 		$ptid       = (int)($data['product_type_id'] ?? $existing['product_type_id']);
 		$parent_id  = (int)($data['parent_id'] ?? $existing['parent_id']);
-		// 结构体始终顶级, 不能作子字段
-		if ($tt === 'struct') { $parent_id = 0; }
 		// 成环防御:父级不能是自身或自身后代
 		if ($parent_id && $this->wouldCreateCycle((int)$tag_id, $parent_id)) {
 			$parent_id = (int)$existing['parent_id'];
@@ -131,41 +129,59 @@ class ModelCatalogCustomTag extends Model {
 		return in_array((int)$parent_id, $this->getDescendantIds((int)$tag_id));
 	}
 
-	// 供编辑表单父字段下拉。规则: 仅结构体 (tag_type='struct') 可作父字段;
-	// 结构体始终顶级, 单层分组 (子字段不能再有子), 故只列顶级结构体, 排除自身。
-	// $product_type_id 非零时仅返回同类型结构体。
+	// 供编辑表单父字段下拉。规则: 仅结构体 (tag_type='struct') 可作父字段; 结构体可嵌套
+	// 子结构体 (最多 3 层), 故列出全部结构体 (任意深度), 按深度缩进显示; 排除自身及其所有
+	// 后代 (成环防御)。$product_type_id 非零时仅返回同类型结构体。返回值附 depth 供前端按
+	// 类型门控 (结构体作子时父级深度须 <= 1, 即子结构体 depth <= 2)。
 	public function getParentOptions($exclude_tag_id = 0, $product_type_id = 0) {
-		$sql = "SELECT tag_id, name, sort_order FROM " . DB_PREFIX . "custom_tag WHERE tag_type = 'struct' AND parent_id = 0";
-		if ($exclude_tag_id) {
-			$sql .= " AND tag_id <> '" . (int)$exclude_tag_id . "'";
-		}
-		if ($product_type_id) {
-			$sql .= " AND product_type_id = '" . (int)$product_type_id . "'";
-		}
-		$sql .= " ORDER BY sort_order ASC, tag_id ASC";
+		$exclude = $exclude_tag_id ? $this->getDescendantIds((int)$exclude_tag_id) : array();
+		$exclude[] = (int)$exclude_tag_id;
+		$flat = $product_type_id ? $this->getCustomTagFlatByType((int)$product_type_id) : $this->getCustomTagFlat();
 		$options = array();
-		foreach ($this->db->query($sql)->rows as $row) {
+		foreach ($flat as $row) {
+			if ($row['tag_type'] !== 'struct') { continue; }
+			if (in_array((int)$row['tag_id'], $exclude, true)) { continue; }
 			$options[] = array(
 				'tag_id' => $row['tag_id'],
-				'name'   => $row['name'],
+				'name'   => str_repeat('　', (int)$row['depth']) . $row['name'],
+				'depth'  => (int)$row['depth'],
 			);
 		}
 		return $options;
 	}
 
+	// 计算某结构体的嵌套深度 (祖先链中结构体个数 = 其 depth; 仅结构体可作父)。
+	// 用于 validateForm 校验结构体作子时父级深度 <= 1 (子结构体 depth <= 2, 即最多 3 层)。
+	public function getStructDepth($tag_id) {
+		$depth = 0;
+		$seen  = array((int)$tag_id);
+		$current = $this->getTag((int)$tag_id);
+		while ($current && (int)$current['parent_id']) {
+			$pid = (int)$current['parent_id'];
+			if (in_array($pid, $seen, true)) { break; } // 防环
+			$seen[] = $pid;
+			$parent = $this->getTag($pid);
+			if (!$parent) { break; }
+			$depth++;
+			$current = $parent;
+		}
+		return $depth;
+	}
+
 	// Batch save tree. Accepts the WordPress-style flat payload [{id, depth}, ...]
 	// in display order: depth encodes the hierarchy and the parent is reconstructed
-	// via a depth stack (mirrors WP's wp_save_nav_menu_items). Falls back to the
+	// via a struct-only stack (mirrors WP's wp_save_nav_menu_items). Falls back to the
 	// legacy nested [{id, children:[...]}] shape (Nestable2) for backward compat.
 	//
-	// 结构体规则: 仅 tag_type='struct' 可作父; struct 始终顶级 (depth=0); 子字段只能挂在
-	// struct 下 (单层分组, 无孙)。客户端拖拽引擎已限制, 此处服务端兜底校正防绕过。
+	// 结构体规则: 仅 tag_type='struct' 可作父; 结构体可嵌套子结构体最多 3 层 (depth 0/1/2);
+	// 普通字段可挂任意结构体下 (最深 depth 3)。struct_stack[i] = 当前作为第 i 层父级的结构体
+	// tag_id (仅结构体入栈; 字段不入栈故不能作父)。客户端拖拽引擎已限制, 此处服务端兜底校正。
 	public function saveTree($tree, $parent_id = 0) {
 		if (empty($tree) || !is_array($tree)) { return; }
 
 		$is_flat = isset($tree[0]) && array_key_exists('depth', $tree[0]);
 		if ($is_flat) {
-			// 预读所有节点的 tag_type, 用于校正非结构体节点能否成为前一结构体的子字段
+			// 预读所有节点的 tag_type
 			$type_map = array();
 			foreach ($tree as $node) {
 				$tid = (int)($node['id'] ?? 0);
@@ -174,39 +190,36 @@ class ModelCatalogCustomTag extends Model {
 					$type_map[$tid] = $tag ? $tag['tag_type'] : '';
 				}
 			}
-			$stack = array(0 => 0); // depth => parent_id (depth 0 -> parent 0)
-			$sort  = 0;
+			$struct_stack = array(); // depth => 结构体 tag_id (仅结构体入栈)
+			$sort = 0;
 			foreach ($tree as $node) {
 				$tag_id = (int)($node['id'] ?? 0);
 				$depth  = (int)($node['depth'] ?? 0);
 				if (!$tag_id) { continue; }
 				$tt = $type_map[$tag_id] ?? '';
-				// 结构体永远顶级
-				if ($tt === 'struct') {
-					$depth  = 0;
+				// 按类型钳制最大深度: 结构体 2 (3 层), 普通字段 3
+				$cap = ($tt === 'struct') ? 2 : 3;
+				if ($depth > $cap) { $depth = $cap; }
+				if ($depth < 0) { $depth = 0; }
+				// depth=0 -> 顶级; depth>0 -> 父级须是 struct_stack[depth-1] 处的结构体
+				if ($depth === 0) {
 					$parent = 0;
+					$struct_stack = array();
+				} elseif (isset($struct_stack[$depth - 1])) {
+					$parent = $struct_stack[$depth - 1];
+					// 截断栈: 丢弃更深的结构体引用 (已离开其子树, 防止字段后误挂旧父)
+					$struct_stack = array_slice($struct_stack, 0, $depth, true);
 				} else {
-					if ($depth < 0) { $depth = 0; }
-					if ($depth > 1) { $depth = 1; }  // 单层: 顶级=0, struct子=1, 无孙
-					// depth=1 要求父是结构体; 否则降回顶级
-					$candidate_parent = isset($stack[0]) ? $stack[0] : 0;
-					if ($depth === 1) {
-						if ($candidate_parent && ($type_map[$candidate_parent] ?? '') === 'struct') {
-							$parent = $candidate_parent;
-						} else {
-							$depth  = 0;
-							$parent = 0;
-						}
-					} else {
-						$parent = 0;
-					}
+					// 缺少 depth-1 处的结构体父级 -> 降回顶级
+					$depth = 0;
+					$parent = 0;
+					$struct_stack = array();
 				}
 				$this->db->query("UPDATE " . DB_PREFIX . "custom_tag SET parent_id = '" . (int)$parent . "', sort_order = '" . (int)$sort . "', date_modified = NOW() WHERE tag_id = '" . $tag_id . "'");
-				// 仅结构体会被推入 stack[0] 作为子字段的候选父; 非结构体不充当当项的父
+				// 仅结构体入栈 (成为下一层子字段的父级候选); 字段不入栈 (不能作父)
 				if ($tt === 'struct') {
-					$stack[0] = $tag_id;
-				} elseif (isset($stack[0])) {
-					// 非结构体节点不改变当前 struct 候选父 (其后的字段仍可挂到同一 struct 下)
+					$struct_stack[$depth] = $tag_id;
+					$struct_stack = array_slice($struct_stack, 0, $depth + 1, true);
 				}
 				$sort++;
 			}

@@ -41,21 +41,16 @@
           {# 统一渲染所有字段 (预序: 结构体紧跟其子字段): 有 system_column 走真实列, 否则走 EAV。
              结构体 (tag_type=struct) 作为可视容器, 开 fieldset 把其后 parent_id=该结构体 的子字段包起来。 #}
           {% if form_fields is not empty %}
-            {% set open_struct = 0 %}
             <fieldset>
               {% for field in form_fields %}
-                {# 结构体字段: 关闭上一个 fieldset, 开新 fieldset 分组 (结构体本身不渲染输入) #}
+                {# close_before: 关闭已离开的 struct fieldset (嵌套层级回退; 控制器按 parent_id 栈预算) #}
+                {% set _cb = field.close_before|default(0) %}
+                {% if _cb %}{% for i in 1.._cb %}</fieldset>{% endfor %}{% endif %}
+                {# 结构体字段: 开新 fieldset 分组 (结构体本身不渲染输入; 可嵌套子结构体最多 3 层) #}
                 {% if field.tag_type is defined and field.tag_type == 'struct' %}
-                  {% if open_struct != 0 %}</fieldset>{% endif %}
                   <fieldset class="struct-group" style="border:1px solid #e2e8f0;border-radius:4px;padding:12px 16px 4px;margin:12px 0;">
                     <legend style="font-size:14px;font-weight:600;color:#334155;width:auto;border-bottom:none;padding:0 8px;margin-bottom:8px;">{{ field.name }}</legend>
-                  {% set open_struct = field.tag_id %}
                 {% else %}
-                  {# 独立字段 (parent_id=0 非 struct): 先关掉可能打开的 struct fieldset #}
-                  {% if field.parent_id is defined and field.parent_id == 0 and open_struct != 0 %}
-                    </fieldset>
-                    {% set open_struct = 0 %}
-                  {% endif %}
                 {% if field.system_column is not empty %}
                 {% if field.field_type == 'core_text_ml' %}
                   {# 多语言系统字段 (商品名称/描述/Meta标题/Meta描述/Meta关键字/商品标签):
@@ -103,7 +98,7 @@
                 {% endif %}
                 {% endif %}
               {% endfor %}
-              {% if open_struct != 0 %}</fieldset>{% endif %}
+              {% if struct_final_close|default(0) %}{% for i in 1..struct_final_close %}</fieldset>{% endfor %}{% endif %}
             </fieldset>
           {% endif %}
             

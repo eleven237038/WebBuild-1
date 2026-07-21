@@ -39,10 +39,10 @@
               <select name="parent_id" id="input-parent" class="form-control">
                 <option value="0">-- 顶级字段 --</option>
                 {% for opt in parent_options %}
-                <option value="{{ opt.tag_id }}" {{ parent_id == opt.tag_id ? 'selected' }}>{{ opt.name }}</option>
+                <option value="{{ opt.tag_id }}" data-depth="{{ opt.depth is defined ? opt.depth : 0 }}" {{ parent_id == opt.tag_id ? 'selected' }}>{{ opt.name }}</option>
                 {% endfor %}
               </select>
-              <div class="help-block">仅"结构体"类型的字段可作为父字段(将本字段归入某个结构体分组)。也可在列表页拖拽调整。</div>
+              <div class="help-block">仅"结构体"类型的字段可作为父字段;结构体可嵌套子结构体(最多 3 层)。也可在列表页拖拽调整。</div>
               {% if error_parent %}<div class="text-danger">{{ error_parent }}</div>{% endif %}
             </div>
           </div>
@@ -61,7 +61,7 @@
                 <option value="radio"    {{ tag_type == 'radio'    ? 'selected' }}>单选</option>
                 <option value="struct"   {{ tag_type == 'struct'   ? 'selected' }}>结构体</option>
               </select>
-              <div class="help-block" id="type-hint-struct" style="display:none;">结构体是容器字段,本身不存值;在列表页拖拽其它字段到其下即建立父子分组。结构体始终为顶级,不可嵌套。</div>
+              <div class="help-block" id="type-hint-struct" style="display:none;">结构体是容器字段,本身不存值;在列表页拖拽其它字段到其下即建立父子分组。结构体可嵌套子结构体,最多 3 层。</div>
             </div>
           </div>
 
@@ -147,32 +147,12 @@
             </div>
           </div>
 
-          <div class="form-group" id="fg-status">
-            <label class="col-sm-2 control-label">是否启用</label>
-            <div class="col-sm-10">
-              <label class="checkbox-inline"><input type="checkbox" name="status" value="1" {{ status == 1 ? 'checked' }}/> 启用(取消则前台不显示该字段)</label>
-            </div>
-          </div>
-
           <div class="form-group" id="fg-list">
             <label class="col-sm-2 control-label">列表显示</label>
             <div class="col-sm-10">
               <label class="checkbox-inline"><input type="checkbox" name="show_in_list" value="1" {{ show_in_list == 1 ? 'checked' }}/> 在商品列表表格中显示该字段列</label>
             </div>
           </div>
-
-          {% if system_column %}
-          <div class="form-group">
-            <label class="col-sm-2 control-label">系统信息</label>
-            <div class="col-sm-10">
-              <p class="form-control-static" style="font-size:12px;color:#999;">
-                {% if field_type %}字段类型:{{ field_type }}{% endif %}
-                {% if system_column %} | 系统列:{{ system_column }}{% endif %}
-                <span class="help-block" style="margin-top:4px;">系统管理字段,不可在此修改。</span>
-              </p>
-            </div>
-          </div>
-          {% endif %}
 
         </form>
       </div>
@@ -183,7 +163,7 @@
 $(function () {
   var $type = $('#input-tag-type');
 
-  // 按 tag_type 显隐类型专属配置 + 父字段/必填/列表 (结构体隐藏)
+  // 按 tag_type 显隐类型专属配置 + 必填/列表 (结构体隐藏)。结构体现可嵌套, 父字段下拉恒显示。
   // 隐藏块的 input 必须 disable, 否则仍会随表单提交 (select/radio 同名数组会重复)
   function syncTypeUI() {
     var t = $type.val();
@@ -193,10 +173,25 @@ $(function () {
       $(this).find('input, select, textarea').prop('disabled', !show);
     });
     var isStruct = (t === 'struct');
-    $('#fg-parent').toggle(!isStruct);
     $('#fg-required').toggle(!isStruct);
     $('#fg-list').toggle(!isStruct);
     $('#type-hint-struct').toggle(isStruct);
+    // 结构体作子时父结构体深度须 <= 1 (子结构体 depth <= 2, 即最多 3 层); 普通字段可挂任意结构体下
+    gateParentOptions(isStruct);
+  }
+
+  // 按当前类型限制父字段可选范围: 结构体仅可选 depth<=1 的结构体作父; 普通字段不限
+  function gateParentOptions(isStruct) {
+    $('#input-parent option').each(function () {
+      var $o = $(this);
+      if ($o.val() === '0') { return; }                 // "-- 顶级字段 --" 恒可选
+      var d = parseInt($o.data('depth'), 10) || 0;
+      $o.prop('disabled', isStruct && d >= 2);
+    });
+    // 当前选中项被禁用时回退到顶级
+    if ($('#input-parent option:selected').prop('disabled')) {
+      $('#input-parent').val('0');
+    }
   }
 
   // select / radio 共用的选项行增删

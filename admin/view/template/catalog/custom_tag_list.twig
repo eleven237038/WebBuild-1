@@ -7,7 +7,8 @@
  *    1. 扁平 DOM: 所有字段为 #tag-menu 下的同级 <li>, 层级 = margin-left/30px
  *       (depthToPx/pxToDepth), 并挂 .tag-depth-N 类。
  *    2. jQuery UI sortable (helper:'original'), 拖动时鼠标 X 实时决定深度。
- *    3. 深度约束: minDepth=下一项深度, maxDepth=上一项深度+1, 且全局上限 4 级 (最多 4 层子字段)。
+ *    3. 深度约束: minDepth=下一项深度, maxDepth=上一项深度+1; 仅结构体可作父, 结构体可
+ *       嵌套子结构体最多 3 层 (depth 0/1/2), 普通字段最深 depth 3。
  *    4. 子字段跟随: start 时把子字段移入 .tag-transport, 并执行 WordPress 的
  *       "tempHolder margin-top 吸收 + sortable('refresh')" 技巧, 让 jQuery UI
  *       在子字段离开列表后重新计算, 避免占位符错位/抖动 (旧实现漏掉的关键)。
@@ -244,7 +245,7 @@ var wpTagNav = (function($) {
 
   api.options = {
     menuItemDepthPerLevel: 30,   // 每级缩进像素 (勿直接用, 走 depthToPx/pxToDepth)
-    globalMaxDepth: 1,           // 单层分组: 结构体顶级=0, 子字段=1, 无孙
+    globalMaxDepth: 3,           // 结构体可嵌套最多 3 层 (depth 0/1/2); 普通字段最深 depth 3
     sortableItems: '> .tag-item:not(.tag-hidden)',
     targetTolerance: 0
   };
@@ -446,8 +447,8 @@ var wpTagNav = (function($) {
     });
 
     // 依据占位符位置重算 prev/next/边界 (对应 WP updateSharedVars)
-    // 结构体规则: 结构体始终顶级 (maxDepth=0); 非结构体仅当 prev 是结构体时可嵌套 (depth 1),
-    // 否则只能与 prev 同级或更浅 (不能挂在非结构体下)。
+    // 结构体规则: 仅结构体可作父; 结构体可嵌套子结构体 (最多 3 层, depth 0/1/2); 普通字段
+    // 可挂任意结构体下 (最深 depth 3)。被拖项 maxDepth 按其类型与 prev 类型决定。
     function updateSharedVars(ui) {
       var depth;
       prev = ui.placeholder.prev('.tag-item');
@@ -458,28 +459,27 @@ var wpTagNav = (function($) {
       prevBottom = prev.length ? prev.offset().top + prev.height() : 0;
       nextThreshold = next.length ? next.offset().top + next.height() / 3 : 0;
 
-      // 被拖项是结构体 -> 始终顶级
-      if (ui.item.is('[data-type=struct]')) {
-        minDepth = 0;
-        maxDepth = 0;
-        return;
-      }
+      // 类型深度上限: 结构体 2 (3 层), 普通字段 3
+      var isStruct = ui.item.is('[data-type=struct]');
+      var typeCap = isStruct ? 2 : 3;
 
       minDepth = next.length ? next.tagItemDepth() : 0;
 
       if (prev.length) {
         if (prev.is('[data-type=struct]')) {
-          // 可成为该结构体的子字段
+          // 可成为该结构体的子字段/子结构体
           depth = prev.tagItemDepth() + 1;
-          maxDepth = (depth > api.options.globalMaxDepth) ? api.options.globalMaxDepth : depth;
+          maxDepth = (depth > typeCap) ? typeCap : depth;
         } else {
           // 前一项非结构体: 只能同级或更浅, 不能嵌套
           maxDepth = prev.tagItemDepth();
+          if (maxDepth > typeCap) { maxDepth = typeCap; }
         }
       } else {
         maxDepth = 0;
       }
       if (maxDepth < 0) { maxDepth = 0; }
+      if (minDepth > maxDepth) { minDepth = maxDepth; }
     }
 
     function updateCurrentDepth(ui, depth) {
@@ -590,9 +590,11 @@ var wpTagNav = (function($) {
       break;
     case 'right':
       if (0 === thisItemPosition) { break; }                 // 顶部不能成为子级
-      if (thisItem.is('[data-type=struct]')) { break; }      // 结构体始终顶级, 不能缩进
       if (thisItemDepth === prevItemDepth + 1) { break; }    // 已是上一项的子字段
       if (!prevItem.is('[data-type=struct]')) { break; }     // 仅结构体可作父
+      // 结构体最深 3 层 (depth 2), 普通字段最深 depth 3
+      var _cap = thisItem.is('[data-type=struct]') ? 2 : 3;
+      if (thisItemDepth + 1 > _cap) { break; }               // 已达类型深度上限
       thisItem.shiftHorizontally(1);
       break;
     }

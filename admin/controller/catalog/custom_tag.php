@@ -64,7 +64,8 @@ class ControllerCatalogCustomTag extends Controller {
 		$this->load->model('catalog/custom_tag');
 		if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validateForm()) {
 			$this->request->post['is_required'] = isset($this->request->post['is_required']) ? 1 : 0;
-			$this->request->post['status']      = isset($this->request->post['status']) ? 1 : 0;
+			// "是否启用"功能已移除: 新字段始终启用 (status=1), 不可在前端关闭
+			$this->request->post['status']      = 1;
 			$this->request->post['parent_id']   = (int)($this->request->post['parent_id'] ?? 0);
 			$this->request->post['product_type_id'] = (int)($this->request->post['product_type_id'] ?? $this->request->get['product_type_id'] ?? 0);
 			$this->request->post['options'] = $this->collectTagOptions();
@@ -94,7 +95,7 @@ class ControllerCatalogCustomTag extends Controller {
 		$this->load->model('catalog/custom_tag');
 		if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validateForm()) {
 			$this->request->post['is_required'] = isset($this->request->post['is_required']) ? 1 : 0;
-			$this->request->post['status']      = isset($this->request->post['status']) ? 1 : 0;
+			// "是否启用"功能已移除: 不提交 status, 模型 editTag 保留原值
 			$this->request->post['parent_id']   = (int)($this->request->post['parent_id'] ?? 0);
 			$this->request->post['options'] = $this->collectTagOptions();
 			$this->request->post['config']  = $this->collectTagConfig((string)($this->request->post['tag_type'] ?? 'text'));
@@ -318,8 +319,17 @@ class ControllerCatalogCustomTag extends Controller {
 		// 成环校验(仅编辑已有字段时)
 		$tag_id    = isset($this->request->get['tag_id']) ? (int)$this->request->get['tag_id'] : 0;
 		$parent_id = (int)($this->request->post['parent_id'] ?? 0);
+		$tt        = (string)($this->request->post['tag_type'] ?? 'text');
+		// 成环校验(仅编辑已有字段时)
 		if ($tag_id && $parent_id && $this->model_catalog_custom_tag->wouldCreateCycle($tag_id, $parent_id)) {
 			$this->error['parent'] = '不能将父字段设为它自己或它的子字段';
+		}
+		// 结构体嵌套最深 3 层: 结构体作子时, 其父结构体深度须 <= 1 (子结构体深度 <= 2)
+		if ($tt === 'struct' && $parent_id) {
+			$parent_depth = $this->model_catalog_custom_tag->getStructDepth($parent_id);
+			if ($parent_depth >= 2) {
+				$this->error['parent'] = '结构体最多嵌套 3 层, 该父结构体已是第 3 层';
+			}
 		}
 		return !$this->error;
 	}

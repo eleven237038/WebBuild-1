@@ -812,29 +812,38 @@ class ControllerCatalogProduct extends Controller {
 		$data['core_fields']   = array();
 		$data['system_fields'] = array();
 		$data['custom_fields'] = array();
-		// 预序重排: 顶级(parent_id=0)按 sort_order, 每个结构体(struct)后紧跟其子字段
-		// (parent_id=该struct), 保证结构体与子字段在表单中连续, 便于 fieldset 分组渲染。
-		$top_level   = array();
+		// 预序重排: 顶级(parent_id=0)按 sort_order, 每个结构体(struct)后递归跟随其全部子字段
+		// (含嵌套子结构体, 最多 3 层), 保证结构体与子字段在表单中连续, 便于嵌套 fieldset 分组渲染。
 		$children_of = array();   // parent_id => [tag, ...]
 		foreach ($all_tags as $t) {
-			$pid = (int)$t['parent_id'];
-			if ($pid === 0) {
-				$top_level[] = $t;
-			} else {
-				if (!isset($children_of[$pid])) { $children_of[$pid] = array(); }
-				$children_of[$pid][] = $t;
-			}
+			$children_of[(int)$t['parent_id']][] = $t;
 		}
 		$ordered = array();
-		foreach ($top_level as $t) {
-			$ordered[] = $t;
-			$tid = (int)$t['tag_id'];
-			if (!empty($children_of[$tid])) {
-				foreach ($children_of[$tid] as $child) {
-					$ordered[] = $child;
-				}
+		$walk = function($parent_id) use (&$walk, &$ordered, $children_of) {
+			if (!isset($children_of[$parent_id])) { return; }
+			foreach ($children_of[$parent_id] as $child) {
+				$ordered[] = $child;
+				$walk((int)$child['tag_id']);
+			}
+		};
+		$walk(0);
+		// 为嵌套 fieldset 渲染预算 close_before: open_stack 跟踪当前已打开的 struct tag_id 栈;
+		// 遇到字段时关闭栈顶 != 其 parent_id 的层 (回退到正确嵌套层级)。
+		$open_stack = array();
+		$close_map  = array();   // tag_id => close_before
+		foreach ($ordered as $t) {
+			$pid = (int)$t['parent_id'];
+			$close = 0;
+			while (!empty($open_stack) && end($open_stack) != $pid) {
+				array_pop($open_stack);
+				$close++;
+			}
+			$close_map[(int)$t['tag_id']] = $close;
+			if ($t['tag_type'] === 'struct') {
+				$open_stack[] = (int)$t['tag_id'];
 			}
 		}
+		$data['struct_final_close'] = count($open_stack);
 		$data['form_fields'] = array();
 		foreach ($ordered as $t) {
 			if (!empty($t['system_column'])) {
@@ -864,7 +873,8 @@ class ControllerCatalogProduct extends Controller {
 			if (empty($t['system_column']) && in_array($t['tag_type'], array('number', 'text', 'textarea', 'image_multi'), true)) {
 				$t['config'] = $this->model_catalog_custom_tag->getTagConfig((int)$t['tag_id']);
 			}
-			// 统一字段列表 (预序: 结构体紧跟子字段), 供表单统一渲染
+			// 统一字段列表 (预序: 结构体递归紧跟子字段), 供表单统一渲染
+			$t['close_before'] = isset($close_map[(int)$t['tag_id']]) ? $close_map[(int)$t['tag_id']] : 0;
 			$data['form_fields'][] = $t;
 		}
 		if (isset($this->request->post['product_custom_tag'])) {
