@@ -68,6 +68,35 @@ class ControllerCommonHeader extends Controller {
 			}
 		}
 
+		// Lite-header: skip heavy JS (tinymce + moment + datetimepicker) on routes that have no rich-text editor and no date picker.
+		// Verified safe via grep of admin templates for tinymce/datetimepicker usage.
+		$route = isset($this->request->get['route']) ? $this->request->get['route'] : 'common/dashboard';
+		$rp = explode('/', $route);
+		$ctrl = isset($rp[1]) ? $rp[0] . '/' . $rp[1] : $rp[0];
+		$action = isset($rp[2]) ? $rp[2] : 'index';
+		$is_list = !in_array($action, array('add', 'edit', 'form'));
+
+		$skip_all = array(
+			'common/dashboard', 'common/login', 'common/forgotten', 'common/reset', 'common/logout', 'common/profile', 'common/filemanager',
+			'catalog/custom_tag',
+			'catalog/attribute', 'catalog/attribute_group', 'catalog/option', 'catalog/manufacturer', 'catalog/filter', 'catalog/recurring',
+			'setting/setting', 'setting/store', 'setting/api', 'setting/modification', 'setting/seo_url', 'setting/event',
+			'user/user', 'user/user_group', 'user/user_authorisation',
+			'tool/backup', 'tool/upgrade', 'tool/log', 'tool/error_log',
+			'extension/extension', 'extension/shipping', 'extension/feed', 'extension/theme', 'extension/analytics', 'extension/currency', 'extension/fraud', 'extension/menu', 'extension/dashboard',
+		);
+		// List views are safe; their form views use an editor/date picker.
+		$skip_list_only = array(
+			'catalog/product', 'catalog/category', 'catalog/information', 'catalog/product_option',
+			'extension/module', 'extension/payment',
+		);
+
+		$heavy_js = true;
+		if (in_array($ctrl, $skip_all) || (in_array($ctrl, $skip_list_only) && $is_list)) {
+			$heavy_js = false;
+		}
+		$data['heavy_js'] = $heavy_js;
+
 		return $this->load->view('common/header', $data);
 	}
 

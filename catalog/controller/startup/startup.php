@@ -16,15 +16,39 @@ class ControllerStartupStartup extends Controller {
 			$this->config->set('config_url', HTTP_SERVER);
 		}
 
-		// Settings
-		$query = $this->db->query("SELECT * FROM `" . DB_PREFIX . "setting` WHERE store_id = '0' OR store_id = '" . (int)$this->config->get('config_store_id') . "' ORDER BY store_id ASC");
+		// Settings (APCu-cached; invalidated by a file-version stamp bumped on
+		// admin editSetting). The full oc_setting scan + 229-row hydration is ~80ms
+		// per request; settings only change on admin save. A filemtime() stamp is
+		// used in the cache key so invalidation works across all prefork workers
+		// (APCu itself is per-process), at the cost of one fast stat per request.
+		$settings_store_id = (int)$this->config->get('config_store_id');
+		$ver_file = DIR_CACHE . 'settings.ver';
+		$ver = @filemtime($ver_file);
+		if (!$ver) { $ver = 1; @touch($ver_file); }
+		$apcu_key = 'oc_settings:' . $ver . ':' . $settings_store_id;
+		$config_data = null;
+		$hit = false;
+		if (function_exists('apcu_fetch')) {
+			$config_data = apcu_fetch($apcu_key, $hit);
+		}
+		if (!$hit) {
+			$config_data = array();
+			$query = $this->db->query("SELECT * FROM `" . DB_PREFIX . "setting` WHERE store_id = '0' OR store_id = '" . $settings_store_id . "' ORDER BY store_id ASC");
 
-		foreach ($query->rows as $result) {
-			if (!$result['serialized']) {
-				$this->config->set($result['key'], $result['value']);
-			} else {
-				$this->config->set($result['key'], json_decode($result['value'], true));
+			foreach ($query->rows as $result) {
+				if (!$result['serialized']) {
+					$config_data[$result['key']] = $result['value'];
+				} else {
+					$config_data[$result['key']] = json_decode($result['value'], true);
+				}
 			}
+			if (function_exists('apcu_store')) {
+				apcu_store($apcu_key, $config_data, 3600);
+			}
+		}
+
+		foreach ($config_data as $__k => $__v) {
+			$this->config->set($__k, $__v);
 		}
 
 		// Theme

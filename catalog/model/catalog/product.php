@@ -56,6 +56,71 @@ class ModelCatalogProduct extends Model {
 		}
 	}
 
+	/**
+	 * Batch variant of getProduct: fetches full product data for many IDs in one
+	 * query (avoids N+1 on the homepage / listing loops). Returns a map keyed by
+	 * product_id, each value the same array shape as getProduct().
+	 */
+	public function getProductsByIds(array $product_ids) {
+		$ids = array();
+		foreach ($product_ids as $id) {
+			$id = (int)$id;
+			if ($id) { $ids[$id] = $id; }
+		}
+		if (!$ids) { return array(); }
+
+		$query = $this->db->query("SELECT DISTINCT *, pd.name AS name, p.image, m.name AS manufacturer, (SELECT price FROM " . DB_PREFIX . "product_discount pd2 WHERE pd2.product_id = p.product_id AND pd2.customer_group_id = '" . (int)$this->config->get('config_customer_group_id') . "' AND pd2.quantity = '1' AND ((pd2.date_start = '0000-00-00' OR pd2.date_start < NOW()) AND (pd2.date_end = '0000-00-00' OR pd2.date_end > NOW())) ORDER BY pd2.priority ASC, pd2.price ASC LIMIT 1) AS discount, (SELECT price FROM " . DB_PREFIX . "product_special ps WHERE ps.product_id = p.product_id AND ps.customer_group_id = '" . (int)$this->config->get('config_customer_group_id') . "' AND ((ps.date_start = '0000-00-00' OR ps.date_start < NOW()) AND (ps.date_end = '0000-00-00' OR ps.date_end > NOW())) ORDER BY ps.priority ASC, ps.price ASC LIMIT 1) AS special, (SELECT points FROM " . DB_PREFIX . "product_reward pr WHERE pr.product_id = p.product_id AND pr.customer_group_id = '" . (int)$this->config->get('config_customer_group_id') . "') AS reward, (SELECT ss.name FROM " . DB_PREFIX . "stock_status ss WHERE ss.stock_status_id = p.stock_status_id AND ss.language_id = '" . (int)$this->config->get('config_language_id') . "') AS stock_status, (SELECT wcd.unit FROM " . DB_PREFIX . "weight_class_description wcd WHERE p.weight_class_id = wcd.weight_class_id AND wcd.language_id = '" . (int)$this->config->get('config_language_id') . "') AS weight_class, (SELECT lcd.unit FROM " . DB_PREFIX . "length_class_description lcd WHERE p.length_class_id = lcd.length_class_id AND lcd.language_id = '" . (int)$this->config->get('config_language_id') . "') AS length_class, (SELECT AVG(rating) AS total FROM " . DB_PREFIX . "review r1 WHERE r1.product_id = p.product_id AND r1.status = '1' GROUP BY r1.product_id) AS rating, (SELECT COUNT(*) AS total FROM " . DB_PREFIX . "review r2 WHERE r2.product_id = p.product_id AND r2.status = '1' GROUP BY r2.product_id) AS reviews, p.sort_order FROM " . DB_PREFIX . "product p LEFT JOIN " . DB_PREFIX . "product_description pd ON (p.product_id = pd.product_id) LEFT JOIN " . DB_PREFIX . "product_to_store p2s ON (p.product_id = p2s.product_id) LEFT JOIN " . DB_PREFIX . "manufacturer m ON (p.manufacturer_id = m.manufacturer_id) WHERE p.product_id IN (" . implode(',', $ids) . ") AND pd.language_id = '" . (int)$this->config->get('config_language_id') . "' AND p.status = '1' AND p.date_available <= NOW() AND p2s.store_id = '" . (int)$this->config->get('config_store_id') . "'");
+
+		$map = array();
+		foreach ($query->rows as $query) {
+			$map[(int)$query['product_id']] = array(
+				'product_id'       => $query['product_id'],
+				'name'             => $query['name'],
+				'description'      => $query['description'],
+				'meta_title'       => $query['meta_title'],
+				'meta_description' => $query['meta_description'],
+				'meta_keyword'     => $query['meta_keyword'],
+				'tag'              => $query['tag'],
+				'model'            => $query['model'],
+				'sku'              => $query['sku'],
+				'upc'              => $query['upc'],
+				'ean'              => $query['ean'],
+				'jan'              => $query['jan'],
+				'isbn'             => $query['isbn'],
+				'mpn'              => $query['mpn'],
+				'location'         => $query['location'],
+				'quantity'         => $query['quantity'],
+				'stock_status'     => $query['stock_status'],
+				'image'            => $query['image'],
+				'manufacturer_id'  => $query['manufacturer_id'],
+				'manufacturer'     => $query['manufacturer'],
+				'price'            => ($query['discount'] ? $query['discount'] : $query['price']),
+				'special'          => $query['special'],
+				'reward'           => $query['reward'],
+				'points'           => $query['points'],
+				'tax_class_id'     => $query['tax_class_id'],
+				'date_available'   => $query['date_available'],
+				'weight'           => $query['weight'],
+				'weight_class_id'  => $query['weight_class_id'],
+				'length'           => $query['length'],
+				'width'            => $query['width'],
+				'height'           => $query['height'],
+				'length_class_id'  => $query['length_class_id'],
+				'subtract'         => $query['subtract'],
+				'rating'           => round($query['rating']),
+				'reviews'          => $query['reviews'] ? $query['reviews'] : 0,
+				'minimum'          => $query['minimum'],
+				'sort_order'       => $query['sort_order'],
+				'status'           => $query['status'],
+				'date_added'       => $query['date_added'],
+				'date_modified'    => $query['date_modified'],
+				'viewed'           => $query['viewed']
+			);
+		}
+
+		return $map;
+	}
+
 	public function getProducts($data = array()) {
 		$sql = "SELECT p.product_id, (SELECT AVG(rating) AS total FROM " . DB_PREFIX . "review r1 WHERE r1.product_id = p.product_id AND r1.status = '1' GROUP BY r1.product_id) AS rating, (SELECT price FROM " . DB_PREFIX . "product_discount pd2 WHERE pd2.product_id = p.product_id AND pd2.customer_group_id = '" . (int)$this->config->get('config_customer_group_id') . "' AND pd2.quantity = '1' AND ((pd2.date_start = '0000-00-00' OR pd2.date_start < NOW()) AND (pd2.date_end = '0000-00-00' OR pd2.date_end > NOW())) ORDER BY pd2.priority ASC, pd2.price ASC LIMIT 1) AS discount, (SELECT price FROM " . DB_PREFIX . "product_special ps WHERE ps.product_id = p.product_id AND ps.customer_group_id = '" . (int)$this->config->get('config_customer_group_id') . "' AND ((ps.date_start = '0000-00-00' OR ps.date_start < NOW()) AND (ps.date_end = '0000-00-00' OR ps.date_end > NOW())) ORDER BY ps.priority ASC, ps.price ASC LIMIT 1) AS special";
 
@@ -601,5 +666,32 @@ class ModelCatalogProduct extends Model {
 		// 排除结构体 (无值); select/radio 把存储 value 解析为选项 label (显示"启用"而非"1")
 		$query = $this->db->query("SELECT t.tag_id, t.name, t.tag_type, t.parent_id, IFNULL(p.name, '') AS parent_name, IFNULL(o.label, pt.`value`) AS `value` FROM " . DB_PREFIX . "custom_tag t INNER JOIN " . DB_PREFIX . "product_to_custom_tag pt ON t.tag_id = pt.tag_id LEFT JOIN " . DB_PREFIX . "custom_tag p ON t.parent_id = p.tag_id LEFT JOIN " . DB_PREFIX . "custom_tag_option o ON t.tag_id = o.tag_id AND o.value = pt.`value` WHERE pt.product_id = '" . (int)$product_id . "' AND t.status = 1 AND t.tag_type <> 'struct' ORDER BY t.parent_id ASC, t.sort_order ASC");
 		return $query->rows;
+	}
+
+	/**
+	 * Batch variant of getProductCustomTags: fetches custom tags for many products
+	 * in one query (avoids N+1 on listing pages / homepage). Returns a map keyed by
+	 * product_id, each value an array of tag rows (same shape as getProductCustomTags).
+	 */
+	public function getProductsCustomTags(array $product_ids) {
+		$ids = array();
+		foreach ($product_ids as $id) {
+			$id = (int)$id;
+			if ($id) { $ids[$id] = $id; }
+		}
+		if (!$ids) { return array(); }
+
+		$map = array();
+		foreach ($ids as $id) { $map[$id] = array(); }
+
+		$query = $this->db->query("SELECT pt.product_id, t.tag_id, t.name, t.tag_type, t.parent_id, IFNULL(p.name, '') AS parent_name, IFNULL(o.label, pt.`value`) AS `value` FROM " . DB_PREFIX . "custom_tag t INNER JOIN " . DB_PREFIX . "product_to_custom_tag pt ON t.tag_id = pt.tag_id LEFT JOIN " . DB_PREFIX . "custom_tag p ON t.parent_id = p.tag_id LEFT JOIN " . DB_PREFIX . "custom_tag_option o ON t.tag_id = o.tag_id AND o.value = pt.`value` WHERE pt.product_id IN (" . implode(',', $ids) . ") AND t.status = 1 AND t.tag_type <> 'struct' ORDER BY t.parent_id ASC, t.sort_order ASC");
+
+		foreach ($query->rows as $row) {
+			$pid = (int)$row['product_id'];
+			unset($row['product_id']);
+			$map[$pid][] = $row;
+		}
+
+		return $map;
 	}
 }

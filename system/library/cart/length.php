@@ -7,15 +7,25 @@ class Length {
 		$this->db = $registry->get('db');
 		$this->config = $registry->get('config');
 
-		$length_class_query = $this->db->query("SELECT * FROM " . DB_PREFIX . "length_class mc LEFT JOIN " . DB_PREFIX . "length_class_description mcd ON (mc.length_class_id = mcd.length_class_id) WHERE mcd.language_id = '" . (int)$this->config->get('config_language_id') . "'");
+		$__ck = 'oclength:' . $this->config->get('config_language_id');
+		$__hit = false;
+		if (function_exists('apcu_fetch')) {
+			$this->lengths = apcu_fetch($__ck, $__hit);
+		}
 
-		foreach ($length_class_query->rows as $result) {
-			$this->lengths[$result['length_class_id']] = array(
-				'length_class_id' => $result['length_class_id'],
-				'title'           => $result['title'],
-				'unit'            => $result['unit'],
-				'value'           => $result['value']
-			);
+		if (!$__hit) {
+			$length_class_query = $this->db->query("SELECT * FROM " . DB_PREFIX . "length_class mc LEFT JOIN " . DB_PREFIX . "length_class_description mcd ON (mc.length_class_id = mcd.length_class_id) WHERE mcd.language_id = '" . (int)$this->config->get('config_language_id') . "'");
+
+			foreach ($length_class_query->rows as $result) {
+				$this->lengths[$result['length_class_id']] = array(
+					'length_class_id' => $result['length_class_id'],
+					'title'           => $result['title'],
+					'unit'            => $result['unit'],
+					'value'           => $result['value']
+				);
+			}
+
+			if (function_exists('apcu_store')) { apcu_store($__ck, $this->lengths, 3600); }
 		}
 	}
 

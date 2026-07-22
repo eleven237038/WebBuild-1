@@ -2,6 +2,20 @@
 class ControllerCommonColumnLeft extends Controller {
 	public function index() {
 		if (isset($this->request->get['user_token']) && isset($this->session->data['user_token']) && ((string)$this->request->get['user_token'] == $this->session->data['user_token'])) {
+			// APCu-cache the rendered admin menu. column_left runs ~50 ops +
+			// order-statistic queries on every admin page; the menu only changes
+			// with permissions/extensions. Keyed per user group + token (hrefs
+			// embed the token) + menu.ver stamp. Bump menu.ver or hit
+			// opcache-reset.php (apcu_clear_cache) to invalidate.
+			$__ck = 'colleft:' . $this->user->getGroupId() . ':' . $this->session->data['user_token'] . ':' . (@filemtime(DIR_CACHE . 'menu.ver') ?: 1);
+			if (function_exists('apcu_fetch')) {
+				$__hit = false;
+				$__html = apcu_fetch($__ck, $__hit);
+				if ($__hit) {
+					return $__html;
+				}
+			}
+
 			$this->load->language('common/column_left');
 
 			// Create a 3 level menu array
@@ -623,7 +637,13 @@ class ControllerCommonColumnLeft extends Controller {
 				$data['other_status'] = 0;
 			}
 
-			return $this->load->view('common/column_left', $data);
+			$__html = $this->load->view('common/column_left', $data);
+
+			if (function_exists('apcu_store')) {
+				apcu_store($__ck, $__html, 600);
+			}
+
+			return $__html;
 		}
 	}
 }

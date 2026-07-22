@@ -4,7 +4,8 @@ final class MySQLi {
 	private $connection;
 
 	public function __construct($hostname, $username, $password, $database, $port = '3306') {
-		$this->connection = new \mysqli($hostname, $username, $password, $database, $port);
+		// Persistent connection (p: prefix) - avoids a fresh TCP+auth handshake per request.
+		$this->connection = new \mysqli('p:' . $hostname, $username, $password, $database, $port);
 
 		if ($this->connection->connect_errno) {
 			throw new \Exception('Error: ' . $this->connection->connect_error . '<br />Error No: ' . $this->connection->connect_errno);

@@ -23,6 +23,24 @@ class Action {
 	public function __construct($route) {
 		$this->id = $route;
 
+		// APCu-cached route resolution. The is_file() loop below stats the
+		// Windows Docker volume mount (~3ms each); event registration alone
+		// creates dozens of Actions per request. Cache the resolved
+		// route/method per (context, route) and skip the loop on hit.
+		// Cleared by apcu_clear_cache() (opcache-reset.php) after code changes.
+		static $__ctx = '';
+		if ($__ctx === '') { $__ctx = (is_admin() ? 'a' : 'c'); }
+		$__ck = 'actr:' . $__ctx . ':' . $route;
+		if ($__ctx !== '' && function_exists('apcu_fetch')) {
+			$__cached = apcu_fetch($__ck, $__hit);
+			if ($__hit) {
+				$this->route = $__cached['r'];
+				$this->method = $__cached['m'];
+				return;
+			}
+		}
+
+		$this->method = 'index';
 		$parts = explode('/', preg_replace('/[^a-zA-Z0-9_\/]/', '', (string)$route));
 
 		// Break apart the route
@@ -36,6 +54,10 @@ class Action {
 			} else {
 				$this->method = array_pop($parts);
 			}
+		}
+
+		if (function_exists('apcu_store')) {
+			apcu_store($__ck, array('r' => isset($this->route) ? $this->route : null, 'm' => $this->method), 3600);
 		}
 	}
 

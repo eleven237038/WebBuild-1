@@ -12,10 +12,22 @@ final class Tax {
 		$this->tax_rates = array();
 	}
 
-	public function setShippingAddress($country_id, $zone_id) {
-		$tax_query = $this->db->query("SELECT tr1.tax_class_id, tr2.tax_rate_id, tr2.name, tr2.rate, tr2.type, tr1.priority FROM " . DB_PREFIX . "tax_rule tr1 LEFT JOIN " . DB_PREFIX . "tax_rate tr2 ON (tr1.tax_rate_id = tr2.tax_rate_id) INNER JOIN " . DB_PREFIX . "tax_rate_to_customer_group tr2cg ON (tr2.tax_rate_id = tr2cg.tax_rate_id) LEFT JOIN " . DB_PREFIX . "zone_to_geo_zone z2gz ON (tr2.geo_zone_id = z2gz.geo_zone_id) LEFT JOIN " . DB_PREFIX . "geo_zone gz ON (tr2.geo_zone_id = gz.geo_zone_id) WHERE tr1.based = 'shipping' AND tr2cg.customer_group_id = '" . (int)$this->config->get('config_customer_group_id') . "' AND z2gz.country_id = '" . (int)$country_id . "' AND (z2gz.zone_id = '0' OR z2gz.zone_id = '" . (int)$zone_id . "') ORDER BY tr1.priority ASC");
+	private function loadRates($based, $country_id, $zone_id) {
+		// Tax rules depend only on (based, customer_group, country, zone) - all
+		// effectively constant for a given store/address. Cache the joined rows
+		// in APCu so the 5-table join runs once instead of every request.
+		$__ck = 'octax:' . $based . ':' . (int)$this->config->get('config_customer_group_id') . ':' . (int)$country_id . ':' . (int)$zone_id;
+		$__hit = false;
+		$__rows = function_exists('apcu_fetch') ? apcu_fetch($__ck, $__hit) : null;
 
-		foreach ($tax_query->rows as $result) {
+		if (!$__hit) {
+			$tax_query = $this->db->query("SELECT tr1.tax_class_id, tr2.tax_rate_id, tr2.name, tr2.rate, tr2.type, tr1.priority FROM " . DB_PREFIX . "tax_rule tr1 LEFT JOIN " . DB_PREFIX . "tax_rate tr2 ON (tr1.tax_rate_id = tr2.tax_rate_id) INNER JOIN " . DB_PREFIX . "tax_rate_to_customer_group tr2cg ON (tr2.tax_rate_id = tr2cg.tax_rate_id) LEFT JOIN " . DB_PREFIX . "zone_to_geo_zone z2gz ON (tr2.geo_zone_id = z2gz.geo_zone_id) LEFT JOIN " . DB_PREFIX . "geo_zone gz ON (tr2.geo_zone_id = gz.geo_zone_id) WHERE tr1.based = '" . $this->db->escape($based) . "' AND tr2cg.customer_group_id = '" . (int)$this->config->get('config_customer_group_id') . "' AND z2gz.country_id = '" . (int)$country_id . "' AND (z2gz.zone_id = '0' OR z2gz.zone_id = '" . (int)$zone_id . "') ORDER BY tr1.priority ASC");
+
+			$__rows = $tax_query->rows;
+			if (function_exists('apcu_store')) { apcu_store($__ck, $__rows, 3600); }
+		}
+
+		foreach ($__rows as $result) {
 			$this->tax_rates[$result['tax_class_id']][$result['tax_rate_id']] = array(
 				'tax_rate_id' => $result['tax_rate_id'],
 				'name'        => $result['name'],
@@ -24,34 +36,18 @@ final class Tax {
 				'priority'    => $result['priority']
 			);
 		}
+	}
+
+	public function setShippingAddress($country_id, $zone_id) {
+		$this->loadRates('shipping', $country_id, $zone_id);
 	}
 
 	public function setPaymentAddress($country_id, $zone_id) {
-		$tax_query = $this->db->query("SELECT tr1.tax_class_id, tr2.tax_rate_id, tr2.name, tr2.rate, tr2.type, tr1.priority FROM " . DB_PREFIX . "tax_rule tr1 LEFT JOIN " . DB_PREFIX . "tax_rate tr2 ON (tr1.tax_rate_id = tr2.tax_rate_id) INNER JOIN " . DB_PREFIX . "tax_rate_to_customer_group tr2cg ON (tr2.tax_rate_id = tr2cg.tax_rate_id) LEFT JOIN " . DB_PREFIX . "zone_to_geo_zone z2gz ON (tr2.geo_zone_id = z2gz.geo_zone_id) LEFT JOIN " . DB_PREFIX . "geo_zone gz ON (tr2.geo_zone_id = gz.geo_zone_id) WHERE tr1.based = 'payment' AND tr2cg.customer_group_id = '" . (int)$this->config->get('config_customer_group_id') . "' AND z2gz.country_id = '" . (int)$country_id . "' AND (z2gz.zone_id = '0' OR z2gz.zone_id = '" . (int)$zone_id . "') ORDER BY tr1.priority ASC");
-
-		foreach ($tax_query->rows as $result) {
-			$this->tax_rates[$result['tax_class_id']][$result['tax_rate_id']] = array(
-				'tax_rate_id' => $result['tax_rate_id'],
-				'name'        => $result['name'],
-				'rate'        => $result['rate'],
-				'type'        => $result['type'],
-				'priority'    => $result['priority']
-			);
-		}
+		$this->loadRates('payment', $country_id, $zone_id);
 	}
 
 	public function setStoreAddress($country_id, $zone_id) {
-		$tax_query = $this->db->query("SELECT tr1.tax_class_id, tr2.tax_rate_id, tr2.name, tr2.rate, tr2.type, tr1.priority FROM " . DB_PREFIX . "tax_rule tr1 LEFT JOIN " . DB_PREFIX . "tax_rate tr2 ON (tr1.tax_rate_id = tr2.tax_rate_id) INNER JOIN " . DB_PREFIX . "tax_rate_to_customer_group tr2cg ON (tr2.tax_rate_id = tr2cg.tax_rate_id) LEFT JOIN " . DB_PREFIX . "zone_to_geo_zone z2gz ON (tr2.geo_zone_id = z2gz.geo_zone_id) LEFT JOIN " . DB_PREFIX . "geo_zone gz ON (tr2.geo_zone_id = gz.geo_zone_id) WHERE tr1.based = 'store' AND tr2cg.customer_group_id = '" . (int)$this->config->get('config_customer_group_id') . "' AND z2gz.country_id = '" . (int)$country_id . "' AND (z2gz.zone_id = '0' OR z2gz.zone_id = '" . (int)$zone_id . "') ORDER BY tr1.priority ASC");
-
-		foreach ($tax_query->rows as $result) {
-			$this->tax_rates[$result['tax_class_id']][$result['tax_rate_id']] = array(
-				'tax_rate_id' => $result['tax_rate_id'],
-				'name'        => $result['name'],
-				'rate'        => $result['rate'],
-				'type'        => $result['type'],
-				'priority'    => $result['priority']
-			);
-		}
+		$this->loadRates('store', $country_id, $zone_id);
 	}
 
 	public function calculate($value, $tax_class_id, $calculate = true) {

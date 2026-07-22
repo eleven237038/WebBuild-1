@@ -77,46 +77,35 @@ $response->addHeader('Content-Type: text/html; charset=utf-8');
 $response->setCompression($config->get('config_compression'));
 $registry->set('response', $response);
 
-// DebugBar
-$debugBar = new \DebugBar\StandardDebugBar();
-
 // Database
 if ($config->get('db_autostart')) {
     $registry->set('db', new DB($config->get('db_engine'), $config->get('db_hostname'), $config->get('db_username'), $config->get('db_password'), $config->get('db_database'), $config->get('db_port')));
-
-    $capsule = new Illuminate\Database\Capsule\Manager();
-    $capsule->addConnection([
-        'driver' => 'mysql',
-        'host' => DB_HOSTNAME,
-        'database' => DB_DATABASE,
-        'username' => DB_USERNAME,
-        'password' => DB_PASSWORD,
-        'charset' => 'utf8mb4',
-        'collation' => 'utf8mb4_unicode_ci',
-        'prefix' => DB_PREFIX,
-        'strict' => false,
-    ]);
-    $capsule->setAsGlobal();
-    $capsule->bootEloquent();
-    $pdo = $capsule->getConnection()->getPdo();
-    $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-    $registry->set('capsule', $capsule);
-    $registry->set('conn', $capsule->getConnection());
-    $debugBar->addCollector(new Mpdo\Collector());
-    $debugBar->addCollector(new Eloquent\Collector($capsule));
 }
 
-if (class_exists(\DebugBar\StandardDebugBar::class) && is_debug()) {
-    $serverUrl = is_admin() ? HTTPS_CATALOG : HTTPS_SERVER;
-    $baseUrl = $serverUrl . 'vendor/maximebf/debugbar/src/DebugBar/Resources';
-    $debugBarRenderer = $debugBar->getJavascriptRenderer($baseUrl);
-    $registry->set('debug_bar', $debugBarRenderer);
-}
-if (class_exists(\Whoops\Run::class) && is_debug()) {
-    $whoops = new \Whoops\Run;
-    $whoops->pushHandler(new \Whoops\Handler\PrettyPageHandler);
-    $whoops->register();
-    $registry->set('whoops', $whoops);
+// DebugBar / Whoops - dev only. Building StandardDebugBar and its collectors (which
+// open a second PDO connection) on every production request is pure overhead, so the
+// whole block is gated on is_debug().
+if (is_debug()) {
+    if (class_exists(\DebugBar\StandardDebugBar::class)) {
+        $debugBar = new \DebugBar\StandardDebugBar();
+
+        $cap = \Models\Base::ensureCapsule();
+        if ($cap) {
+            $debugBar->addCollector(new Mpdo\Collector());
+            $debugBar->addCollector(new Eloquent\Collector($cap));
+        }
+
+        $serverUrl = is_admin() ? HTTPS_CATALOG : HTTPS_SERVER;
+        $baseUrl = $serverUrl . 'vendor/maximebf/debugbar/src/DebugBar/Resources';
+        $registry->set('debug_bar', $debugBar->getJavascriptRenderer($baseUrl));
+    }
+
+    if (class_exists(\Whoops\Run::class)) {
+        $whoops = new \Whoops\Run;
+        $whoops->pushHandler(new \Whoops\Handler\PrettyPageHandler);
+        $whoops->register();
+        $registry->set('whoops', $whoops);
+    }
 }
 
 // Session
@@ -145,6 +134,52 @@ if ($config->get('session_autostart')) {
     $session->start($session_id);
 
     setcookie($config->get('session_name'), $session->getId(), (ini_get('session.cookie_lifetime') ? (time() + ini_get('session.cookie_lifetime')) : 0), ini_get('session.cookie_path'), ini_get('session.cookie_domain'));
+}
+
+// Early full-page cache for guest visitors on the main storefront pages.
+// Serves cached HTML before the startup controllers / dispatch run, cutting
+// the per-request bootstrap for the most common pages. Applies only to GET
+// requests from guests with an empty cart AND empty wishlist (the only
+// session-dependent parts of the header). Invalidated by the content.ver /
+// settings.ver stamps (bumped on content/setting saves via oc_event).
+$__page_fw_key = null;
+if (!is_admin() && isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'GET' && $config->get('session_autostart')) {
+	$__fw_route = isset($_GET['route']) ? $_GET['route'] : '';
+	if ($__fw_route === '') {
+		// No route param: only treat as home when the URL path is the site root.
+		// (If SEO URLs are ever enabled, a non-root path is a clean URL whose
+		// real route is only resolved later by startup/seo_url, so we skip it.)
+		$__fw_path = isset($_SERVER['REQUEST_URI']) ? parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) : '';
+		if ($__fw_path === '/' || $__fw_path === '' || $__fw_path === '/index.php') {
+			$__fw_route = 'common/home';
+		}
+	}
+	$__fw_cacheable = ($__fw_route === 'common/home' || $__fw_route === 'product/category' || $__fw_route === 'product/product');
+	if ($__fw_cacheable) {
+		$__fw_cust = !empty($session->data['customer_id']) ? (int)$session->data['customer_id'] : 0;
+		$__fw_cart = isset($session->data['cart']) ? count($session->data['cart']) : 0;
+		$__fw_wish = isset($session->data['wishlist']) ? count($session->data['wishlist']) : 0;
+		if ($__fw_cust === 0 && $__fw_cart === 0 && $__fw_wish === 0) {
+			$__fw_params = '';
+			if ($__fw_route === 'product/category' && isset($_GET['path'])) {
+				$__fw_params = (string)$_GET['path'];
+			} elseif ($__fw_route === 'product/product' && isset($_GET['product_id'])) {
+				$__fw_params = 'p' . (int)$_GET['product_id'];
+			}
+			$__cver = @filemtime(DIR_CACHE . 'content.ver') ?: 1;
+			$__sver = @filemtime(DIR_CACHE . 'settings.ver') ?: 1;
+			$__page_fw_key = 'page_fw:' . $__fw_route . ':' . $__cver . ':' . $__sver . ':' . (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '') . ':' . (isset($session->data['language']) ? $session->data['language'] : '') . ':' . (isset($session->data['currency']) ? $session->data['currency'] : '') . ':' . $__fw_params;
+			if (function_exists('apcu_fetch')) {
+				$__fw_hit = false;
+				$__fw_cached = apcu_fetch($__page_fw_key, $__fw_hit);
+				if ($__fw_hit) {
+					$response->setOutput($__fw_cached);
+					$response->output();
+					exit;
+				}
+			}
+		}
+	}
 }
 
 // Cache
@@ -206,6 +241,11 @@ if ($config->has('action_pre_action')) {
 
 // Dispatch
 $route->dispatch(new Action($config->get('action_router')), new Action($config->get('action_error')));
+
+// Populate the early page full-page cache from the rendered output.
+if ($__page_fw_key !== null && function_exists('apcu_store')) {
+	apcu_store($__page_fw_key, $response->getOutput(), 120);
+}
 
 // Output
 $response->output();

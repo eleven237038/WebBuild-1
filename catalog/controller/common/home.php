@@ -1,7 +1,6 @@
 <?php
 class ControllerCommonHome extends Controller {
 	public function index() {
-
 		$this->document->setTitle($this->config->get('config_meta_title'));
 		$this->document->setDescription($this->config->get('config_meta_description'));
 		$this->document->setKeywords($this->config->get('config_meta_keyword'));
@@ -27,13 +26,21 @@ class ControllerCommonHome extends Controller {
 		$thumb_w = $this->config->get('theme_' . $this->config->get('config_theme') . '_image_product_width') ?: 228;
 		$thumb_h = $this->config->get('theme_' . $this->config->get('config_theme') . '_image_product_height') ?: 200;
 
+		// Batch the product + custom-tag fetches (was N+1: one getProduct() and one
+		// getProductCustomTags() per product = 16 queries; now 2 queries total).
+		$pids = array();
+		foreach ($query->rows as $row) {
+			$pids[] = (int)$row['product_id'];
+		}
+		$products_map = $this->model_catalog_product->getProductsByIds($pids);
+		$tags_map = $this->model_catalog_product->getProductsCustomTags($pids);
+
 		foreach ($query->rows as $row) {
 			$pid = (int)$row['product_id'];
-			$product = $this->model_catalog_product->getProduct($pid);
 
-			if ($product) {
+			if (isset($products_map[$pid])) {
 				$href = $this->url->link('product/product', 'product_id=' . $pid);
-				$data['products'][] = $this->model_catalog_product->handleSingleProduct($product, $thumb_w, $thumb_h, $href) + array('custom_tags' => $this->model_catalog_product->getProductCustomTags($pid));
+				$data['products'][] = $this->model_catalog_product->handleSingleProduct($products_map[$pid], $thumb_w, $thumb_h, $href) + array('custom_tags' => isset($tags_map[$pid]) ? $tags_map[$pid] : array());
 			}
 		}
 

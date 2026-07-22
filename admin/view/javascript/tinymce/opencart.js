@@ -1,4 +1,4 @@
-
+if (typeof tinymce !== 'undefined') {
 tinymce.init({
 	selector: '.tinymce',
 	language:editor_language, //en or zh_CN
@@ -39,3 +39,4 @@ tinymce.init({
 	    });
 	}
 });
+}

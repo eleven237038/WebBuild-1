@@ -1,0 +1,2 @@
+# Deny web access to build-time config files (loaded into the container, not served).
+Require all denied

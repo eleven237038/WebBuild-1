@@ -7,15 +7,29 @@ class Weight {
 		$this->db = $registry->get('db');
 		$this->config = $registry->get('config');
 
-		$weight_class_query = $this->db->query("SELECT * FROM " . DB_PREFIX . "weight_class wc LEFT JOIN " . DB_PREFIX . "weight_class_description wcd ON (wc.weight_class_id = wcd.weight_class_id) WHERE wcd.language_id = '" . (int)$this->config->get('config_language_id') . "'");
+		// Weight classes rarely change; cache the lookup in APCu to skip the
+		// per-request query. Cleared by apcu_clear_cache() (opcache-reset.php).
+		$__ck = 'ocweight:' . $this->config->get('config_language_id');
+		$__hit = false;
+		if (function_exists('apcu_fetch')) {
+			$this->weights = apcu_fetch($__ck, $__hit);
+		}
 
-		foreach ($weight_class_query->rows as $result) {
-			$this->weights[$result['weight_class_id']] = array(
-				'weight_class_id' => $result['weight_class_id'],
-				'title'           => $result['title'],
-				'unit'            => $result['unit'],
-				'value'           => $result['value']
-			);
+		if (!$__hit) {
+			$weight_class_query = $this->db->query("SELECT * FROM " . DB_PREFIX . "weight_class wc LEFT JOIN " . DB_PREFIX . "weight_class_description wcd ON (wc.weight_class_id = wcd.weight_class_id) WHERE wcd.language_id = '" . (int)$this->config->get('config_language_id') . "'");
+
+			foreach ($weight_class_query->rows as $result) {
+				$this->weights[$result['weight_class_id']] = array(
+					'weight_class_id' => $result['weight_class_id'],
+					'title'           => $result['title'],
+					'unit'            => $result['unit'],
+					'value'           => $result['value']
+				);
+			}
+
+			if (function_exists('apcu_store')) {
+				apcu_store($__ck, $this->weights, 3600);
+			}
 		}
 	}
 

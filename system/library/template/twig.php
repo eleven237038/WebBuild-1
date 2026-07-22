@@ -20,6 +20,11 @@ final class Twig {
 
 		if ($cache) {
 			$config['cache'] = DIR_CACHE;
+			// Never stat source templates to decide on recompilation - the Windows
+			// Docker volume mount charges ~3ms per stat and a page render touches
+			// many templates. Compiled cache is used directly; clear the 2-char-hex
+			// subdirs under storage/cache/ (or hit opcache-reset.php) after edits.
+			$config['auto_reload'] = false;
 		}
 
 		$this->twig = new \Twig_Environment($loader, $config);

@@ -55,6 +55,12 @@ class Session {
 	 * @return	string
  	*/	
 	public function start($session_id = '') {
+		// Idempotent: catalog starts the session both in framework.php (session_autostart)
+		// and again in startup/session pre-action. Re-reading on the second call is wasted work.
+		if ($this->session_id) {
+			return $this->session_id;
+		}
+
 		if (!$session_id) {
 			if (function_exists('random_bytes')) {
 				$session_id = substr(bin2hex(random_bytes(26)), 0, 26);
