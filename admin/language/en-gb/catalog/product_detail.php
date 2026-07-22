@@ -5,6 +5,8 @@ $_['heading_title']     = 'Product Detail Page Settings';
 // Text
 $_['text_home']         = 'Home';
 $_['text_form']         = 'Product Detail Page Appearance';
+$_['text_preview']      = 'Live Preview';
+$_['text_preview_hint'] = 'Click any part of the preview to jump to its setting; editing the form updates the preview in real time.';
 $_['text_success']      = 'Success: product detail page settings updated!';
 $_['text_section_toggle'] = 'Display Toggles';
 $_['text_section_size']   = 'Sizing';

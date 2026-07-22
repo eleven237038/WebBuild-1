@@ -22,8 +22,9 @@
     <div class="alert alert-success"><i class="fa fa-check-circle"></i> {{ success }}<button type="button" class="close" data-dismiss="alert">&times;</button></div>
     {% endif %}
 
-    {# 商品类型 chip bar: 切换编辑不同商品类型的详情页设置 (type 1 = 全局默认) #}
-    <div class="panel panel-default" style="margin-bottom:12px;">
+    {# 商品类型 chip bar: 切换编辑不同商品类型的详情页设置 (type 1 = 全局默认)
+       sticky 顶部, 任何窗口大小/模式都始终可见 #}
+    <div class="panel panel-default pdp-typebar" style="margin-bottom:12px;">
       <div class="panel-body" style="padding:8px 12px;">
         <div style="display:flex;align-items:center;gap:10px;">
           <span style="color:#64748b;font-weight:600;white-space:nowrap;">商品类型</span>
@@ -36,132 +37,454 @@
       </div>
     </div>
 
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h3 class="panel-title"><i class="fa fa-file-text-o"></i> {{ text_form }}</h3>
-      </div>
-      <div class="panel-body">
-        <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-product-detail" class="form-horizontal">
+    {# 实时预览样式: 复用前台 product-card.css (相关商品卡片) + 作用域化的 PDP 预览样式 #}
+    <link rel="stylesheet" href="../catalog/view/theme/default/stylesheet/genscript/product-card.css">
+    <style>
+      .pcard-admin-layout { display: flex; gap: 20px; align-items: flex-start; }
+      .pcard-admin-form { flex: 1 1 auto; min-width: 0; }
+      {# 商品类型 chip bar: 始终吸顶可见 #}
+      .pdp-typebar { position: sticky; top: 0; z-index: 1050; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+      {# 宽屏: 预览吸在右侧, top 留出类型栏高度, 表单再长也始终可见, 自身超高时内部滚动 #}
+      .pcard-admin-preview { flex: 0 0 380px; max-width: 380px; position: sticky; top: var(--pdp-typebar-h, 52px); max-height: calc(100vh - var(--pdp-typebar-h, 52px) - 16px); overflow: auto; }
+      .pcard-admin-preview .panel-body { background: #f5f6f8; }
+      .pcard-preview-hint { font-size: 12px; color: #888; margin: 0 0 12px; }
+      {# 点击预览各部分 -> 跳转并高亮对应编辑项 #}
+      #pdp-preview-frame [data-jump] { cursor: pointer; }
+      #pdp-preview-frame [data-jump]:hover { outline: 2px dashed var(--pdp-primary, #10B981); outline-offset: 3px; border-radius: 4px; }
+      .pcard-jump-flash { border-radius: 4px; animation: pcard-jump-flash 1.4s ease-out; }
+      @keyframes pcard-jump-flash {
+        0%, 18% { background-color: #fff3cd; box-shadow: 0 0 0 3px rgba(255,193,7,.55); }
+        100% { background-color: transparent; box-shadow: 0 0 0 0 transparent; }
+      }
+      {# 跳转滚动时为吸顶区域预留空间 (类型栏 + dock 时再加预览高度) #}
+      .pcard-admin-form .form-group { scroll-margin-top: calc(var(--pdp-typebar-h, 52px) + 16px); }
+      {# 窄屏 (含侧栏开合后内容变窄): 预览转为吸顶 dock, 紧贴"商品类型"下方而非窗口下边缘, 任何窗口大小/模式都始终可见 #}
+      .pcard-admin-layout.pcard-dock { flex-direction: column; }
+      .pcard-admin-layout.pcard-dock .pcard-admin-form { order: 1; }
+      .pcard-admin-layout.pcard-dock .pcard-admin-preview {
+        order: 0;
+        position: sticky;
+        top: var(--pdp-typebar-h, 52px);
+        flex: 0 0 auto;
+        width: 100%;
+        max-width: none;
+        max-height: calc(100vh - var(--pdp-typebar-h, 52px) - 16px);
+        overflow: auto;
+        z-index: 1040;
+        box-shadow: 0 6px 18px rgba(0,0,0,.12);
+      }
+      .pcard-admin-layout.pcard-dock .pcard-admin-preview .panel { margin: 0; }
+      .pcard-admin-layout.pcard-dock .pcard-admin-form .form-group { scroll-margin-top: calc(var(--pdp-typebar-h, 52px) + var(--pdp-preview-h, 360px) + 16px); }
 
-          <legend>{{ text_section_toggle }}</legend>
-          <div class="form-group">
-            <label class="col-sm-2 control-label">{{ entry_product_detail_show_breadcrumb }}</label>
-            <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_detail_show_breadcrumb" value="1" {{ product_detail_show_breadcrumb == 1 or product_detail_show_breadcrumb == '1' ? 'checked' }}/> {{ entry_product_detail_show_breadcrumb }}</label></div>
-          </div>
-          <div class="form-group">
-            <label class="col-sm-2 control-label">{{ entry_product_detail_show_gallery }}</label>
-            <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_detail_show_gallery" value="1" {{ product_detail_show_gallery == 1 or product_detail_show_gallery == '1' ? 'checked' }}/> {{ entry_product_detail_show_gallery }}</label></div>
-          </div>
-          <div class="form-group">
-            <label class="col-sm-2 control-label">{{ entry_product_detail_show_badges }}</label>
-            <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_detail_show_badges" value="1" {{ product_detail_show_badges == 1 or product_detail_show_badges == '1' ? 'checked' }}/> {{ entry_product_detail_show_badges }}</label></div>
-          </div>
-          <div class="form-group">
-            <label class="col-sm-2 control-label">{{ entry_product_detail_show_trust_box }}</label>
-            <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_detail_show_trust_box" value="1" {{ product_detail_show_trust_box == 1 or product_detail_show_trust_box == '1' ? 'checked' }}/> {{ entry_product_detail_show_trust_box }}</label></div>
-          </div>
-          <div class="form-group">
-            <label class="col-sm-2 control-label">{{ entry_product_detail_show_tabs }}</label>
-            <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_detail_show_tabs" value="1" {{ product_detail_show_tabs == 1 or product_detail_show_tabs == '1' ? 'checked' }}/> {{ entry_product_detail_show_tabs }}</label></div>
-          </div>
-          <div class="form-group">
-            <label class="col-sm-2 control-label">{{ entry_product_detail_show_related }}</label>
-            <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_detail_show_related" value="1" {{ product_detail_show_related == 1 or product_detail_show_related == '1' ? 'checked' }}/> {{ entry_product_detail_show_related }}</label></div>
-          </div>
-          <div class="form-group">
-            <label class="col-sm-2 control-label">{{ entry_product_detail_show_research }}</label>
-            <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_detail_show_research" value="1" {{ product_detail_show_research == 1 or product_detail_show_research == '1' ? 'checked' }}/> {{ entry_product_detail_show_research }}</label></div>
-          </div>
+      {# ===== PDP 预览画布: 作用域化, 隔离配色变量 (不污染后台 :root) ===== #}
+      #pdp-preview-frame {
+        --pdp-primary: #10B981;
+        --pdp-bg-navy: #0F172A;
+        background: #fff;
+        padding: 14px;
+        border-radius: 10px;
+        border: 1px solid #e8e8e8;
+        min-height: 120px;
+        font-family: "Figtree", -apple-system, "Segoe UI", sans-serif;
+      }
+      #pdp-preview-frame .pdp-wrap { max-width: 100%; padding: 0; margin: 0; }
+      #pdp-preview-frame .pdp-breadcrumb { font-size: 11px; color: #999; padding: 0 0 8px; }
+      #pdp-preview-frame .pdp-breadcrumb a { color: var(--pdp-primary); text-decoration: none; }
+      #pdp-preview-frame .pdp-buy { display: flex; flex-direction: column; gap: 12px; padding: 0; }
+      #pdp-preview-frame .pdp-main-img { position: relative; background: var(--pdp-bg-navy); border-radius: 10px; aspect-ratio: 16 / 9; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+      #pdp-preview-frame .pdp-mol { font-size: 44px; line-height: 1; }
+      #pdp-preview-frame .pdp-badge { position: absolute; top: 10px; left: 10px; background: var(--pdp-primary); color: #fff; font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 4px; letter-spacing: .5px; }
+      #pdp-preview-frame .pdp-cat { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--pdp-primary); margin: 0 0 4px; }
+      #pdp-preview-frame .pdp-title { font-weight: 900; color: var(--pdp-bg-navy); margin: 0 0 8px; line-height: 1.2; word-break: break-word; }
+      #pdp-preview-frame .pdp-tags { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+      #pdp-preview-frame .pdp-tag { padding: 3px 10px; background: #ecfdf5; color: var(--pdp-primary); font-size: 10px; font-weight: 700; border-radius: 12px; letter-spacing: .3px; }
+      #pdp-preview-frame .pdp-desc { color: #555; line-height: 1.55; margin: 0 0 12px; }
+      #pdp-preview-frame .pdp-price { font-size: 22px; font-weight: 900; color: var(--pdp-bg-navy); margin: 0 0 10px; }
+      #pdp-preview-frame .pdp-qty-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+      #pdp-preview-frame .pdp-qty { width: 34px; height: 34px; text-align: center; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 13px; font-weight: 700; line-height: 34px; color: #555; }
+      #pdp-preview-frame .pdp-add-btn { flex: 1; height: 34px; background: var(--pdp-primary); color: #fff; border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: default; display: flex; align-items: center; justify-content: center; gap: 6px; }
+      #pdp-preview-frame .pdp-trust { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; }
+      #pdp-preview-frame .pdp-trust li { list-style: none; padding: 3px 0; font-size: 11px; color: #555; display: flex; align-items: center; gap: 6px; }
+      #pdp-preview-frame .pdp-trust li i { color: var(--pdp-primary); font-size: 13px; }
+      #pdp-preview-frame .pdp-tabs-section { border-top: 1px solid #e5e7eb; margin-top: 4px; }
+      #pdp-preview-frame .pdp-tab-nav { display: flex; border-bottom: 1px solid #e5e7eb; flex-wrap: wrap; }
+      #pdp-preview-frame .pdp-tab-link { padding: 8px 12px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .3px; color: #999; border: none; background: none; border-bottom: 2px solid transparent; margin-bottom: -1px; cursor: pointer; }
+      #pdp-preview-frame .pdp-tab-link.active { color: var(--pdp-bg-navy); border-bottom-color: var(--pdp-primary); }
+      #pdp-preview-frame .pdp-tab-panel { padding: 10px 0; border-bottom: 1px dashed #eee; }
+      #pdp-preview-frame .pdp-tab-panel:last-child { border-bottom: none; }
+      #pdp-preview-frame .pdp-tab-panel p { color: #555; line-height: 1.55; margin: 0; white-space: pre-wrap; }
+      #pdp-preview-frame .pdp-tab-panel .pdp-panel-label { display: block; font-size: 9px; font-weight: 700; text-transform: uppercase; color: #bbb; letter-spacing: .5px; margin-bottom: 3px; }
+      #pdp-preview-frame .pdp-section { padding: 14px 0; border-top: 1px solid #e5e7eb; }
+      #pdp-preview-frame .pdp-section-tag { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--pdp-primary); margin: 0 0 4px; }
+      #pdp-preview-frame .pdp-section-title { font-weight: 900; font-size: 15px; color: var(--pdp-bg-navy); margin: 0 0 10px; text-transform: uppercase; }
+      #pdp-preview-frame .pdp-related-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+      #pdp-preview-frame .pdp-related-card { border: 1px solid #f0f0f0; border-radius: 8px; overflow: hidden; }
+      #pdp-preview-frame .pdp-related-card .img-wrap { background: var(--pdp-bg-navy); height: 46px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+      #pdp-preview-frame .pdp-related-card .body { padding: 6px 8px; }
+      #pdp-preview-frame .pdp-related-card .body h3 { font-size: 11px; font-weight: 700; color: var(--pdp-bg-navy); margin: 0 0 2px; }
+      #pdp-preview-frame .pdp-related-card .body .price { font-size: 12px; font-weight: 800; color: var(--pdp-bg-navy); }
+      #pdp-preview-frame .pdp-research-item { display: block; padding: 6px 0; font-size: 11px; font-weight: 700; color: var(--pdp-bg-navy); text-decoration: none; border-bottom: 1px solid #f0f0f0; }
+      #pdp-preview-frame .pdp-research-item:last-child { border-bottom: none; }
+    </style>
 
-          <legend>{{ text_section_size }}</legend>
-          <div class="form-group">
-            <label class="col-sm-2 control-label" for="input-title-fs">{{ entry_product_detail_title_font_size }}</label>
-            <div class="col-sm-10"><input type="number" name="product_detail_title_font_size" value="{{ product_detail_title_font_size }}" id="input-title-fs" class="form-control" style="max-width:200px;"></div>
+    <div class="pcard-admin-layout">
+      <div class="pcard-admin-form">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-file-text-o"></i> {{ text_form }}</h3>
           </div>
-          <div class="form-group">
-            <label class="col-sm-2 control-label" for="input-body-fs">{{ entry_product_detail_body_font_size }}</label>
-            <div class="col-sm-10"><input type="number" name="product_detail_body_font_size" value="{{ product_detail_body_font_size }}" id="input-body-fs" class="form-control" style="max-width:200px;"></div>
-          </div>
+          <div class="panel-body">
+            <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-product-detail" class="form-horizontal">
 
-          <legend>{{ text_section_text }}</legend>
-          <div class="form-group">
-            <label class="col-sm-2 control-label" for="input-coa-badge">{{ entry_product_detail_coa_badge_text }}</label>
-            <div class="col-sm-10"><input type="text" name="product_detail_coa_badge_text" value="{{ product_detail_coa_badge_text }}" id="input-coa-badge" class="form-control" style="max-width:300px;"></div>
-          </div>
-          <div class="form-group">
-            <label class="col-sm-2 control-label" for="input-batch-verified">{{ entry_product_detail_batch_verified_text }}</label>
-            <div class="col-sm-10"><input type="text" name="product_detail_batch_verified_text" value="{{ product_detail_batch_verified_text }}" id="input-batch-verified" class="form-control" style="max-width:300px;"></div>
-          </div>
-          <div class="form-group">
-            <label class="col-sm-2 control-label" for="input-tab-details-label">{{ entry_product_detail_tab_details_label }}</label>
-            <div class="col-sm-10"><input type="text" name="product_detail_tab_details_label" value="{{ product_detail_tab_details_label }}" id="input-tab-details-label" class="form-control" style="max-width:300px;"></div>
-          </div>
-          <div class="form-group">
-            <label class="col-sm-2 control-label" for="input-tab-coa-label">{{ entry_product_detail_tab_coa_label }}</label>
-            <div class="col-sm-10"><input type="text" name="product_detail_tab_coa_label" value="{{ product_detail_tab_coa_label }}" id="input-tab-coa-label" class="form-control" style="max-width:300px;"></div>
-          </div>
-          <div class="form-group">
-            <label class="col-sm-2 control-label" for="input-tab-shipping-label">{{ entry_product_detail_tab_shipping_label }}</label>
-            <div class="col-sm-10"><input type="text" name="product_detail_tab_shipping_label" value="{{ product_detail_tab_shipping_label }}" id="input-tab-shipping-label" class="form-control" style="max-width:300px;"></div>
-          </div>
-          <div class="form-group">
-            <label class="col-sm-2 control-label" for="input-tab-details-body">{{ entry_product_detail_tab_details_body }}</label>
-            <div class="col-sm-10"><textarea name="product_detail_tab_details_body" rows="3" id="input-tab-details-body" class="form-control">{{ product_detail_tab_details_body }}</textarea></div>
-          </div>
-          <div class="form-group">
-            <label class="col-sm-2 control-label" for="input-tab-coa-body">{{ entry_product_detail_tab_coa_body }}</label>
-            <div class="col-sm-10"><textarea name="product_detail_tab_coa_body" rows="4" id="input-tab-coa-body" class="form-control">{{ product_detail_tab_coa_body }}</textarea></div>
-          </div>
-          <div class="form-group">
-            <label class="col-sm-2 control-label" for="input-tab-shipping-body">{{ entry_product_detail_tab_shipping_body }}</label>
-            <div class="col-sm-10"><textarea name="product_detail_tab_shipping_body" rows="4" id="input-tab-shipping-body" class="form-control">{{ product_detail_tab_shipping_body }}</textarea></div>
-          </div>
-          <div class="form-group">
-            <label class="col-sm-2 control-label" for="input-trust-1">{{ entry_product_detail_trust_item_1 }}</label>
-            <div class="col-sm-10"><input type="text" name="product_detail_trust_item_1" value="{{ product_detail_trust_item_1 }}" id="input-trust-1" class="form-control" style="max-width:400px;"></div>
-          </div>
-          <div class="form-group">
-            <label class="col-sm-2 control-label" for="input-trust-2">{{ entry_product_detail_trust_item_2 }}</label>
-            <div class="col-sm-10"><input type="text" name="product_detail_trust_item_2" value="{{ product_detail_trust_item_2 }}" id="input-trust-2" class="form-control" style="max-width:400px;"></div>
-          </div>
-          <div class="form-group">
-            <label class="col-sm-2 control-label" for="input-trust-3">{{ entry_product_detail_trust_item_3 }}</label>
-            <div class="col-sm-10"><input type="text" name="product_detail_trust_item_3" value="{{ product_detail_trust_item_3 }}" id="input-trust-3" class="form-control" style="max-width:400px;"></div>
-          </div>
-          <div class="form-group">
-            <label class="col-sm-2 control-label" for="input-related-title">{{ entry_product_detail_related_title }}</label>
-            <div class="col-sm-10"><input type="text" name="product_detail_related_title" value="{{ product_detail_related_title }}" id="input-related-title" class="form-control" style="max-width:300px;"></div>
-          </div>
-          <div class="form-group">
-            <label class="col-sm-2 control-label" for="input-research-title">{{ entry_product_detail_research_title }}</label>
-            <div class="col-sm-10"><input type="text" name="product_detail_research_title" value="{{ product_detail_research_title }}" id="input-research-title" class="form-control" style="max-width:300px;"></div>
-          </div>
-
-          {% for i in 1..4 %}
-          <div class="form-group">
-            <label class="col-sm-2 control-label">研究链接 {{ i }}</label>
-            <div class="col-sm-10">
-              <div class="row">
-                <div class="col-sm-6"><input type="text" name="product_detail_research_link_{{ i }}_label" value="{{ _context['product_detail_research_link_' ~ i ~ '_label'] }}" class="form-control" placeholder="文字"></div>
-                <div class="col-sm-6"><input type="text" name="product_detail_research_link_{{ i }}_url" value="{{ _context['product_detail_research_link_' ~ i ~ '_url'] }}" class="form-control" placeholder="地址"></div>
+              <legend>{{ text_section_toggle }}</legend>
+              <div class="form-group">
+                <label class="col-sm-2 control-label">{{ entry_product_detail_show_breadcrumb }}</label>
+                <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_detail_show_breadcrumb" value="1" {{ product_detail_show_breadcrumb == 1 or product_detail_show_breadcrumb == '1' ? 'checked' }}/> {{ entry_product_detail_show_breadcrumb }}</label></div>
               </div>
-            </div>
-          </div>
-          {% endfor %}
+              <div class="form-group">
+                <label class="col-sm-2 control-label">{{ entry_product_detail_show_gallery }}</label>
+                <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_detail_show_gallery" value="1" {{ product_detail_show_gallery == 1 or product_detail_show_gallery == '1' ? 'checked' }}/> {{ entry_product_detail_show_gallery }}</label></div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label">{{ entry_product_detail_show_badges }}</label>
+                <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_detail_show_badges" value="1" {{ product_detail_show_badges == 1 or product_detail_show_badges == '1' ? 'checked' }}/> {{ entry_product_detail_show_badges }}</label></div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label">{{ entry_product_detail_show_trust_box }}</label>
+                <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_detail_show_trust_box" value="1" {{ product_detail_show_trust_box == 1 or product_detail_show_trust_box == '1' ? 'checked' }}/> {{ entry_product_detail_show_trust_box }}</label></div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label">{{ entry_product_detail_show_tabs }}</label>
+                <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_detail_show_tabs" value="1" {{ product_detail_show_tabs == 1 or product_detail_show_tabs == '1' ? 'checked' }}/> {{ entry_product_detail_show_tabs }}</label></div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label">{{ entry_product_detail_show_related }}</label>
+                <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_detail_show_related" value="1" {{ product_detail_show_related == 1 or product_detail_show_related == '1' ? 'checked' }}/> {{ entry_product_detail_show_related }}</label></div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label">{{ entry_product_detail_show_research }}</label>
+                <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_detail_show_research" value="1" {{ product_detail_show_research == 1 or product_detail_show_research == '1' ? 'checked' }}/> {{ entry_product_detail_show_research }}</label></div>
+              </div>
 
-          <legend>{{ text_section_color }}</legend>
-          <div class="form-group">
-            <label class="col-sm-2 control-label" for="input-pdp-primary">{{ entry_product_detail_primary_color }}</label>
-            <div class="col-sm-10"><input type="color" name="product_detail_primary_color" value="{{ product_detail_primary_color }}" id="input-pdp-primary" class="form-control" style="max-width:80px;height:38px;padding:2px;"></div>
-          </div>
-          <div class="form-group">
-            <label class="col-sm-2 control-label" for="input-pdp-navy">{{ entry_product_detail_bg_navy }}</label>
-            <div class="col-sm-10"><input type="color" name="product_detail_bg_navy" value="{{ product_detail_bg_navy }}" id="input-pdp-navy" class="form-control" style="max-width:80px;height:38px;padding:2px;"></div>
-          </div>
+              <legend>{{ text_section_size }}</legend>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-title-fs">{{ entry_product_detail_title_font_size }}</label>
+                <div class="col-sm-10"><input type="number" name="product_detail_title_font_size" value="{{ product_detail_title_font_size }}" id="input-title-fs" class="form-control" style="max-width:200px;"></div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-body-fs">{{ entry_product_detail_body_font_size }}</label>
+                <div class="col-sm-10"><input type="number" name="product_detail_body_font_size" value="{{ product_detail_body_font_size }}" id="input-body-fs" class="form-control" style="max-width:200px;"></div>
+              </div>
 
-        </form>
+              <legend>{{ text_section_text }}</legend>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-coa-badge">{{ entry_product_detail_coa_badge_text }}</label>
+                <div class="col-sm-10"><input type="text" name="product_detail_coa_badge_text" value="{{ product_detail_coa_badge_text }}" id="input-coa-badge" class="form-control" style="max-width:300px;"></div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-batch-verified">{{ entry_product_detail_batch_verified_text }}</label>
+                <div class="col-sm-10"><input type="text" name="product_detail_batch_verified_text" value="{{ product_detail_batch_verified_text }}" id="input-batch-verified" class="form-control" style="max-width:300px;"></div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-tab-details-label">{{ entry_product_detail_tab_details_label }}</label>
+                <div class="col-sm-10"><input type="text" name="product_detail_tab_details_label" value="{{ product_detail_tab_details_label }}" id="input-tab-details-label" class="form-control" style="max-width:300px;"></div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-tab-coa-label">{{ entry_product_detail_tab_coa_label }}</label>
+                <div class="col-sm-10"><input type="text" name="product_detail_tab_coa_label" value="{{ product_detail_tab_coa_label }}" id="input-tab-coa-label" class="form-control" style="max-width:300px;"></div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-tab-shipping-label">{{ entry_product_detail_tab_shipping_label }}</label>
+                <div class="col-sm-10"><input type="text" name="product_detail_tab_shipping_label" value="{{ product_detail_tab_shipping_label }}" id="input-tab-shipping-label" class="form-control" style="max-width:300px;"></div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-tab-details-body">{{ entry_product_detail_tab_details_body }}</label>
+                <div class="col-sm-10"><textarea name="product_detail_tab_details_body" rows="3" id="input-tab-details-body" class="form-control">{{ product_detail_tab_details_body }}</textarea></div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-tab-coa-body">{{ entry_product_detail_tab_coa_body }}</label>
+                <div class="col-sm-10"><textarea name="product_detail_tab_coa_body" rows="4" id="input-tab-coa-body" class="form-control">{{ product_detail_tab_coa_body }}</textarea></div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-tab-shipping-body">{{ entry_product_detail_tab_shipping_body }}</label>
+                <div class="col-sm-10"><textarea name="product_detail_tab_shipping_body" rows="4" id="input-tab-shipping-body" class="form-control">{{ product_detail_tab_shipping_body }}</textarea></div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-trust-1">{{ entry_product_detail_trust_item_1 }}</label>
+                <div class="col-sm-10"><input type="text" name="product_detail_trust_item_1" value="{{ product_detail_trust_item_1 }}" id="input-trust-1" class="form-control" style="max-width:400px;"></div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-trust-2">{{ entry_product_detail_trust_item_2 }}</label>
+                <div class="col-sm-10"><input type="text" name="product_detail_trust_item_2" value="{{ product_detail_trust_item_2 }}" id="input-trust-2" class="form-control" style="max-width:400px;"></div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-trust-3">{{ entry_product_detail_trust_item_3 }}</label>
+                <div class="col-sm-10"><input type="text" name="product_detail_trust_item_3" value="{{ product_detail_trust_item_3 }}" id="input-trust-3" class="form-control" style="max-width:400px;"></div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-related-title">{{ entry_product_detail_related_title }}</label>
+                <div class="col-sm-10"><input type="text" name="product_detail_related_title" value="{{ product_detail_related_title }}" id="input-related-title" class="form-control" style="max-width:300px;"></div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-research-title">{{ entry_product_detail_research_title }}</label>
+                <div class="col-sm-10"><input type="text" name="product_detail_research_title" value="{{ product_detail_research_title }}" id="input-research-title" class="form-control" style="max-width:300px;"></div>
+              </div>
+
+              {% for i in 1..4 %}
+              <div class="form-group">
+                <label class="col-sm-2 control-label">研究链接 {{ i }}</label>
+                <div class="col-sm-10">
+                  <div class="row">
+                    <div class="col-sm-6"><input type="text" name="product_detail_research_link_{{ i }}_label" value="{{ _context['product_detail_research_link_' ~ i ~ '_label'] }}" class="form-control" placeholder="文字"></div>
+                    <div class="col-sm-6"><input type="text" name="product_detail_research_link_{{ i }}_url" value="{{ _context['product_detail_research_link_' ~ i ~ '_url'] }}" class="form-control" placeholder="地址"></div>
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+
+              <legend>{{ text_section_color }}</legend>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-pdp-primary">{{ entry_product_detail_primary_color }}</label>
+                <div class="col-sm-10"><input type="color" name="product_detail_primary_color" value="{{ product_detail_primary_color }}" id="input-pdp-primary" class="form-control" style="max-width:80px;height:38px;padding:2px;"></div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-pdp-navy">{{ entry_product_detail_bg_navy }}</label>
+                <div class="col-sm-10"><input type="color" name="product_detail_bg_navy" value="{{ product_detail_bg_navy }}" id="input-pdp-navy" class="form-control" style="max-width:80px;height:38px;padding:2px;"></div>
+              </div>
+
+            </form>
+          </div>
+        </div>
+      </div>
+
+      {# ===== 实时预览面板 ===== #}
+      <div class="pcard-admin-preview">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-eye"></i> {{ text_preview }}</h3>
+          </div>
+          <div class="panel-body">
+            <p class="pcard-preview-hint">{{ text_preview_hint }}</p>
+            <div id="pdp-preview-frame"></div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </div>
+
+<script>
+(function () {
+  // 示例商品数据 (用于预览渲染; 与前台 product.twig 结构保持一致)
+  var SAMPLE = {
+    title: 'BPC-157 高纯度合成多肽试剂',
+    cat: '多肽试剂 / PEPTIDE',
+    price: '¥299.00',
+    desc: '实验室级高纯度合成多肽试剂，纯度≥99%，适用于细胞培养与体外研究。每瓶5mg装量，-20°C避光保存，长期稳定性经验证。',
+    related: [
+      { name: 'TB-500 5mg', price: '¥329.00' },
+      { name: 'GHK-Cu 10mg', price: '¥259.00' }
+    ]
+  };
+
+  var form = document.getElementById('form-product-detail');
+  var frame = document.getElementById('pdp-preview-frame');
+  if (!form || !frame) return;
+
+  function field(name) { return form.querySelector('[name="' + name + '"]'); }
+  function chk(name) { var el = field(name); return el && el.checked ? 1 : 0; }
+  function num(name, def) { var el = field(name); var v = el ? parseInt(el.value, 10) : NaN; return isNaN(v) ? def : v; }
+  function val(name, def) { var el = field(name); return el && el.value !== '' ? el.value : def; }
+
+  function read() {
+    var links = [];
+    for (var i = 1; i <= 4; i++) {
+      links.push({ label: val('product_detail_research_link_' + i + '_label', '') });
+    }
+    return {
+      show_breadcrumb: chk('product_detail_show_breadcrumb'),
+      show_gallery: chk('product_detail_show_gallery'),
+      show_badges: chk('product_detail_show_badges'),
+      show_trust_box: chk('product_detail_show_trust_box'),
+      show_tabs: chk('product_detail_show_tabs'),
+      show_related: chk('product_detail_show_related'),
+      show_research: chk('product_detail_show_research'),
+      title_font_size: num('product_detail_title_font_size', 38),
+      body_font_size: num('product_detail_body_font_size', 15),
+      coa_badge_text: val('product_detail_coa_badge_text', '★ COA ON FILE'),
+      batch_verified_text: val('product_detail_batch_verified_text', 'BATCH-VERIFIED'),
+      tab_details_label: val('product_detail_tab_details_label', 'DETAILS'),
+      tab_coa_label: val('product_detail_tab_coa_label', 'CERTIFICATE OF ANALYSIS'),
+      tab_shipping_label: val('product_detail_tab_shipping_label', 'SHIPPING & RETURNS'),
+      tab_details_body: val('product_detail_tab_details_body', ''),
+      tab_coa_body: val('product_detail_tab_coa_body', ''),
+      tab_shipping_body: val('product_detail_tab_shipping_body', ''),
+      trust_item_1: val('product_detail_trust_item_1', ''),
+      trust_item_2: val('product_detail_trust_item_2', ''),
+      trust_item_3: val('product_detail_trust_item_3', ''),
+      related_title: val('product_detail_related_title', 'MORE COMPOUNDS'),
+      research_title: val('product_detail_research_title', 'RESEARCH LIBRARY'),
+      research_links: links,
+      primary_color: val('product_detail_primary_color', '#10B981'),
+      bg_navy: val('product_detail_bg_navy', '#0F172A')
+    };
+  }
+
+  function esc(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  // 构建详情页 HTML - 对应 catalog/.../product/product.twig 的渲染分支
+  // 每个可点部分带 data-jump, 点击跳转到对应设置项
+  function build(s) {
+    var html = '<div class="pdp-wrap">';
+    if (s.show_breadcrumb) {
+      html += '<p class="pdp-breadcrumb" data-jump="product_detail_show_breadcrumb"><a>HOME</a> / <a>SHOP</a> / <span>' + esc(SAMPLE.title) + '</span></p>';
+    }
+    html += '<div class="pdp-buy">';
+    if (s.show_gallery) {
+      html += '<div class="pdp-gallery" data-jump="product_detail_show_gallery">';
+      html += '<div class="pdp-main-img">';
+      if (s.show_badges) {
+        html += '<span class="pdp-badge" data-jump="product_detail_coa_badge_text">' + esc(s.coa_badge_text) + '</span>';
+      }
+      html += '<span class="pdp-mol">🧪</span>';
+      html += '</div>';
+      html += '</div>';
+    }
+    html += '<div class="pdp-info">';
+    html += '<p class="pdp-cat">// ' + esc(SAMPLE.cat) + '</p>';
+    html += '<h1 class="pdp-title" data-jump="product_detail_title_font_size" style="font-size:' + s.title_font_size + 'px;">' + esc(SAMPLE.title) + '</h1>';
+    html += '<div class="pdp-tags">';
+    if (s.show_badges) {
+      html += '<span class="pdp-tag" data-jump="product_detail_batch_verified_text">' + esc(s.batch_verified_text) + '</span>';
+    }
+    html += '<span class="pdp-tag">IN STOCK</span>';
+    html += '</div>';
+    html += '<p class="pdp-desc" data-jump="product_detail_body_font_size" style="font-size:' + s.body_font_size + 'px;">' + esc(SAMPLE.desc) + '</p>';
+    html += '<div class="pdp-price" data-jump="product_detail_bg_navy">' + esc(SAMPLE.price) + '</div>';
+    html += '<div class="pdp-qty-row"><span class="pdp-qty">1</span><span class="pdp-add-btn"><i class="fa fa-cart-shopping"></i> 加入购物车</span></div>';
+    if (s.show_trust_box) {
+      html += '<ul class="pdp-trust" data-jump="product_detail_show_trust_box">';
+      if (s.trust_item_1) html += '<li><i class="fa fa-check-circle"></i> ' + esc(s.trust_item_1) + '</li>';
+      if (s.trust_item_2) html += '<li><i class="fa fa-check-circle"></i> ' + esc(s.trust_item_2) + '</li>';
+      if (s.trust_item_3) html += '<li><i class="fa fa-check-circle"></i> ' + esc(s.trust_item_3) + '</li>';
+      html += '</ul>';
+    }
+    html += '</div>'; // pdp-info
+    html += '</div>'; // pdp-buy
+
+    if (s.show_tabs) {
+      html += '<div class="pdp-tabs-section" data-jump="product_detail_show_tabs">';
+      html += '<nav class="pdp-tab-nav">';
+      html += '<button class="pdp-tab-link active" data-jump="product_detail_tab_details_label">' + esc(s.tab_details_label) + '</button>';
+      html += '<button class="pdp-tab-link" data-jump="product_detail_tab_coa_label">' + esc(s.tab_coa_label) + '</button>';
+      html += '<button class="pdp-tab-link" data-jump="product_detail_tab_shipping_label">' + esc(s.tab_shipping_label) + '</button>';
+      html += '</nav>';
+      html += '<div class="pdp-tab-panel" data-jump="product_detail_tab_details_body"><span class="pdp-panel-label">' + esc(s.tab_details_label) + '</span><p>' + esc(s.tab_details_body) + '</p></div>';
+      html += '<div class="pdp-tab-panel" data-jump="product_detail_tab_coa_body"><span class="pdp-panel-label">' + esc(s.tab_coa_label) + '</span><p>' + esc(s.tab_coa_body) + '</p></div>';
+      html += '<div class="pdp-tab-panel" data-jump="product_detail_tab_shipping_body"><span class="pdp-panel-label">' + esc(s.tab_shipping_label) + '</span><p>' + esc(s.tab_shipping_body) + '</p></div>';
+      html += '</div>';
+    }
+    if (s.show_related) {
+      html += '<div class="pdp-section" data-jump="product_detail_related_title">';
+      html += '<p class="pdp-section-tag">// RELATED</p>';
+      html += '<h2 class="pdp-section-title">' + esc(s.related_title) + '</h2>';
+      html += '<div class="pdp-related-grid">';
+      for (var i = 0; i < SAMPLE.related.length; i++) {
+        var r = SAMPLE.related[i];
+        html += '<div class="pdp-related-card"><div class="img-wrap">🧪</div><div class="body"><h3>' + esc(r.name) + '</h3><div class="price">' + esc(r.price) + '</div></div></div>';
+      }
+      html += '</div>';
+      html += '</div>';
+    }
+    if (s.show_research) {
+      html += '<div class="pdp-section" data-jump="product_detail_research_title">';
+      html += '<p class="pdp-section-tag">// RESEARCH</p>';
+      html += '<h2 class="pdp-section-title">' + esc(s.research_title) + '</h2>';
+      html += '<div class="pdp-research-list">';
+      for (var j = 0; j < s.research_links.length; j++) {
+        if (s.research_links[j].label) {
+          html += '<a class="pdp-research-item" data-jump="product_detail_research_link_1_label">' + esc(s.research_links[j].label) + '</a>';
+        }
+      }
+      html += '</div>';
+      html += '</div>';
+    }
+    html += '</div>'; // pdp-wrap
+    return html;
+  }
+
+  function render() {
+    var s = read();
+    // 配色作用域化到预览画布 (不写 :root, 避免污染后台整体配色)
+    frame.style.setProperty('--pdp-primary', s.primary_color);
+    frame.style.setProperty('--pdp-bg-navy', s.bg_navy);
+    frame.innerHTML = build(s);
+  }
+
+  form.addEventListener('input', render);
+  form.addEventListener('change', render);
+  render();
+
+  // 点击预览各部分 -> 滚动到对应设置项并高亮
+  frame.addEventListener('click', function (e) {
+    var el = e.target.closest('[data-jump]');
+    if (!el) return;
+    e.preventDefault();
+    var name = el.getAttribute('data-jump');
+    var f = field(name);
+    if (!f) return;
+    var group = f.closest('.form-group') || f;
+    var prev = document.querySelector('.pcard-jump-flash');
+    if (prev) prev.classList.remove('pcard-jump-flash');
+    void group.offsetWidth;
+    group.classList.add('pcard-jump-flash');
+    setTimeout(function () { group.classList.remove('pcard-jump-flash'); }, 1400);
+    try { f.focus({ preventScroll: true }); } catch (_) { f.focus(); }
+    // 滚动到吸顶区域下方 (类型栏; dock 模式再加预览高度), 避免字段被吸顶面板遮挡
+    var root = getComputedStyle(document.documentElement);
+    var typebarH = parseFloat(root.getPropertyValue('--pdp-typebar-h')) || 52;
+    var layoutEl = document.querySelector('.pcard-admin-layout');
+    var stickyH = typebarH + 16;
+    if (layoutEl && layoutEl.classList.contains('pcard-dock')) {
+      var pv = document.querySelector('.pcard-admin-preview');
+      stickyH += pv ? pv.offsetHeight : 0;
+    }
+    var top = window.pageYOffset + group.getBoundingClientRect().top - stickyH;
+    window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+  });
+
+  // 窄屏 (含侧栏开合导致内容变窄) -> 预览转吸顶 dock (紧贴"商品类型"下方), 始终可见
+  // 依据 .pcard-admin-layout 实际宽度判断, 能正确响应侧栏模式 (viewport 不变而内容变窄)
+  // 同时把类型栏(含下margin)与预览高度写入 CSS 变量, 供 sticky top 与跳转滚动使用
+  function syncLayout() {
+    var layout = document.querySelector('.pcard-admin-layout');
+    if (!layout) return;
+    var typebar = document.querySelector('.pdp-typebar');
+    var typebarH = 52;
+    if (typebar) {
+      var mb = parseInt(getComputedStyle(typebar).marginBottom) || 0;
+      typebarH = typebar.offsetHeight + mb;
+    }
+    document.documentElement.style.setProperty('--pdp-typebar-h', typebarH + 'px');
+    if (layout.clientWidth < 820) {
+      layout.classList.add('pcard-dock');
+    } else {
+      layout.classList.remove('pcard-dock');
+    }
+    var pv = document.querySelector('.pcard-admin-preview');
+    if (pv) { document.documentElement.style.setProperty('--pdp-preview-h', pv.offsetHeight + 'px'); }
+  }
+  var layoutTimer;
+  window.addEventListener('resize', function () { clearTimeout(layoutTimer); layoutTimer = setTimeout(syncLayout, 120); });
+  var btnMenu = document.getElementById('button-menu');
+  if (btnMenu) btnMenu.addEventListener('click', function () { setTimeout(syncLayout, 60); setTimeout(syncLayout, 280); });
+  var colLeft = document.getElementById('column-left');
+  if (colLeft && window.MutationObserver) {
+    new MutationObserver(function () { setTimeout(syncLayout, 280); }).observe(colLeft, { attributes: true, attributeFilter: ['class', 'style'] });
+  }
+  syncLayout();
+})();
+</script>
 {{ footer }}

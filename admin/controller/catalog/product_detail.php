@@ -180,6 +180,8 @@ class ControllerCatalogProductDetail extends Controller {
 		$data['text_section_size']    = $this->language->get('text_section_size');
 		$data['text_section_text']    = $this->language->get('text_section_text');
 		$data['text_section_color']   = $this->language->get('text_section_color');
+		$data['text_preview']         = $this->language->get('text_preview');
+		$data['text_preview_hint']    = $this->language->get('text_preview_hint');
 
 		foreach ($this->keys as $key) {
 			$data['entry_' . $key] = $this->language->get('entry_' . $key);

@@ -22,8 +22,9 @@
     <div class="alert alert-success"><i class="fa fa-check-circle"></i> {{ success }}<button type="button" class="close" data-dismiss="alert">&times;</button></div>
     {% endif %}
 
-    {# 商品类型 chip bar: 切换编辑不同商品类型的卡片设置 (type 1 = 全局默认) #}
-    <div class="panel panel-default" style="margin-bottom:12px;">
+    {# 商品类型 chip bar: 切换编辑不同商品类型的卡片设置 (type 1 = 全局默认)
+       sticky 顶部, 任何窗口大小/模式都始终可见 #}
+    <div class="panel panel-default pcard-typebar" style="margin-bottom:12px;">
       <div class="panel-body" style="padding:8px 12px;">
         <div style="display:flex;align-items:center;gap:10px;">
           <span style="color:#64748b;font-weight:600;white-space:nowrap;">商品类型</span>
@@ -41,8 +42,10 @@
     <style>
       .pcard-admin-layout { display: flex; gap: 20px; align-items: flex-start; }
       .pcard-admin-form { flex: 1 1 auto; min-width: 0; }
-      {# 宽屏: 预览固定在右侧 (sticky), 表单再长也始终可见, 自身超高时内部滚动 #}
-      .pcard-admin-preview { flex: 0 0 380px; max-width: 380px; position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow: auto; }
+      {# 商品类型 chip bar: 始终吸顶可见 #}
+      .pcard-typebar { position: sticky; top: 0; z-index: 1050; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+      {# 宽屏: 预览吸在右侧, top 留出类型栏高度, 表单再长也始终可见, 自身超高时内部滚动 #}
+      .pcard-admin-preview { flex: 0 0 380px; max-width: 380px; position: sticky; top: var(--pcard-typebar-h, 52px); max-height: calc(100vh - var(--pcard-typebar-h, 52px) - 16px); overflow: auto; }
       .pcard-admin-preview .panel-body { background: #f5f6f8; }
       .pcard-preview-hint { font-size: 12px; color: #888; margin: 0 0 12px; }
       {# 预览画布: 居中展示一张卡片, 隔离配色变量 (不污染后台 :root) #}
@@ -65,16 +68,26 @@
         0%, 18% { background-color: #fff3cd; box-shadow: 0 0 0 3px rgba(255,193,7,.55); }
         100% { background-color: transparent; box-shadow: 0 0 0 0 transparent; }
       }
-      {# 窄屏 (含侧栏开合后内容变窄): 预览转为底部常驻 dock, 任何窗口大小/模式都始终可见 #}
-      .pcard-admin-layout.pcard-dock { flex-direction: column; padding-bottom: 40vh; }
+      {# 跳转滚动时为吸顶区域预留空间 (类型栏 + dock 时再加预览高度) #}
+      .pcard-admin-form .form-group { scroll-margin-top: calc(var(--pcard-typebar-h, 52px) + 16px); }
+      {# 窄屏 (含侧栏开合后内容变窄): 预览转为吸顶 dock, 紧贴"商品类型"下方而非窗口下边缘, 任何窗口大小/模式都始终可见 #}
+      .pcard-admin-layout.pcard-dock { flex-direction: column; }
+      .pcard-admin-layout.pcard-dock .pcard-admin-form { order: 1; }
       .pcard-admin-layout.pcard-dock .pcard-admin-preview {
-        position: fixed; bottom: 0; left: 0; right: 0; top: auto;
-        flex: 0 0 auto; width: 100%; max-width: none;
-        max-height: 40vh; overflow: auto; z-index: 1040;
-        box-shadow: 0 -6px 18px rgba(0,0,0,.15);
+        order: 0;
+        position: sticky;
+        top: var(--pcard-typebar-h, 52px);
+        flex: 0 0 auto;
+        width: 100%;
+        max-width: none;
+        max-height: calc(100vh - var(--pcard-typebar-h, 52px) - 16px);
+        overflow: auto;
+        z-index: 1040;
+        box-shadow: 0 6px 18px rgba(0,0,0,.12);
       }
-      .pcard-admin-layout.pcard-dock .pcard-admin-preview .panel { margin: 0; border-radius: 0; }
+      .pcard-admin-layout.pcard-dock .pcard-admin-preview .panel { margin: 0; }
       .pcard-admin-layout.pcard-dock #pcard-preview-frame .product-card { max-width: 360px; }
+      .pcard-admin-layout.pcard-dock .pcard-admin-form .form-group { scroll-margin-top: calc(var(--pcard-typebar-h, 52px) + var(--pcard-preview-h, 360px) + 16px); }
     </style>
 
     <div class="pcard-admin-layout">
@@ -349,19 +362,39 @@
     group.classList.add('pcard-jump-flash');
     setTimeout(function () { group.classList.remove('pcard-jump-flash'); }, 1400);
     try { field.focus({ preventScroll: true }); } catch (_) { field.focus(); }
-    group.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // 滚动到吸顶区域下方 (类型栏; dock 模式再加预览高度), 避免字段被吸顶面板遮挡
+    var root = getComputedStyle(document.documentElement);
+    var typebarH = parseFloat(root.getPropertyValue('--pcard-typebar-h')) || 52;
+    var layoutEl = document.querySelector('.pcard-admin-layout');
+    var stickyH = typebarH + 16;
+    if (layoutEl && layoutEl.classList.contains('pcard-dock')) {
+      var pv = document.querySelector('.pcard-admin-preview');
+      stickyH += pv ? pv.offsetHeight : 0;
+    }
+    var top = window.pageYOffset + group.getBoundingClientRect().top - stickyH;
+    window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
   });
 
-  // 窄屏 (含侧栏开合导致内容变窄) -> 预览转底部 dock, 始终可见
+  // 窄屏 (含侧栏开合导致内容变窄) -> 预览转吸顶 dock (紧贴"商品类型"下方), 始终可见
   // 依据 .pcard-admin-layout 实际宽度判断, 能正确响应侧栏模式 (viewport 不变而内容变窄)
+  // 同时把类型栏(含下margin)与预览高度写入 CSS 变量, 供 sticky top 与跳转滚动使用
   function syncLayout() {
     var layout = document.querySelector('.pcard-admin-layout');
     if (!layout) return;
+    var typebar = document.querySelector('.pcard-typebar');
+    var typebarH = 52;
+    if (typebar) {
+      var mb = parseInt(getComputedStyle(typebar).marginBottom) || 0;
+      typebarH = typebar.offsetHeight + mb;
+    }
+    document.documentElement.style.setProperty('--pcard-typebar-h', typebarH + 'px');
     if (layout.clientWidth < 820) {
       layout.classList.add('pcard-dock');
     } else {
       layout.classList.remove('pcard-dock');
     }
+    var pv = document.querySelector('.pcard-admin-preview');
+    if (pv) { document.documentElement.style.setProperty('--pcard-preview-h', pv.offsetHeight + 'px'); }
   }
   var layoutTimer;
   window.addEventListener('resize', function () { clearTimeout(layoutTimer); layoutTimer = setTimeout(syncLayout, 120); });
