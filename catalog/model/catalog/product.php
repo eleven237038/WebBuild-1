@@ -584,22 +584,66 @@ class ModelCatalogProduct extends Model {
 		if ($type_id > 1 && empty($s)) {
 			$s = $this->model_setting_setting->getSetting('product_card', 0);
 		}
-		$defaults = array(
-			'show_image' => 1, 'show_name' => 1, 'show_description' => 1, 'show_price' => 1,
-			'show_wishlist' => 1, 'show_badges' => 1, 'show_add_button' => 1,
+
+		// Field metadata for this product type: tag_id => meta. Lets handleSingleProduct
+		// resolve each field-mapping slot to an actual value (system column or EAV).
+		$fields = array();
+		$sysmap = array();  // system_column => tag_id (default resolution)
+		$fquery = $this->db->query("SELECT tag_id, name, parent_id, system_column, field_type FROM " . DB_PREFIX . "custom_tag WHERE product_type_id = '" . $type_id . "' AND status = 1");
+		foreach ($fquery->rows as $r) {
+			$tid = (int)$r['tag_id'];
+			$fields[$tid] = array(
+				'system_column' => $r['system_column'],
+				'field_type'    => $r['field_type'],
+				'name'          => $r['name'],
+				'parent_id'     => (int)$r['parent_id'],
+			);
+			if ($r['system_column'] !== '') { $sysmap[$r['system_column']] = $tid; }
+		}
+
+		// Field-mapping slots: stored value is a tag_id (or '' = hide). Migrate legacy
+		// boolean ('1'/'0') / stale tag_id -> default resolved by system_column.
+		$map_slots = array(
+			'image'       => array('key' => 'product_card_show_image',       'col' => 'image'),
+			'name'        => array('key' => 'product_card_show_name',        'col' => 'name'),
+			'description' => array('key' => 'product_card_show_description', 'col' => 'description'),
+			'price'       => array('key' => 'product_card_show_price',       'col' => 'price'),
+			'badges'      => array('key' => 'product_card_show_badges',      'col' => ''),
+		);
+		$cfg = array();
+		foreach ($map_slots as $slot => $info) {
+			$v = array_key_exists($info['key'], $s) ? $s[$info['key']] : '';
+			$iv = (int)$v;
+			if ($v === '' || $v === '0' || !isset($fields[$iv])) {
+				$v = ($info['col'] !== '' && isset($sysmap[$info['col']])) ? $sysmap[$info['col']] : '';
+			} else {
+				$v = $iv;
+			}
+			$cfg['map_' . $slot] = $v;
+		}
+
+		// Boolean action-button toggles (still 1/0).
+		foreach (array('show_wishlist' => 'product_card_show_wishlist', 'show_add_button' => 'product_card_show_add_button') as $k => $key) {
+			$cfg[$k] = array_key_exists($key, $s) ? (int)$s[$key] : 1;
+		}
+
+		// Sizing / text / colors.
+		$raw = array(
 			'image_height' => 200, 'desc_length' => 100, 'desc_clamp' => 2,
 			'name_font_size' => 15, 'price_font_size' => 22, 'add_btn_text' => '+',
 			'primary_color' => '#10B981', 'name_color' => '#0F172A', 'price_color' => '#10B981',
 		);
-		$cache[$type_id] = array();
-		foreach ($defaults as $k => $v) {
+		foreach ($raw as $k => $def) {
 			$key = 'product_card_' . $k;
-			$cache[$type_id][$k] = array_key_exists($key, $s) ? $s[$key] : $v;
+			$cfg[$k] = array_key_exists($key, $s) ? $s[$key] : $def;
 		}
-		return $cache[$type_id];
+
+		$cfg['fields'] = $fields;
+		$cache[$type_id] = $cfg;
+		return $cfg;
 	}
 
-	public function handleSingleProduct($product, $thumb_width = 100, $thumb_height = 100, $href = null) {
+	public function handleSingleProduct($product, $thumb_width = 100, $thumb_height = 100, $href = null, $custom_tags = null) {
 		$this->load->model('tool/image');
 		$image = $this->model_tool_image->resize($product['image'], $thumb_width, $thumb_height);
 
@@ -627,6 +671,49 @@ class ModelCatalogProduct extends Model {
 			$rating = false;
 		}
 
+		// Type-level card config (cached, shared across products of this type - never mutated).
+		$pc = $this->getCardConfig(isset($product['product_type_id']) ? $product['product_type_id'] : 0);
+
+		if ($custom_tags === null) {
+			$custom_tags = $this->getProductCustomTags($product['product_id']);
+		}
+
+		// Resolve each field-mapping slot to this product's display value.
+		$slot_values = array();
+		foreach (array('image', 'name', 'description', 'price', 'badges') as $slot) {
+			$tag_id = (int)$pc['map_' . $slot];
+			$val = '';
+			if ($tag_id && isset($pc['fields'][$tag_id])) {
+				$meta = $pc['fields'][$tag_id];
+				$col = $meta['system_column'];
+				if ($col === 'image') {
+					if (!empty($product['image'])) {
+						$val = $this->model_tool_image->resize($product['image'], $thumb_width, $thumb_height);
+					}
+				} elseif ($col === 'name') {
+					$val = isset($product['name']) ? $product['name'] : '';
+				} elseif ($col === 'price') {
+					$val = $price;
+				} elseif ($col === 'description') {
+					$val = isset($product['description']) ? $product['description'] : '';
+				} else {
+					// EAV field: find this product's value for the mapped tag.
+					foreach ($custom_tags as $ct) {
+						if ((int)$ct['tag_id'] === $tag_id) {
+							$cv = $ct['value'];
+							if ($ct['tag_type'] === 'image_single' && $cv !== '') {
+								$cv = $this->model_tool_image->resize($cv, $thumb_width, $thumb_height);
+							}
+							// Badges render as "parent: value" (matches legacy multi-badge format).
+							$val = ($slot === 'badges' && !empty($ct['parent_name'])) ? $ct['parent_name'] . ': ' . $cv : $cv;
+							break;
+						}
+					}
+				}
+			}
+			$slot_values[$slot] = $val;
+		}
+
 		return array(
 			'product_id'  => $product['product_id'],
 			'thumb'       => $image,
@@ -638,7 +725,19 @@ class ModelCatalogProduct extends Model {
 			'minimum'     => $product['minimum'] ?: 1,
 			'rating'      => $rating,
 			'href'        => $href ?: $this->url->link('product/product', 'product_id=' . $product['product_id']),
-			'pcards'       => $this->getCardConfig(isset($product['product_type_id']) ? $product['product_type_id'] : 0)
+			'pcards'      => $pc,
+			'custom_tags' => $custom_tags,
+			// Per-product resolved slot values + show flags (1 if value non-empty).
+			'image_value'       => $slot_values['image'],
+			'name_value'        => $slot_values['name'],
+			'description_value' => $slot_values['description'],
+			'price_value'       => $slot_values['price'],
+			'badge_value'       => $slot_values['badges'],
+			'show_image'        => ($slot_values['image'] !== '') ? 1 : 0,
+			'show_name'         => ($slot_values['name'] !== '') ? 1 : 0,
+			'show_description'  => ($slot_values['description'] !== '') ? 1 : 0,
+			'show_price'        => ($slot_values['price'] !== '' && $slot_values['price'] !== false) ? 1 : 0,
+			'show_badges'       => ($slot_values['badges'] !== '') ? 1 : 0,
 		);
 	}
 

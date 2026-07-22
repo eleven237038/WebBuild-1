@@ -40,7 +40,8 @@ class ControllerCommonHome extends Controller {
 
 			if (isset($products_map[$pid])) {
 				$href = $this->url->link('product/product', 'product_id=' . $pid);
-				$data['products'][] = $this->model_catalog_product->handleSingleProduct($products_map[$pid], $thumb_w, $thumb_h, $href) + array('custom_tags' => isset($tags_map[$pid]) ? $tags_map[$pid] : array());
+				$ct = isset($tags_map[$pid]) ? $tags_map[$pid] : array();
+				$data['products'][] = $this->model_catalog_product->handleSingleProduct($products_map[$pid], $thumb_w, $thumb_h, $href, $ct);
 			}
 		}
 

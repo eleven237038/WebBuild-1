@@ -2,50 +2,65 @@
  *  Product Card Component - 100% Data-Driven from MySQL
  *  Usage: {% include 'default/template/product/product_card.twig' with {'product': product} %}
  *  Card appearance is configurable from admin > 商品目录 > 商品卡片管理.
+ *  Content slots (image/name/description/price/badges) each map to a custom_tag
+ *  field of the product's type; the mapped field's value feeds that slot
+ *  (blank mapping = hide). Action buttons (wishlist/add) stay boolean toggles.
  *  When product.pcards is absent (e.g. inline related lists), defaults show all.
  * ========================================================================== #}
 {% set pc = product.pcards is defined ? product.pcards : {
-  'show_image': 1, 'show_name': 1, 'show_description': 1, 'show_price': 1,
-  'show_wishlist': 1, 'show_badges': 1, 'show_add_button': 1,
+  'show_wishlist': 1, 'show_add_button': 1,
   'image_height': 200, 'desc_length': 100, 'desc_clamp': 2,
   'name_font_size': 15, 'price_font_size': 22, 'add_btn_text': '+',
   'primary_color': '#10B981', 'name_color': '#0F172A', 'price_color': '#10B981'
 } %}
+{# Per-slot show flags: resolved per-product when pcards present; default 1 when absent. #}
+{% set show_image = product.show_image is defined ? product.show_image : 1 %}
+{% set show_name = product.show_name is defined ? product.show_name : 1 %}
+{% set show_description = product.show_description is defined ? product.show_description : 1 %}
+{% set show_price = product.show_price is defined ? product.show_price : 1 %}
+{% set show_badges = product.show_badges is defined ? product.show_badges : 1 %}
+{% set show_wishlist = pc.show_wishlist is defined ? pc.show_wishlist : 1 %}
+{% set show_add_button = pc.show_add_button is defined ? pc.show_add_button : 1 %}
 <div class="product-card" style="--pcard-primary:{{ pc.primary_color is defined ? pc.primary_color : '#10B981' }};--pcard-name-color:{{ pc.name_color is defined ? pc.name_color : '#0F172A' }};--pcard-price-color:{{ pc.price_color is defined ? pc.price_color : '#10B981' }};">
-  <!-- Dynamic Custom Tags -> parent_name: tag_name or tag_name -->
-  {% if pc.show_badges and product.custom_tags is defined and product.custom_tags is not empty %}
+  <!-- Dynamic badge: single mapped field value (fallback to all custom_tags when pcards absent) -->
+  {% if show_badges %}
+    {% if product.badge_value is defined and product.badge_value is not empty %}
+    <span class="pcard-badge-dynamic">{{ product.badge_value }}</span>
+    {% elseif product.custom_tags is defined and product.custom_tags is not empty %}
     {% for tag in product.custom_tags %}
     <span class="pcard-badge-dynamic">{{ tag.parent_name is defined and tag.parent_name is not empty ? tag.parent_name ~ ': ' }}{{ tag.name }}</span>
     {% endfor %}
+    {% endif %}
   {% endif %}
 
-  <!-- Image -->
-  {% if pc.show_image %}
-  <a href="{{ product.href is defined ? product.href : '#' }}" class="pcard-img-wrap" style="text-decoration:none;display:flex;align-items:center;justify-content:center;height:{{ pc.image_height }}px;">
-    {% if pc.show_wishlist %}
+  <!-- Image (mapped field value, else product thumb/image) -->
+  {% if show_image %}
+  <a href="{{ product.href is defined ? product.href : '#' }}" class="pcard-img-wrap" style="text-decoration:none;display:flex;align-items:center;justify-content:center;height:{{ pc.image_height is defined ? pc.image_height : 200 }}px;">
+    {% if show_wishlist %}
     <button class="pcard-wishlist" aria-label="Wishlist" onclick="event.preventDefault();event.stopPropagation();">
       <i class="fa-regular fa-heart"></i>
     </button>
     {% endif %}
-    {% if product.thumb %}<img src="{{ product.thumb }}" alt="{{ product.name }}" loading="lazy">
-    {% elseif product.image %}<img src="{{ product.image }}" alt="{{ product.name }}" loading="lazy">
+    {% set img_src = product.image_value is defined and product.image_value is not empty ? product.image_value : (product.thumb is defined and product.thumb ? product.thumb : (product.image is defined and product.image ? product.image : '')) %}
+    {% if img_src %}<img src="{{ img_src }}" alt="{{ product.name is defined ? product.name : '' }}" loading="lazy">
     {% else %}<span style="font-size:60px;">🧪</span>{% endif %}
   </a>
   {% endif %}
 
   <!-- Card body -->
   <div class="pcard-body">
-    {% if pc.show_name %}
-    <a href="{{ product.href is defined ? product.href : '#' }}" style="text-decoration:none;color:inherit;"><h3 class="pcard-name" style="font-size:{{ pc.name_font_size }}px;">{{ product.name }}</h3></a>
+    {% if show_name %}
+    <a href="{{ product.href is defined ? product.href : '#' }}" style="text-decoration:none;color:inherit;"><h3 class="pcard-name" style="font-size:{{ pc.name_font_size is defined ? pc.name_font_size : 15 }}px;">{{ product.name_value is defined and product.name_value is not empty ? product.name_value : (product.name is defined ? product.name : '') }}</h3></a>
     {% endif %}
-    {% if pc.show_description %}
-    <p class="pcard-desc" style="-webkit-line-clamp:{{ pc.desc_clamp }};">{{ product.description is defined ? product.description|striptags|slice(0, pc.desc_length) ~ '...' : '' }}</p>
+    {% if show_description %}
+    {% set desc_src = product.description_value is defined and product.description_value is not empty ? product.description_value : (product.description is defined ? product.description : '') %}
+    <p class="pcard-desc" style="-webkit-line-clamp:{{ pc.desc_clamp is defined ? pc.desc_clamp : 2 }};">{{ desc_src|striptags|slice(0, pc.desc_length is defined ? pc.desc_length : 100) ~ '...' }}</p>
     {% endif %}
 
-    {% if pc.show_price or pc.show_add_button %}
+    {% if show_price or show_add_button %}
     <div class="pcard-bottom">
-      {% if pc.show_price %}<p class="pcard-price" style="font-size:{{ pc.price_font_size }}px;">{{ product.price is defined ? product.price : '' }}</p>{% endif %}
-      {% if pc.show_add_button %}<button class="pcard-add" onclick="cart.add('{{ product.product_id }}', '1');">{{ pc.add_btn_text }}</button>{% endif %}
+      {% if show_price %}<p class="pcard-price" style="font-size:{{ pc.price_font_size is defined ? pc.price_font_size : 22 }}px;">{{ product.price_value is defined and product.price_value is not empty ? product.price_value : (product.price is defined ? product.price : '') }}</p>{% endif %}
+      {% if show_add_button %}<button class="pcard-add" onclick="cart.add('{{ product.product_id }}', '1');">{{ pc.add_btn_text is defined ? pc.add_btn_text : '+' }}</button>{% endif %}
     </div>
     {% endif %}
   </div>

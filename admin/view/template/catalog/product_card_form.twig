@@ -72,30 +72,67 @@
           <div class="panel-body">
             <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-product-card" class="form-horizontal">
 
-              <legend>{{ text_section_toggle }}</legend>
+              <legend>{{ text_section_map }}</legend>
               <div class="form-group">
                 <label class="col-sm-2 control-label">{{ entry_product_card_show_image }}</label>
-                <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_card_show_image" value="1" {{ product_card_show_image == 1 or product_card_show_image == '1' ? 'checked' }}/> {{ entry_product_card_show_image }}</label></div>
+                <div class="col-sm-10">
+                  <select name="product_card_show_image" class="form-control" style="max-width:320px;">
+                    <option value="" {{ product_card_show_image is empty ? 'selected' : '' }}>{{ text_none }}</option>
+                    {% for fo in field_options %}
+                    <option value="{{ fo.tag_id }}" {{ fo.tag_id == product_card_show_image ? 'selected' : '' }}>{{ fo.label }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
               </div>
               <div class="form-group">
                 <label class="col-sm-2 control-label">{{ entry_product_card_show_name }}</label>
-                <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_card_show_name" value="1" {{ product_card_show_name == 1 or product_card_show_name == '1' ? 'checked' }}/> {{ entry_product_card_show_name }}</label></div>
+                <div class="col-sm-10">
+                  <select name="product_card_show_name" class="form-control" style="max-width:320px;">
+                    <option value="" {{ product_card_show_name is empty ? 'selected' : '' }}>{{ text_none }}</option>
+                    {% for fo in field_options %}
+                    <option value="{{ fo.tag_id }}" {{ fo.tag_id == product_card_show_name ? 'selected' : '' }}>{{ fo.label }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
               </div>
               <div class="form-group">
                 <label class="col-sm-2 control-label">{{ entry_product_card_show_description }}</label>
-                <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_card_show_description" value="1" {{ product_card_show_description == 1 or product_card_show_description == '1' ? 'checked' }}/> {{ entry_product_card_show_description }}</label></div>
+                <div class="col-sm-10">
+                  <select name="product_card_show_description" class="form-control" style="max-width:320px;">
+                    <option value="" {{ product_card_show_description is empty ? 'selected' : '' }}>{{ text_none }}</option>
+                    {% for fo in field_options %}
+                    <option value="{{ fo.tag_id }}" {{ fo.tag_id == product_card_show_description ? 'selected' : '' }}>{{ fo.label }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
               </div>
               <div class="form-group">
                 <label class="col-sm-2 control-label">{{ entry_product_card_show_price }}</label>
-                <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_card_show_price" value="1" {{ product_card_show_price == 1 or product_card_show_price == '1' ? 'checked' }}/> {{ entry_product_card_show_price }}</label></div>
-              </div>
-              <div class="form-group">
-                <label class="col-sm-2 control-label">{{ entry_product_card_show_wishlist }}</label>
-                <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_card_show_wishlist" value="1" {{ product_card_show_wishlist == 1 or product_card_show_wishlist == '1' ? 'checked' }}/> {{ entry_product_card_show_wishlist }}</label></div>
+                <div class="col-sm-10">
+                  <select name="product_card_show_price" class="form-control" style="max-width:320px;">
+                    <option value="" {{ product_card_show_price is empty ? 'selected' : '' }}>{{ text_none }}</option>
+                    {% for fo in field_options %}
+                    <option value="{{ fo.tag_id }}" {{ fo.tag_id == product_card_show_price ? 'selected' : '' }}>{{ fo.label }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
               </div>
               <div class="form-group">
                 <label class="col-sm-2 control-label">{{ entry_product_card_show_badges }}</label>
-                <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_card_show_badges" value="1" {{ product_card_show_badges == 1 or product_card_show_badges == '1' ? 'checked' }}/> {{ entry_product_card_show_badges }}</label></div>
+                <div class="col-sm-10">
+                  <select name="product_card_show_badges" class="form-control" style="max-width:320px;">
+                    <option value="" {{ product_card_show_badges is empty ? 'selected' : '' }}>{{ text_none }}</option>
+                    {% for fo in field_options %}
+                    <option value="{{ fo.tag_id }}" {{ fo.tag_id == product_card_show_badges ? 'selected' : '' }}>{{ fo.label }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+
+              <legend>{{ text_section_toggle }}</legend>
+              <div class="form-group">
+                <label class="col-sm-2 control-label">{{ entry_product_card_show_wishlist }}</label>
+                <div class="col-sm-10"><label class="checkbox-inline"><input type="checkbox" name="product_card_show_wishlist" value="1" {{ product_card_show_wishlist == 1 or product_card_show_wishlist == '1' ? 'checked' }}/> {{ entry_product_card_show_wishlist }}</label></div>
               </div>
               <div class="form-group">
                 <label class="col-sm-2 control-label">{{ entry_product_card_show_add_button }}</label>
@@ -187,6 +224,11 @@
     var el = form.querySelector('input[name="' + name + '"]');
     return el && el.checked ? 1 : 0;
   }
+  // 字段映射下拉: 非空白 = 显示该槽位 (1), 空白 = 隐藏 (0)
+  function sel(name) {
+    var el = form.querySelector('select[name="' + name + '"]');
+    return el && el.value !== '' ? 1 : 0;
+  }
   function num(name, def) {
     var el = form.querySelector('input[name="' + name + '"]');
     var v = el ? parseInt(el.value, 10) : NaN;
@@ -199,12 +241,12 @@
 
   function read() {
     return {
-      show_image: chk('product_card_show_image'),
-      show_name: chk('product_card_show_name'),
-      show_description: chk('product_card_show_description'),
-      show_price: chk('product_card_show_price'),
+      show_image: sel('product_card_show_image'),
+      show_name: sel('product_card_show_name'),
+      show_description: sel('product_card_show_description'),
+      show_price: sel('product_card_show_price'),
       show_wishlist: chk('product_card_show_wishlist'),
-      show_badges: chk('product_card_show_badges'),
+      show_badges: sel('product_card_show_badges'),
       show_add_button: chk('product_card_show_add_button'),
       image_height: num('product_card_image_height', 200),
       desc_length: num('product_card_desc_length', 100),
@@ -225,12 +267,10 @@
   // 构建卡片 HTML - 严格对应 catalog/.../product/product_card.twig 的渲染分支
   function build(s) {
     var html = '<div class="product-card">';
-    // 动态标签徽章
+    // 动态标签徽章 (单字段映射: 预览取首个示例标签)
     if (s.show_badges) {
-      for (var i = 0; i < SAMPLE.tags.length; i++) {
-        var t = SAMPLE.tags[i];
-        html += '<span class="pcard-badge-dynamic">' + esc((t.parent ? t.parent + ': ' : '') + t.name) + '</span>';
-      }
+      var t = SAMPLE.tags[0];
+      html += '<span class="pcard-badge-dynamic">' + esc((t.parent ? t.parent + ': ' : '') + t.name) + '</span>';
     }
     // 图片区
     if (s.show_image) {
