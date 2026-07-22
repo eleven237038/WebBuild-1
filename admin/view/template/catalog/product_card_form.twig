@@ -41,7 +41,8 @@
     <style>
       .pcard-admin-layout { display: flex; gap: 20px; align-items: flex-start; }
       .pcard-admin-form { flex: 1 1 auto; min-width: 0; }
-      .pcard-admin-preview { flex: 0 0 380px; max-width: 380px; position: sticky; top: 20px; }
+      {# 宽屏: 预览固定在右侧 (sticky), 表单再长也始终可见, 自身超高时内部滚动 #}
+      .pcard-admin-preview { flex: 0 0 380px; max-width: 380px; position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow: auto; }
       .pcard-admin-preview .panel-body { background: #f5f6f8; }
       .pcard-preview-hint { font-size: 12px; color: #888; margin: 0 0 12px; }
       {# 预览画布: 居中展示一张卡片, 隔离配色变量 (不污染后台 :root) #}
@@ -56,11 +57,24 @@
       #pcard-preview-frame .product-card { max-width: 320px; margin: 0 auto; }
       #pcard-preview-frame .pcard-add:hover,
       #pcard-preview-frame .pcard-var:hover { background: var(--pcard-primary); }
-      @media (max-width: 1280px) {
-        .pcard-admin-layout { flex-direction: column; }
-        .pcard-admin-preview { flex: 0 0 auto; max-width: none; width: 100%; position: static; }
-        #pcard-preview-frame .product-card { max-width: 360px; }
+      {# 点击预览各部分 -> 跳转并高亮对应编辑项 #}
+      #pcard-preview-frame [data-jump] { cursor: pointer; }
+      #pcard-preview-frame [data-jump]:hover { outline: 2px dashed var(--pcard-primary, #10B981); outline-offset: 3px; border-radius: 4px; }
+      .pcard-jump-flash { border-radius: 4px; animation: pcard-jump-flash 1.4s ease-out; }
+      @keyframes pcard-jump-flash {
+        0%, 18% { background-color: #fff3cd; box-shadow: 0 0 0 3px rgba(255,193,7,.55); }
+        100% { background-color: transparent; box-shadow: 0 0 0 0 transparent; }
       }
+      {# 窄屏 (含侧栏开合后内容变窄): 预览转为底部常驻 dock, 任何窗口大小/模式都始终可见 #}
+      .pcard-admin-layout.pcard-dock { flex-direction: column; padding-bottom: 40vh; }
+      .pcard-admin-layout.pcard-dock .pcard-admin-preview {
+        position: fixed; bottom: 0; left: 0; right: 0; top: auto;
+        flex: 0 0 auto; width: 100%; max-width: none;
+        max-height: 40vh; overflow: auto; z-index: 1040;
+        box-shadow: 0 -6px 18px rgba(0,0,0,.15);
+      }
+      .pcard-admin-layout.pcard-dock .pcard-admin-preview .panel { margin: 0; border-radius: 0; }
+      .pcard-admin-layout.pcard-dock #pcard-preview-frame .product-card { max-width: 360px; }
     </style>
 
     <div class="pcard-admin-layout">
@@ -265,18 +279,19 @@
   }
 
   // 构建卡片 HTML - 严格对应 catalog/.../product/product_card.twig 的渲染分支
+  // 每个可点部分带 data-jump, 点击跳转到对应设置项
   function build(s) {
     var html = '<div class="product-card">';
     // 动态标签徽章 (单字段映射: 预览取首个示例标签)
     if (s.show_badges) {
       var t = SAMPLE.tags[0];
-      html += '<span class="pcard-badge-dynamic">' + esc((t.parent ? t.parent + ': ' : '') + t.name) + '</span>';
+      html += '<span class="pcard-badge-dynamic" data-jump="product_card_show_badges">' + esc((t.parent ? t.parent + ': ' : '') + t.name) + '</span>';
     }
     // 图片区
     if (s.show_image) {
-      html += '<a href="#" class="pcard-img-wrap" style="text-decoration:none;display:flex;align-items:center;justify-content:center;height:' + s.image_height + 'px;" onclick="return false;">';
+      html += '<a href="#" class="pcard-img-wrap" data-jump="product_card_show_image" style="text-decoration:none;display:flex;align-items:center;justify-content:center;height:' + s.image_height + 'px;">';
       if (s.show_wishlist) {
-        html += '<button class="pcard-wishlist" type="button" aria-label="Wishlist" onclick="event.preventDefault();event.stopPropagation();"><i class="fa-regular fa-heart">&#9825;</i></button>';
+        html += '<button class="pcard-wishlist" type="button" data-jump="product_card_show_wishlist" aria-label="Wishlist"><i class="fa-regular fa-heart">&#9825;</i></button>';
       }
       html += '<img src="' + SAMPLE.thumb + '" alt="' + esc(SAMPLE.name) + '" loading="lazy">';
       html += '</a>';
@@ -284,19 +299,19 @@
     // 卡片正文
     html += '<div class="pcard-body">';
     if (s.show_name) {
-      html += '<a href="#" style="text-decoration:none;color:inherit;" onclick="return false;"><h3 class="pcard-name" style="font-size:' + s.name_font_size + 'px;">' + esc(SAMPLE.name) + '</h3></a>';
+      html += '<a href="#" data-jump="product_card_show_name" style="text-decoration:none;color:inherit;"><h3 class="pcard-name" style="font-size:' + s.name_font_size + 'px;">' + esc(SAMPLE.name) + '</h3></a>';
     }
     if (s.show_description) {
       var desc = SAMPLE.description.substr(0, s.desc_length) + '...';
-      html += '<p class="pcard-desc" style="-webkit-line-clamp:' + s.desc_clamp + ';">' + esc(desc) + '</p>';
+      html += '<p class="pcard-desc" data-jump="product_card_show_description" style="-webkit-line-clamp:' + s.desc_clamp + ';">' + esc(desc) + '</p>';
     }
     if (s.show_price || s.show_add_button) {
       html += '<div class="pcard-bottom">';
       if (s.show_price) {
-        html += '<p class="pcard-price" style="font-size:' + s.price_font_size + 'px;">' + esc(SAMPLE.price) + '</p>';
+        html += '<p class="pcard-price" data-jump="product_card_show_price" style="font-size:' + s.price_font_size + 'px;">' + esc(SAMPLE.price) + '</p>';
       }
       if (s.show_add_button) {
-        html += '<button class="pcard-add" type="button">' + esc(s.add_btn_text) + '</button>';
+        html += '<button class="pcard-add" type="button" data-jump="product_card_show_add_button">' + esc(s.add_btn_text) + '</button>';
       }
       html += '</div>';
     }
@@ -317,6 +332,46 @@
   form.addEventListener('input', render);
   form.addEventListener('change', render);
   render();
+
+  // 点击预览各部分 -> 滚动到对应设置项并高亮
+  frame.addEventListener('click', function (e) {
+    var el = e.target.closest('[data-jump]');
+    if (!el) return;
+    e.preventDefault();
+    var name = el.getAttribute('data-jump');
+    var field = form.querySelector('[name="' + name + '"]');
+    if (!field) return;
+    var group = field.closest('.form-group') || field;
+    // 清掉残留高亮, 重启动画
+    var prev = document.querySelector('.pcard-jump-flash');
+    if (prev) prev.classList.remove('pcard-jump-flash');
+    void group.offsetWidth;
+    group.classList.add('pcard-jump-flash');
+    setTimeout(function () { group.classList.remove('pcard-jump-flash'); }, 1400);
+    try { field.focus({ preventScroll: true }); } catch (_) { field.focus(); }
+    group.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+
+  // 窄屏 (含侧栏开合导致内容变窄) -> 预览转底部 dock, 始终可见
+  // 依据 .pcard-admin-layout 实际宽度判断, 能正确响应侧栏模式 (viewport 不变而内容变窄)
+  function syncLayout() {
+    var layout = document.querySelector('.pcard-admin-layout');
+    if (!layout) return;
+    if (layout.clientWidth < 820) {
+      layout.classList.add('pcard-dock');
+    } else {
+      layout.classList.remove('pcard-dock');
+    }
+  }
+  var layoutTimer;
+  window.addEventListener('resize', function () { clearTimeout(layoutTimer); layoutTimer = setTimeout(syncLayout, 120); });
+  var btnMenu = document.getElementById('button-menu');
+  if (btnMenu) btnMenu.addEventListener('click', function () { setTimeout(syncLayout, 60); setTimeout(syncLayout, 280); });
+  var colLeft = document.getElementById('column-left');
+  if (colLeft && window.MutationObserver) {
+    new MutationObserver(function () { setTimeout(syncLayout, 280); }).observe(colLeft, { attributes: true, attributeFilter: ['class', 'style'] });
+  }
+  syncLayout();
 })();
 </script>
 {{ footer }}

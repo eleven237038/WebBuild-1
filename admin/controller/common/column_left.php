@@ -51,7 +51,7 @@ class ControllerCommonColumnLeft extends Controller {
 
 		if ($this->user->hasPermission('access', 'catalog/product_card')) {
 			$catalog[] = array(
-				'name'     => '商品卡片设置',
+				'name'     => '商品卡片',
 				'href'     => $this->url->link('catalog/product_card', 'user_token=' . $this->session->data['user_token']),
 				'children' => array()
 			);
@@ -59,7 +59,7 @@ class ControllerCommonColumnLeft extends Controller {
 
 		if ($this->user->hasPermission('access', 'catalog/product_detail')) {
 			$catalog[] = array(
-				'name'     => '商品详情页设置',
+				'name'     => '商品详情页',
 				'href'     => $this->url->link('catalog/product_detail', 'user_token=' . $this->session->data['user_token']),
 				'children' => array()
 			);

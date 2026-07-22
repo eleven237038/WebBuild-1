@@ -1,11 +1,11 @@
 <?php
 // Heading
-$_['heading_title']     = '商品卡片设置';
+$_['heading_title']     = '商品卡片';
 
 // Text
 $_['text_home']         = '主页';
 $_['text_form']         = '商品卡片外观设置';
-$_['text_success']      = '成功：商品卡片设置已更新！';
+$_['text_success']      = '成功：商品卡片已更新！';
 $_['text_section_toggle'] = '显示开关';
 $_['text_section_map']    = '字段映射';
 $_['text_none']           = '- 不显示 -';
@@ -13,15 +13,15 @@ $_['text_section_size']   = '尺寸';
 $_['text_section_text']   = '文案';
 $_['text_section_color']  = '配色';
 $_['text_preview']        = '实时预览';
-$_['text_preview_hint']   = '修改左侧任意设置，此处实时显示商品卡片效果（示例数据，保存后全站生效）。';
+$_['text_preview_hint']   = '点击预览中任意部分可跳转到对应设置项；修改设置实时显示效果（示例数据，保存后全站生效）。';
 
 // Entry
-$_['entry_product_card_show_image']      = '显示图片';
-$_['entry_product_card_show_name']       = '显示名称';
-$_['entry_product_card_show_description'] = '显示描述';
-$_['entry_product_card_show_price']      = '显示价格';
+$_['entry_product_card_show_image']      = '图片';
+$_['entry_product_card_show_name']       = '名称';
+$_['entry_product_card_show_description'] = '描述';
+$_['entry_product_card_show_price']      = '价格';
 $_['entry_product_card_show_wishlist']   = '显示收藏按钮';
-$_['entry_product_card_show_badges']     = '显示标签徽章';
+$_['entry_product_card_show_badges']     = '标签徽章';
 $_['entry_product_card_show_add_button'] = '显示加购按钮';
 $_['entry_product_card_image_height']    = '图片高度 (px)';
 $_['entry_product_card_desc_length']     = '描述截取字数';

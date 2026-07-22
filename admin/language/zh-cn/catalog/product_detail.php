@@ -1,11 +1,11 @@
 <?php
 // Heading
-$_['heading_title']     = '商品详情页设置';
+$_['heading_title']     = '商品详情页';
 
 // Text
 $_['text_home']         = '主页';
 $_['text_form']         = '商品详情页外观设置';
-$_['text_success']      = '成功：商品详情页设置已更新！';
+$_['text_success']      = '成功：商品详情页已更新！';
 $_['text_section_toggle'] = '显示开关';
 $_['text_section_size']   = '尺寸';
 $_['text_section_text']   = '文案';
