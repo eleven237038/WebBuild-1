@@ -53,19 +53,8 @@ class ControllerCatalogProductCard extends Controller {
 		'product_card_price_color',
 	);
 
-	private $defaults = array(
-		'product_card_show_wishlist'     => 1,
-		'product_card_show_add_button'   => 1,
-		'product_card_image_height'      => 200,
-		'product_card_desc_length'       => 100,
-		'product_card_desc_clamp'        => 2,
-		'product_card_name_font_size'    => 15,
-		'product_card_price_font_size'   => 22,
-		'product_card_add_btn_text'      => '+',
-		'product_card_primary_color'     => '#10B981',
-		'product_card_name_color'        => '#0F172A',
-		'product_card_price_color'       => '#10B981',
-	);
+	// Defaults are owned by ModelCatalogProduct::cardDefaults() (single source
+	// of truth shared with getCardConfig on the storefront) and loaded in index().
 
 	public function index() {
 		if (!$this->user->hasPermission('access', 'catalog/product_card')) {
@@ -75,6 +64,10 @@ class ControllerCatalogProductCard extends Controller {
 		$this->load->language('catalog/product_card');
 		$this->document->setTitle($this->language->get('heading_title'));
 		$this->load->model('setting/setting');
+		// Defaults: single source of truth lives in the catalog product model
+		// (cardDefaults), shared with getCardConfig() on the storefront.
+		$this->load->model('catalog/product');
+		$defaults = $this->model_catalog_product->cardDefaults();
 
 		// Per product type: type 1 = global default (code 'product_card'); type N>1 = 'product_card_N'.
 		$product_type_id = isset($this->request->get['product_type_id']) ? (int)$this->request->get['product_type_id'] : 1;
@@ -161,7 +154,7 @@ class ControllerCatalogProductCard extends Controller {
 				if (in_array($key, $this->field_maps, true)) {
 					$data[$key] = $this->mapDefault($key, $sysmap);
 				} else {
-					$data[$key] = isset($this->defaults[$key]) ? $this->defaults[$key] : '';
+					$data[$key] = isset($defaults[$key]) ? $defaults[$key] : '';
 				}
 			}
 		}

@@ -37,16 +37,14 @@
       </div>
     </div>
 
-    {# 实时预览样式: 复用前台 product-card.css (相关商品卡片) + 作用域化的 PDP 预览样式 #}
+    {# 复用前台 product-card.css (相关商品卡片) + 共享浮窗样式 #}
     <link rel="stylesheet" href="../catalog/view/theme/default/stylesheet/genscript/product-card.css">
+    <link rel="stylesheet" href="view/stylesheet/genscript/preview-float.css">
     <style>
-      .pcard-admin-layout { display: flex; gap: 20px; align-items: flex-start; }
-      .pcard-admin-form { flex: 1 1 auto; min-width: 0; }
       {# 商品类型 chip bar: 始终吸顶可见 #}
       .pdp-typebar { position: sticky; top: 0; z-index: 1050; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
-      {# 宽屏: 预览吸在右侧, top 留出类型栏高度, 表单再长也始终可见, 自身超高时内部滚动 #}
-      .pcard-admin-preview { flex: 0 0 380px; max-width: 380px; position: sticky; top: var(--pdp-typebar-h, 52px); max-height: calc(100vh - var(--pdp-typebar-h, 52px) - 16px); overflow: auto; }
-      .pcard-admin-preview .panel-body { background: #f5f6f8; }
+      {# 表单占满宽度; 跳转滚动时为吸顶类型栏预留空间 #}
+      .pcard-admin-form .form-group { scroll-margin-top: calc(var(--pdp-typebar-h, 52px) + 16px); }
       .pcard-preview-hint { font-size: 12px; color: #888; margin: 0 0 12px; }
       {# 点击预览各部分 -> 跳转并高亮对应编辑项 #}
       #pdp-preview-frame [data-jump] { cursor: pointer; }
@@ -56,25 +54,6 @@
         0%, 18% { background-color: #fff3cd; box-shadow: 0 0 0 3px rgba(255,193,7,.55); }
         100% { background-color: transparent; box-shadow: 0 0 0 0 transparent; }
       }
-      {# 跳转滚动时为吸顶区域预留空间 (类型栏 + dock 时再加预览高度) #}
-      .pcard-admin-form .form-group { scroll-margin-top: calc(var(--pdp-typebar-h, 52px) + 16px); }
-      {# 窄屏 (含侧栏开合后内容变窄): 预览转为吸顶 dock, 紧贴"商品类型"下方而非窗口下边缘, 任何窗口大小/模式都始终可见 #}
-      .pcard-admin-layout.pcard-dock { flex-direction: column; }
-      .pcard-admin-layout.pcard-dock .pcard-admin-form { order: 1; }
-      .pcard-admin-layout.pcard-dock .pcard-admin-preview {
-        order: 0;
-        position: sticky;
-        top: var(--pdp-typebar-h, 52px);
-        flex: 0 0 auto;
-        width: 100%;
-        max-width: none;
-        max-height: calc(100vh - var(--pdp-typebar-h, 52px) - 16px);
-        overflow: auto;
-        z-index: 1040;
-        box-shadow: 0 6px 18px rgba(0,0,0,.12);
-      }
-      .pcard-admin-layout.pcard-dock .pcard-admin-preview .panel { margin: 0; }
-      .pcard-admin-layout.pcard-dock .pcard-admin-form .form-group { scroll-margin-top: calc(var(--pdp-typebar-h, 52px) + var(--pdp-preview-h, 360px) + 16px); }
 
       {# ===== PDP 预览画布: 作用域化, 隔离配色变量 (不污染后台 :root) ===== #}
       #pdp-preview-frame {
@@ -127,8 +106,7 @@
       #pdp-preview-frame .pdp-research-item:last-child { border-bottom: none; }
     </style>
 
-    <div class="pcard-admin-layout">
-      <div class="pcard-admin-form">
+    <div class="pcard-admin-form">
         <div class="panel panel-default">
           <div class="panel-heading">
             <h3 class="panel-title"><i class="fa fa-file-text-o"></i> {{ text_form }}</h3>
@@ -257,22 +235,25 @@
         </div>
       </div>
 
-      {# ===== 实时预览面板 ===== #}
-      <div class="pcard-admin-preview">
-        <div class="panel panel-default">
-          <div class="panel-heading">
-            <h3 class="panel-title"><i class="fa fa-eye"></i> {{ text_preview }}</h3>
-          </div>
-          <div class="panel-body">
-            <p class="pcard-preview-hint">{{ text_preview_hint }}</p>
-            <div id="pdp-preview-frame"></div>
-          </div>
+      {# ===== 实时预览浮窗 (可拖拽/最小化/关闭, 右上角固定) ===== #}
+      <div id="pf-window" class="pf-window">
+        <div class="pf-header" id="pf-header">
+          <span class="pf-title"><i class="fa fa-eye"></i> {{ text_preview }}</span>
+          <span class="pf-actions">
+            <button type="button" class="pf-btn" id="pf-min" title="最小化"><i class="fa fa-minus"></i></button>
+            <button type="button" class="pf-btn" id="pf-close" title="关闭"><i class="fa fa-times"></i></button>
+          </span>
+        </div>
+        <div class="pf-body" id="pf-body">
+          <p class="pcard-preview-hint">{{ text_preview_hint }}</p>
+          <div id="pdp-preview-frame"></div>
         </div>
       </div>
-    </div>
+      <button type="button" id="pf-fab" class="pf-fab" title="{{ text_preview }}"><i class="fa fa-eye"></i></button>
   </div>
 </div>
 
+<script src="view/javascript/genscript/preview-float.js"></script>
 <script>
 (function () {
   // 示例商品数据 (用于预览渲染; 与前台 product.twig 结构保持一致)
@@ -442,25 +423,15 @@
     group.classList.add('pcard-jump-flash');
     setTimeout(function () { group.classList.remove('pcard-jump-flash'); }, 1400);
     try { f.focus({ preventScroll: true }); } catch (_) { f.focus(); }
-    // 滚动到吸顶区域下方 (类型栏; dock 模式再加预览高度), 避免字段被吸顶面板遮挡
+    // 滚动到吸顶类型栏下方, 避免字段被遮挡 (预览已改为浮窗, 不再叠加预览高度)
     var root = getComputedStyle(document.documentElement);
     var typebarH = parseFloat(root.getPropertyValue('--pdp-typebar-h')) || 52;
-    var layoutEl = document.querySelector('.pcard-admin-layout');
-    var stickyH = typebarH + 16;
-    if (layoutEl && layoutEl.classList.contains('pcard-dock')) {
-      var pv = document.querySelector('.pcard-admin-preview');
-      stickyH += pv ? pv.offsetHeight : 0;
-    }
-    var top = window.pageYOffset + group.getBoundingClientRect().top - stickyH;
+    var top = window.pageYOffset + group.getBoundingClientRect().top - (typebarH + 16);
     window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
   });
 
-  // 窄屏 (含侧栏开合导致内容变窄) -> 预览转吸顶 dock (紧贴"商品类型"下方), 始终可见
-  // 依据 .pcard-admin-layout 实际宽度判断, 能正确响应侧栏模式 (viewport 不变而内容变窄)
-  // 同时把类型栏(含下margin)与预览高度写入 CSS 变量, 供 sticky top 与跳转滚动使用
-  function syncLayout() {
-    var layout = document.querySelector('.pcard-admin-layout');
-    if (!layout) return;
+  // 把吸顶类型栏高度写入 CSS 变量, 供 scroll-margin-top / 跳转滚动使用
+  (function () {
     var typebar = document.querySelector('.pdp-typebar');
     var typebarH = 52;
     if (typebar) {
@@ -468,23 +439,7 @@
       typebarH = typebar.offsetHeight + mb;
     }
     document.documentElement.style.setProperty('--pdp-typebar-h', typebarH + 'px');
-    if (layout.clientWidth < 820) {
-      layout.classList.add('pcard-dock');
-    } else {
-      layout.classList.remove('pcard-dock');
-    }
-    var pv = document.querySelector('.pcard-admin-preview');
-    if (pv) { document.documentElement.style.setProperty('--pdp-preview-h', pv.offsetHeight + 'px'); }
-  }
-  var layoutTimer;
-  window.addEventListener('resize', function () { clearTimeout(layoutTimer); layoutTimer = setTimeout(syncLayout, 120); });
-  var btnMenu = document.getElementById('button-menu');
-  if (btnMenu) btnMenu.addEventListener('click', function () { setTimeout(syncLayout, 60); setTimeout(syncLayout, 280); });
-  var colLeft = document.getElementById('column-left');
-  if (colLeft && window.MutationObserver) {
-    new MutationObserver(function () { setTimeout(syncLayout, 280); }).observe(colLeft, { attributes: true, attributeFilter: ['class', 'style'] });
-  }
-  syncLayout();
+  })();
 })();
 </script>
 {{ footer }}

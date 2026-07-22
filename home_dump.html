@@ -1,0 +1,787 @@
+<b>Warning</b>: filemtime(): stat failed for /var/www/html/system/storage/cache/content.ver in <b>/var/www/html/system/framework.php</b> on line <b>169</b><!DOCTYPE html>
+<html dir="ltr" lang="zh_cn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<title>InsightWellnessLab</title>
+<base href="http://localhost:8081/">
+
+<meta name="description" content="OpenCart 开源免费PHP商城">
+<meta name="keywords" content="OpenCart 开源免费PHP商城">
+
+<!-- Facebook share -->
+<meta property="og:site_name" content="InsightWellnessLab">
+<meta property="og:url" content="http://localhost:8081/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="InsightWellnessLab">
+<meta property="og:description" content="OpenCart 开源免费PHP商城">
+<meta property="og:image" content="http://localhost:8081/image/cache/catalog/logo-600x315.png">
+<meta property="og:image:width" content="600">
+<meta property="og:image:height" content="315">
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧬</text></svg>">
+
+<!-- External CDN CSS -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="preconnect" href="https://cdnjs.cloudflare.com">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800;900&display=swap">
+
+<!-- jQuery (must load first —  layer.js and common.js depend on it) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+
+<!-- InsightWellnessLab Custom CSS (our design system) -->
+<link rel="stylesheet" href="catalog/view/theme/default/stylesheet/genscript/index-performance.css">
+<link rel="stylesheet" href="catalog/view/theme/default/stylesheet/genscript/header-nav.css">
+<link rel="stylesheet" href="catalog/view/theme/default/stylesheet/genscript/header-nav-screen.css">
+<link rel="stylesheet" href="catalog/view/theme/default/stylesheet/genscript/home.css">
+<link rel="stylesheet" href="catalog/view/theme/default/stylesheet/genscript/product-card.css">
+<link rel="stylesheet" href="catalog/view/theme/default/stylesheet/genscript/redesign.css">
+<link rel="stylesheet" href="catalog/view/theme/default/stylesheet/genscript/iconfont.css">
+<link rel="stylesheet" href="catalog/view/theme/default/stylesheet/login.css">
+
+<!-- Deferred non-critical CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Swiper/3.4.2/css/swiper.min.css" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" media="print" onload="this.media='all'">
+
+<link href="catalog/view/javascript/jquery/swiper/css/swiper.min.css" type="text/css" rel="stylesheet" media="screen">
+<link href="http://localhost:8081/image/catalog/favicon.png" rel="icon">
+
+<style>:root{--pcard-primary:#10B981;--pcard-name-color:#0F172A;--pcard-price-color:#10B981;--pdp-primary:#10B981;--pdp-bg-navy:#0F172A;}</style>
+</head>
+<body class="common-home">
+
+<!-- ========================================================================= -->
+<!--  HEADER — Single-Row Flex Flat Layout (Modern)                            -->
+<!--  [Logo] —— [Main Nav Menu] —— [🔍Icon] [👤Icon] [🌐] [🛒Cart Button]    -->
+<!--  Mega Menu + responsive hamburger logic FULLY PRESERVED                   -->
+<!-- ========================================================================= -->
+<header id="header">
+  <div class="header-inner">
+
+    <!-- ===== Mobile Toolbar (hidden on desktop) ===== -->
+    <div class="header-mobile-tools" style="justify-content:center; gap:18px;">
+      <button class="mob-icon mob-icon-search" aria-label="Search">
+        <i class="fa-solid fa-magnifying-glass"></i>
+      </button>
+      <a href="http://localhost:8081/index.php?route=information/contact" class="mob-icon" aria-label="Contact Us">
+        <i class="fa-solid fa-phone"></i>
+      </a>
+      <a href="http://localhost:8081/index.php?route=checkout/cart" class="mob-icon" aria-label="Shopping Cart">
+        <i class="fa-solid fa-cart-shopping"></i>
+      </a>
+      <button class="mob-icon mob-icon-menu" id="menu-toggle" aria-label="Open Menu">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+    </div>
+
+    <!-- ===== Single-Row Flex: Logo | Nav | Icons+Cart ===== -->
+    <div class="header-row">
+
+      <!-- Left: Logo -->
+      <a href="http://localhost:8081/" class="header-logo" aria-label="InsightWellnessLab Home">
+        <img src="catalog/view/theme/default/image/logo-icon.svg" alt="" class="logo-icon-img" width="40" height="40">
+        <div class="logo-text-group">
+          <span class="logo-main-text">InsightWellnessLab</span>
+          <span class="logo-tagline">Scripting Possibilities</span>
+        </div>
+      </a>
+
+      <!-- Center: Main Nav (Mega Menu anchor — structure FULLY PRESERVED) -->
+      <nav class="main-nav">
+        <ul class="nav-list">
+          <li><a href="index.php?route=product/category&path=59" class="nav-link-item">SHOP</a></li>
+          <li><a href="index.php?route=information/information&information_id=7" class="nav-link-item">LAB RESULTS</a></li>
+          <li><a href="index.php?route=information/information&information_id=4" class="nav-link-item">ABOUT</a></li>
+          <li><a href="index.php?route=information/information&information_id=8" class="nav-link-item">ARTICLES</a></li>
+          <li><a href="index.php?route=information/contact" class="nav-link-item">CONTACT</a></li>
+        </ul>
+      </nav>
+
+      <!-- Right: Icon buttons + Cart -->
+      <div class="header-actions-right">
+        <!-- Search icon button -->
+        <button class="header-icon-btn" id="btn-toggle-search" aria-label="Search">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+
+                <a href="http://localhost:8081/index.php?route=account/login" class="header-icon-btn" aria-label="Sign In">
+          <i class="fa-regular fa-user"></i>
+        </a>
+        
+        <!-- Wishlist -->
+        <a href="#" class="header-icon-btn" aria-label="Wishlist">
+          <i class="fa-regular fa-heart"></i>
+        </a>
+
+        <!-- Cart button (solid, prominent) -->
+        <a href="http://localhost:8081/index.php?route=checkout/cart" class="header-cart-btn" id="get-box" aria-label="Shopping Cart">
+          <i class="fa-solid fa-cart-shopping"></i>
+          <span>Cart</span>
+        </a>
+      </div>
+
+    </div><!-- /.header-row -->
+
+  </div>
+</header>
+
+<!-- ====== Mobile Drawer Menu (slides in from right, ≤1024px) ====== -->
+<div class="drawer-overlay" id="drawer-overlay"></div>
+
+<aside id="mobile-menu" class="mobile-drawer">
+  <button class="drawer-close" id="drawer-close" aria-label="Close Menu">
+    <i class="fa-solid fa-times"></i>
+  </button>
+
+  <nav class="drawer-nav">
+    <a href="index.php?route=product/category&path=59" class="drawer-link">SHOP <span class="drawer-arrow">&gt;</span></a>
+    <a href="index.php?route=information/information&information_id=7" class="drawer-link">LAB RESULTS <span class="drawer-arrow">&gt;</span></a>
+    <a href="index.php?route=information/information&information_id=4" class="drawer-link">ABOUT <span class="drawer-arrow">&gt;</span></a>
+    <a href="index.php?route=information/information&information_id=8" class="drawer-link">ARTICLES <span class="drawer-arrow">&gt;</span></a>
+    <a href="index.php?route=information/contact" class="drawer-link">CONTACT <span class="drawer-arrow">&gt;</span></a>
+    <hr class="drawer-divider">
+  </nav>
+
+  <div class="drawer-auth">
+        <a href="http://localhost:8081/index.php?route=account/login" class="drawer-link">SIGN IN <span class="drawer-arrow">&gt;</span></a>
+    <a href="http://localhost:8081/index.php?route=account/register" class="drawer-link">REGISTER <span class="drawer-arrow">&gt;</span></a>
+      </div>
+</aside>
+<!-- ==== Mega Menu JS (deferred) ==== -->
+
+<!-- ==========================================================================
+ *  InsightWellnessLab Homepage — Modern Science-Backed Landing Page
+ *  10 Blocks: Hero → Stats → Bestsellers → Categories → Feature Compare
+ *  → Reviews → Why Us Table → Education → FAQ → Money-Back Guarantee
+ *  Brand Colors: Deep Navy var(--bg-navy) | Accent Green var(--primary-green)
+ * ========================================================================== -->
+
+<style>
+/* ═══════ Homepage Block System ═══════ */
+.home-block { width: 100%; padding: 80px 0; box-sizing: border-box; }
+.home-block--dark  { background: var(--bg-navy); color: #ffffff; }
+.home-block--light { background: #ffffff; color: #1a1a2e; }
+.home-block--gray  { background: #f4f6f9; color: #1a1a2e; }
+.home-block--green { background: var(--primary-green); color: #ffffff; }
+.home-wrap { max-width: 1260px; margin: 0 auto; padding: 0 32px; }
+
+/* ═══════ BLOCK 1: Hero ═══════ */
+.hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+.hero-title { font-family: "Figtree",sans-serif; font-weight: 900; font-size: 56px; line-height: 1.08; color: var(--bg-navy); margin: 0 0 18px; }
+.hero-sub { font-size: 17px; color: #555; line-height: 1.6; margin: 0 0 28px; max-width: 480px; }
+.hero-cta { display: inline-flex; align-items: center; gap: 8px; padding: 14px 32px; background: var(--primary-green); color: #fff; font-weight: 700; font-size: 15px; border-radius: 6px; text-decoration: none; transition: background 0.2s; }
+.hero-cta:hover { background: #008c44; color: #fff; text-decoration: none; }
+.hero-payments { display: flex; gap: 12px; margin-top: 20px; }
+.hero-payments span { padding: 4px 10px; background: #f0f2f5; border-radius: 4px; font-size: 12px; color: #666; }
+.hero-right { display: flex; gap: 20px; align-items: center; justify-content: center; }
+.hero-card { background: var(--bg-navy); border-radius: 16px; padding: 28px 22px; color: #fff; box-shadow: 0 20px 50px rgba(0,11,71,0.25); }
+.hero-card h3 { font-size: 16px; margin: 0 0 8px; }
+.hero-card .card-vial { width: 100px; height: 140px; margin: 10px auto; background: linear-gradient(180deg, #1a3a8a 0%, #0d1f5c 100%); border-radius: 12px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 10px; }
+
+/* ═══════ BLOCK 2: Stats Bar ═══════ */
+.stats-flex { display: flex; gap: 0; }
+.stats-item { flex: 1; text-align: center; padding: 48px 20px; border-right: 1px solid rgba(255,255,255,0.12); }
+.stats-item:last-child { border-right: none; }
+.stats-num { font-family: "Figtree",sans-serif; font-weight: 900; font-size: 42px; margin: 0 0 4px; }
+.stats-label { font-size: 13px; text-transform: uppercase; letter-spacing: 2px; opacity: 0.7; margin: 0; }
+
+/* ═══════ BLOCK 3: Best Sellers Grid ═══════ */
+.section-title { font-family: "Figtree",sans-serif; font-weight: 800; font-size: 32px; margin: 0 0 40px; }
+.products-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+/* Card markup (.product-card / .pcard-*) + styles live in shared product-card.css,
+   loaded via header.twig so homepage cards are identical to shop cards. */
+.btn-view-all { display: block; width: 100%; max-width: 360px; margin: 40px auto 0; padding: 14px 0; background: var(--primary-green); color: #fff; border: none; border-radius: 6px; font-weight: 700; font-size: 15px; cursor: pointer; text-align: center; text-decoration: none; }
+.trust-strip { display: flex; justify-content: center; gap: 60px; margin-top: 28px; }
+.trust-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #666; }
+.trust-item i { font-size: 20px; color: var(--primary-green); }
+
+/* ═══════ BLOCK 4: Category Cards ═══════ */
+.cat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.cat-card { background: #f4f6f9; border-radius: 10px; padding: 28px 22px; display: flex; align-items: center; justify-content: space-between; transition: transform 0.2s; text-decoration: none; color: var(--bg-navy); }
+.cat-card:hover { transform: translateY(-3px); }
+.cat-card span { font-weight: 700; font-size: 14px; }
+.cat-card i { color: var(--primary-green); font-size: 18px; }
+
+/* ═══════ BLOCK 5: Proof Before Potency ═══════ */
+.proof-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+.proof-title { font-family: "Figtree",sans-serif; font-weight: 900; font-size: 38px; line-height: 1.15; margin: 0 0 22px; }
+.proof-list { list-style: none; padding: 0; margin: 0 0 24px; }
+.proof-list li { padding: 10px 0; font-size: 15px; display: flex; align-items: center; gap: 10px; }
+.proof-list li i { color: var(--primary-green); font-size: 18px; }
+.proof-card { background: #fff; border-radius: 14px; padding: 28px; box-shadow: 0 12px 40px rgba(0,0,0,0.1); text-align: center; max-width: 340px; }
+.proof-card .sku { font-size: 12px; color: #999; margin: 0 0 4px; }
+.proof-card .price-lg { font-size: 28px; font-weight: 900; color: var(--bg-navy); margin: 10px 0; }
+.proof-card .btn-green { display: block; width: 100%; padding: 12px; background: var(--primary-green); color: #fff; border: none; border-radius: 6px; font-weight: 700; font-size: 14px; cursor: pointer; }
+
+/* ═══════ BLOCK 6: Reviews ═══════ */
+.review-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.review-card { background: #fff; border: 1px solid #eee; border-radius: 12px; padding: 28px; }
+.review-stars { color: #f5a623; font-size: 14px; margin-bottom: 10px; }
+.review-card h4 { font-family: "Figtree",sans-serif; font-weight: 700; font-size: 15px; margin: 0 0 8px; }
+.review-card p { font-size: 13.5px; color: #555; line-height: 1.5; margin: 0 0 14px; }
+.review-author { display: flex; align-items: center; gap: 10px; }
+.review-author .avatar { width: 36px; height: 36px; border-radius: 50%; background: #ddd; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #666; }
+.review-author .name { font-size: 13px; font-weight: 600; }
+
+/* ═══════ BLOCK 7: Why Researchers Choose Us ═══════ */
+.why-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; margin-bottom: 40px; }
+.why-grid p { font-size: 14px; line-height: 1.7; color: #555; }
+.compare-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+.compare-table th { background: var(--bg-navy); color: #fff; padding: 12px 16px; text-align: left; font-size: 13px; font-weight: 700; text-transform: uppercase; }
+.compare-table td { padding: 12px 16px; border-bottom: 1px solid #eee; font-size: 13px; }
+.compare-table td:nth-child(2) { color: var(--primary-green); font-weight: 700; }
+.compare-table td:nth-child(3) { color: #999; }
+
+/* ═══════ BLOCK 8: Education ═══════ */
+.edu-text { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+.edu-text p { font-size: 14px; line-height: 1.75; color: #555; }
+
+/* ═══════ BLOCK 9: FAQ ═══════ */
+.faq-list details { border-bottom: 1px solid #e5e7eb; padding: 16px 0; }
+.faq-list summary { font-family: "Figtree",sans-serif; font-weight: 700; font-size: 15px; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+.faq-list summary::after { content: "+"; font-size: 22px; color: var(--primary-green); }
+.faq-list details[open] summary::after { content: "−"; }
+.faq-list .faq-answer { padding-top: 10px; font-size: 14px; color: #555; line-height: 1.6; }
+
+/* ═══════ BLOCK 10: Money-Back ═══════ */
+.mb-flex { display: flex; align-items: center; justify-content: space-between; gap: 30px; }
+.mb-title { font-family: "Figtree",sans-serif; font-weight: 900; font-size: 30px; line-height: 1.2; margin: 0; }
+.mb-badge { background: #fff; color: var(--bg-navy); padding: 16px 28px; border-radius: 8px; font-weight: 800; font-size: 16px; white-space: nowrap; }
+
+/* ═══════ Responsive ═══════ */
+@media (max-width: 1024px) {
+  .hero-grid, .proof-grid, .why-grid { grid-template-columns: 1fr; }
+  .products-grid, .cat-grid, .review-grid { grid-template-columns: repeat(2, 1fr); }
+  .stats-flex, .mb-flex { flex-direction: column; }
+  .stats-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.12); }
+  .hero-title { font-size: 38px; }
+  .edu-text { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .products-grid, .cat-grid, .review-grid { grid-template-columns: 1fr; }
+  .home-block { padding: 48px 0; }
+  .hero-title { font-size: 30px; }
+  .mb-title { font-size: 22px; }
+}
+</style>
+
+<!-- ════════════════════════════════════════════════════════════
+  BLOCK 1: Hero Area
+  ════════════════════════════════════════════════════════════ -->
+<section class="home-block home-block--light">
+  <div class="home-wrap">
+    <div class="hero-grid">
+      <div>
+        <h1 class="hero-title">PRECISION.<br>TRANSPARENCY.<br>SCIENCE.</h1>
+        <p class="hero-sub">Lab-verified research compounds with 99.4% purity. Trusted by over 1,000 laboratories worldwide for reproducible results.</p>
+        <a href="#" class="hero-cta">SHOP PREMIUM COMPOUNDS <i class="fa-solid fa-arrow-right"></i></a>
+        <div class="hero-payments">
+          <span>VISA</span><span>Mastercard</span><span>AMEX</span><span>BTC</span>
+        </div>
+      </div>
+      <div class="hero-right">
+        <div class="hero-card">
+          <h3>Peptide Bundle</h3>
+          <div class="card-vial" style="background:linear-gradient(180deg,#1a3a8a,#0d1f5c);">99.4%</div>
+          <p style="font-size:13px;color:#a3e635;margin:0;">3-Pack Special</p>
+        </div>
+        <div class="hero-card" style="transform:rotate(3deg);">
+          <h3>Research Grade</h3>
+          <div class="card-vial" style="background:linear-gradient(180deg,#162d6e,#0a1845);">HPLC</div>
+          <p style="font-size:13px;color:#a3e635;margin:0;">Certified Pure</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+  BLOCK 2: Stats Bar
+  ════════════════════════════════════════════════════════════ -->
+<section class="home-block home-block--dark" style="padding:0;">
+  <div class="stats-flex">
+    <div class="stats-item"><p class="stats-num">99.4%</p><p class="stats-label">PURITY</p></div>
+    <div class="stats-item"><p class="stats-num">USA</p><p class="stats-label">MADE</p></div>
+    <div class="stats-item"><p class="stats-num">5.0+</p><p class="stats-label">REVIEWS</p></div>
+    <div class="stats-item"><p class="stats-num">1,000+</p><p class="stats-label">ORDERS</p></div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+  BLOCK 3: Best Sellers Grid
+  ════════════════════════════════════════════════════════════ -->
+<section class="home-block home-block--light">
+  <div class="home-wrap">
+    <h2 class="section-title">BEST SELLERS — LAB VERIFIED THIS MONTH</h2>
+    <div class="products-grid">
+              <div class="product-card" style="--pcard-primary:#10B981;--pcard-name-color:#0F172A;--pcard-price-color:#10B981;">
+  <!-- Dynamic badge: single mapped field value (fallback to all custom_tags when pcards absent) -->
+  
+  <!-- Image (mapped field value, else product thumb/image) -->
+    <a href="http://localhost:8081/index.php?route=product/product&amp;product_id=62" class="pcard-img-wrap" style="text-decoration:none;display:flex;align-items:center;justify-content:center;height:200px;">
+        <button class="pcard-wishlist" aria-label="Wishlist" onclick="event.preventDefault();event.stopPropagation();">
+      <i class="fa-regular fa-heart"></i>
+    </button>
+            <img src="http://localhost:8081/image/cache/catalog/demo/product/product-2-300x300.png" alt="司美格鲁肽" loading="lazy">
+      </a>
+  
+  <!-- Card body -->
+  <div class="pcard-body">
+        <a href="http://localhost:8081/index.php?route=product/product&amp;product_id=62" style="text-decoration:none;color:inherit;"><h3 class="pcard-name" style="font-size:15px;">司美格鲁肽</h3></a>
+        
+        <div class="pcard-bottom">
+      <p class="pcard-price" style="font-size:22px;">￥65.24</p>      <button class="pcard-add" onclick="cart.add('62', '1');">+</button>    </div>
+      </div>
+</div>
+              <div class="product-card" style="--pcard-primary:#10B981;--pcard-name-color:#0F172A;--pcard-price-color:#10B981;">
+  <!-- Dynamic badge: single mapped field value (fallback to all custom_tags when pcards absent) -->
+  
+  <!-- Image (mapped field value, else product thumb/image) -->
+    <a href="http://localhost:8081/index.php?route=product/product&amp;product_id=64" class="pcard-img-wrap" style="text-decoration:none;display:flex;align-items:center;justify-content:center;height:200px;">
+        <button class="pcard-wishlist" aria-label="Wishlist" onclick="event.preventDefault();event.stopPropagation();">
+      <i class="fa-regular fa-heart"></i>
+    </button>
+            <img src="http://localhost:8081/image/cache/catalog/demo/product/product-4-300x300.png" alt="CJC-1295" loading="lazy">
+      </a>
+  
+  <!-- Card body -->
+  <div class="pcard-body">
+        <a href="http://localhost:8081/index.php?route=product/product&amp;product_id=64" style="text-decoration:none;color:inherit;"><h3 class="pcard-name" style="font-size:15px;">CJC-1295</h3></a>
+        
+        <div class="pcard-bottom">
+      <p class="pcard-price" style="font-size:22px;">￥67.47</p>      <button class="pcard-add" onclick="cart.add('64', '1');">+</button>    </div>
+      </div>
+</div>
+              <div class="product-card" style="--pcard-primary:#10B981;--pcard-name-color:#0F172A;--pcard-price-color:#10B981;">
+  <!-- Dynamic badge: single mapped field value (fallback to all custom_tags when pcards absent) -->
+  
+  <!-- Image (mapped field value, else product thumb/image) -->
+    <a href="http://localhost:8081/index.php?route=product/product&amp;product_id=65" class="pcard-img-wrap" style="text-decoration:none;display:flex;align-items:center;justify-content:center;height:200px;">
+        <button class="pcard-wishlist" aria-label="Wishlist" onclick="event.preventDefault();event.stopPropagation();">
+      <i class="fa-regular fa-heart"></i>
+    </button>
+            <img src="http://localhost:8081/image/cache/catalog/demo/product/product-5-300x300.png" alt="美拉诺坦 II" loading="lazy">
+      </a>
+  
+  <!-- Card body -->
+  <div class="pcard-body">
+        <a href="http://localhost:8081/index.php?route=product/product&amp;product_id=65" style="text-decoration:none;color:inherit;"><h3 class="pcard-name" style="font-size:15px;">美拉诺坦 II</h3></a>
+        
+        <div class="pcard-bottom">
+      <p class="pcard-price" style="font-size:22px;">￥149.89</p>      <button class="pcard-add" onclick="cart.add('65', '1');">+</button>    </div>
+      </div>
+</div>
+              <div class="product-card" style="--pcard-primary:#10B981;--pcard-name-color:#0F172A;--pcard-price-color:#10B981;">
+  <!-- Dynamic badge: single mapped field value (fallback to all custom_tags when pcards absent) -->
+  
+  <!-- Image (mapped field value, else product thumb/image) -->
+    <a href="http://localhost:8081/index.php?route=product/product&amp;product_id=66" class="pcard-img-wrap" style="text-decoration:none;display:flex;align-items:center;justify-content:center;height:200px;">
+        <button class="pcard-wishlist" aria-label="Wishlist" onclick="event.preventDefault();event.stopPropagation();">
+      <i class="fa-regular fa-heart"></i>
+    </button>
+            <img src="http://localhost:8081/image/cache/catalog/demo/product/product-6-300x300.png" alt="海沙瑞林" loading="lazy">
+      </a>
+  
+  <!-- Card body -->
+  <div class="pcard-body">
+        <a href="http://localhost:8081/index.php?route=product/product&amp;product_id=66" style="text-decoration:none;color:inherit;"><h3 class="pcard-name" style="font-size:15px;">海沙瑞林</h3></a>
+        
+        <div class="pcard-bottom">
+      <p class="pcard-price" style="font-size:22px;">￥149.77</p>      <button class="pcard-add" onclick="cart.add('66', '1');">+</button>    </div>
+      </div>
+</div>
+              <div class="product-card" style="--pcard-primary:#10B981;--pcard-name-color:#0F172A;--pcard-price-color:#10B981;">
+  <!-- Dynamic badge: single mapped field value (fallback to all custom_tags when pcards absent) -->
+  
+  <!-- Image (mapped field value, else product thumb/image) -->
+    <a href="http://localhost:8081/index.php?route=product/product&amp;product_id=68" class="pcard-img-wrap" style="text-decoration:none;display:flex;align-items:center;justify-content:center;height:200px;">
+        <button class="pcard-wishlist" aria-label="Wishlist" onclick="event.preventDefault();event.stopPropagation();">
+      <i class="fa-regular fa-heart"></i>
+    </button>
+            <img src="http://localhost:8081/image/cache/catalog/demo/product/product-8-300x300.png" alt="表达龙" loading="lazy">
+      </a>
+  
+  <!-- Card body -->
+  <div class="pcard-body">
+        <a href="http://localhost:8081/index.php?route=product/product&amp;product_id=68" style="text-decoration:none;color:inherit;"><h3 class="pcard-name" style="font-size:15px;">表达龙</h3></a>
+        
+        <div class="pcard-bottom">
+      <p class="pcard-price" style="font-size:22px;">￥70.23</p>      <button class="pcard-add" onclick="cart.add('68', '1');">+</button>    </div>
+      </div>
+</div>
+              <div class="product-card" style="--pcard-primary:#10B981;--pcard-name-color:#0F172A;--pcard-price-color:#10B981;">
+  <!-- Dynamic badge: single mapped field value (fallback to all custom_tags when pcards absent) -->
+  
+  <!-- Image (mapped field value, else product thumb/image) -->
+    <a href="http://localhost:8081/index.php?route=product/product&amp;product_id=69" class="pcard-img-wrap" style="text-decoration:none;display:flex;align-items:center;justify-content:center;height:200px;">
+        <button class="pcard-wishlist" aria-label="Wishlist" onclick="event.preventDefault();event.stopPropagation();">
+      <i class="fa-regular fa-heart"></i>
+    </button>
+            <img src="http://localhost:8081/image/cache/catalog/demo/product/product-9-300x300.png" alt="替尔泊肽" loading="lazy">
+      </a>
+  
+  <!-- Card body -->
+  <div class="pcard-body">
+        <a href="http://localhost:8081/index.php?route=product/product&amp;product_id=69" style="text-decoration:none;color:inherit;"><h3 class="pcard-name" style="font-size:15px;">替尔泊肽</h3></a>
+        
+        <div class="pcard-bottom">
+      <p class="pcard-price" style="font-size:22px;">￥159.56</p>      <button class="pcard-add" onclick="cart.add('69', '1');">+</button>    </div>
+      </div>
+</div>
+          </div>
+    <a href="index.php?route=product/category&path=59" class="btn-view-all">View all products</a>
+    <div class="trust-strip">
+      <div class="trust-item"><i class="fa-solid fa-truck-fast"></i> Fast Shipping</div>
+      <div class="trust-item"><i class="fa-solid fa-lock"></i> Secure Checkout</div>
+      <div class="trust-item"><i class="fa-solid fa-flask"></i> Lab Tested</div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+  BLOCK 4: Shop By Research Focus
+  ════════════════════════════════════════════════════════════ -->
+<section class="home-block home-block--gray">
+  <div class="home-wrap">
+    <h2 class="section-title">SHOP BY RESEARCH FOCUS</h2>
+    <div class="cat-grid">
+                  <a href="#" class="cat-card"><span>Muscle & Strength</span><i class="fa-solid fa-arrow-right"></i></a>
+            <a href="#" class="cat-card"><span>Fat Loss</span><i class="fa-solid fa-arrow-right"></i></a>
+            <a href="#" class="cat-card"><span>Cognitive Function</span><i class="fa-solid fa-arrow-right"></i></a>
+            <a href="#" class="cat-card"><span>Anti-Aging</span><i class="fa-solid fa-arrow-right"></i></a>
+            <a href="#" class="cat-card"><span>Immune Support</span><i class="fa-solid fa-arrow-right"></i></a>
+            <a href="#" class="cat-card"><span>Sleep & Recovery</span><i class="fa-solid fa-arrow-right"></i></a>
+          </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+  BLOCK 5: Proof Before Potency
+  ════════════════════════════════════════════════════════════ -->
+<section class="home-block home-block--dark">
+  <div class="home-wrap">
+    <div class="proof-grid">
+      <div>
+        <h2 class="proof-title">PROOF BEFORE POTENCY</h2>
+        <ul class="proof-list">
+          <li><i class="fa-solid fa-circle-check"></i> HPLC Tested — Every batch verified</li>
+          <li><i class="fa-solid fa-circle-check"></i> 99% Purity — Industry-leading standards</li>
+          <li><i class="fa-solid fa-circle-check"></i> COA Included — Certificate of Analysis</li>
+          <li><i class="fa-solid fa-circle-check"></i> USA Manufactured — Domestic quality control</li>
+        </ul>
+      </div>
+      <div style="display:flex;justify-content:center;">
+                    <div class="product-card" style="--pcard-primary:#10B981;--pcard-name-color:#0F172A;--pcard-price-color:#10B981;">
+  <!-- Dynamic badge: single mapped field value (fallback to all custom_tags when pcards absent) -->
+  
+  <!-- Image (mapped field value, else product thumb/image) -->
+    <a href="http://localhost:8081/index.php?route=product/product&amp;product_id=62" class="pcard-img-wrap" style="text-decoration:none;display:flex;align-items:center;justify-content:center;height:200px;">
+        <button class="pcard-wishlist" aria-label="Wishlist" onclick="event.preventDefault();event.stopPropagation();">
+      <i class="fa-regular fa-heart"></i>
+    </button>
+            <img src="http://localhost:8081/image/cache/catalog/demo/product/product-2-300x300.png" alt="司美格鲁肽" loading="lazy">
+      </a>
+  
+  <!-- Card body -->
+  <div class="pcard-body">
+        <a href="http://localhost:8081/index.php?route=product/product&amp;product_id=62" style="text-decoration:none;color:inherit;"><h3 class="pcard-name" style="font-size:15px;">司美格鲁肽</h3></a>
+        
+        <div class="pcard-bottom">
+      <p class="pcard-price" style="font-size:22px;">￥65.24</p>      <button class="pcard-add" onclick="cart.add('62', '1');">+</button>    </div>
+      </div>
+</div>
+            </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+  BLOCK 6: Customer Reviews
+  ════════════════════════════════════════════════════════════ -->
+<section class="home-block home-block--light">
+  <div class="home-wrap">
+    <h2 class="section-title">WHAT RESEARCHERS SAY</h2>
+    <div class="review-grid">
+                  <div class="review-card">
+        <div class="review-stars">★★★★★</div>
+        <h4>Exceptional Purity</h4>
+        <p>The HPLC results were spot on. Best quality we have sourced in 3 years of lab work.</p>
+        <div class="review-author">
+          <div class="avatar">D</div>
+          <div><div class="name">Dr. Michael R.</div><div style="font-size:11px;color:#999;">Stanford University</div></div>
+        </div>
+      </div>
+            <div class="review-card">
+        <div class="review-stars">★★★★★</div>
+        <h4>Fast Shipping</h4>
+        <p>Ordered Tuesday, received Thursday. Cold-chain packaging was intact. Will reorder.</p>
+        <div class="review-author">
+          <div class="avatar">S</div>
+          <div><div class="name">Sarah K.</div><div style="font-size:11px;color:#999;">Johns Hopkins</div></div>
+        </div>
+      </div>
+            <div class="review-card">
+        <div class="review-stars">★★★★★</div>
+        <h4>Reproducible Results</h4>
+        <p>Used in our peptide study. Results were 100% reproducible across all three trials.</p>
+        <div class="review-author">
+          <div class="avatar">J</div>
+          <div><div class="name">James L.</div><div style="font-size:11px;color:#999;">MIT Lab</div></div>
+        </div>
+      </div>
+          </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+  BLOCK 7: Why Researchers Choose Us
+  ════════════════════════════════════════════════════════════ -->
+<section class="home-block home-block--gray">
+  <div class="home-wrap">
+    <h2 class="section-title">WHY RESEARCHERS CHOOSE US</h2>
+    <div class="why-grid">
+      <p>Our compounds undergo rigorous third-party HPLC testing to ensure every batch meets the 99% purity standard. Unlike overseas suppliers, we manufacture domestically under strict quality control protocols, providing full traceability from synthesis to shipment.</p>
+      <p>We believe transparency is non-negotiable. Every order includes a Certificate of Analysis (COA) with batch-specific data. Our peer-reviewed approach has made us the trusted supplier for over 1,000 independent research laboratories worldwide.</p>
+    </div>
+    <table class="compare-table">
+      <thead><tr><th>FEATURE</th><th>OUR BRAND</th><th>COMPETITORS</th></tr></thead>
+      <tbody>
+        <tr><td>HPLC Testing</td><td>Every Batch</td><td>Intermittent</td></tr>
+        <tr><td>Purity Standard</td><td>&ge; 99%</td><td>95-98%</td></tr>
+        <tr><td>COA Included</td><td>Yes</td><td>On Request</td></tr>
+        <tr><td>USA Manufactured</td><td>Yes</td><td>Often Overseas</td></tr>
+        <tr><td>Shipping Speed</td><td>2-3 Days</td><td>1-3 Weeks</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+  BLOCK 8: Education
+  ════════════════════════════════════════════════════════════ -->
+<section class="home-block home-block--light">
+  <div class="home-wrap">
+    <h2 class="section-title">UNDERSTANDING PEPTIDE PURITY &amp; TESTING</h2>
+    <div class="edu-text">
+      <div>
+        <p>Peptide purity is determined through High-Performance Liquid Chromatography (HPLC), the gold standard in analytical chemistry. This method separates compounds based on their molecular properties, allowing precise quantification of the target peptide versus impurities. A purity level of 99% means that out of every 100 molecules, 99 are the intended compound — a standard that exceeds typical industry benchmarks.</p>
+      </div>
+      <div>
+        <p>Mass spectrometry (MS) complements HPLC by confirming molecular weight and structural integrity. Together, HPLC and MS form a complete analytical framework that ensures researchers receive exactly what they ordered. At InsightWellnessLab, every batch is independently verified and documented before release.</p>
+        <p>Proper storage conditions — typically lyophilized powder at -20°C — preserve peptide integrity for long-term stability. Always consult the included COA for batch-specific handling recommendations.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+  BLOCK 9: FAQ
+  ════════════════════════════════════════════════════════════ -->
+<section class="home-block home-block--gray">
+  <div class="home-wrap">
+    <h2 class="section-title">FREQUENTLY ASKED QUESTIONS</h2>
+    <div class="faq-list">
+      <details>
+        <summary>How do you verify product purity?</summary>
+        <div class="faq-answer">Every batch undergoes independent third-party HPLC analysis. The Certificate of Analysis (COA) is included with every order and available for download on our website. We publish batch-specific purity data — never averages.</div>
+      </details>
+      <details>
+        <summary>What is your shipping and return policy?</summary>
+        <div class="faq-answer">Orders ship within 24 hours via express courier with cold-chain packaging where required. Domestic delivery takes 2-3 business days. If a product does not meet the stated purity specification, we offer a full refund within 90 days of purchase.</div>
+      </details>
+      <details>
+        <summary>Are your products for human consumption?</summary>
+        <div class="faq-answer">No. All products sold by InsightWellnessLab are strictly for laboratory research and analytical purposes only. They are not intended for human or veterinary use. By purchasing, you certify that you are a qualified researcher affiliated with an accredited institution.</div>
+      </details>
+      <details>
+        <summary>Do you ship internationally?</summary>
+        <div class="faq-answer">Yes, we ship to over 40 countries. International orders typically arrive within 5-10 business days depending on customs clearance. All international shipments include proper documentation for customs purposes.</div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+  BLOCK 10: Money-Back Guarantee
+  ════════════════════════════════════════════════════════════ -->
+<section class="home-block home-block--green" style="padding:50px 0;">
+  <div class="home-wrap">
+    <div class="mb-flex">
+      <h2 class="mb-title">LAB-VERIFIED OR YOUR MONEY BACK<br>— 90 DAYS</h2>
+      <div class="mb-badge">100% Satisfaction Guarantee</div>
+    </div>
+  </div>
+</section>
+
+<!-- ==========================================================================
+ *  GenScript Footer — 5-Column Layout
+ *  Brand: --bg-navy #0F172A | --primary-green #10B981
+ * ========================================================================== -->
+<style>
+.footer-wrap { background: var(--bg-navy, #0F172A); color: rgba(255,255,255,0.72); }
+.footer-grid { max-width: 1260px; margin: 0 auto; padding: 60px 32px 40px; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 40px; }
+.footer-grid h5 { color: #ffffff; font-family: "Figtree",sans-serif; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 14px; }
+.footer-grid ul { list-style: none; padding: 0; margin: 0; }
+.footer-grid ul li { margin-bottom: 7px; }
+.footer-grid ul li a { color: rgba(255,255,255,0.55); font-size: 13px; text-decoration: none; transition: color 0.15s; }
+.footer-grid ul li a:hover { color: var(--primary-green, #10B981); }
+.footer-brand { }
+.footer-brand p { font-size: 13px; line-height: 1.55; color: rgba(255,255,255,0.5); margin: 12px 0; }
+.footer-coa-badge { display: inline-block; background: var(--primary-green, #10B981); color: #fff; font-size: 10px; font-weight: 700; padding: 4px 12px; border-radius: 4px; letter-spacing: 0.5px; margin-bottom: 12px; }
+.footer-payments { display: flex; gap: 8px; margin-top: 8px; }
+.footer-payments span { padding: 4px 8px; background: rgba(255,255,255,0.08); border-radius: 4px; font-size: 10px; color: rgba(255,255,255,0.6); }
+.footer-bottom { border-top: 1px solid rgba(255,255,255,0.06); max-width: 1260px; margin: 0 auto; padding: 20px 32px; }
+.footer-disclaimer { font-size: 11px; color: rgba(255,255,255,0.35); line-height: 1.65; margin: 0 0 14px; }
+.footer-copyright { font-size: 12px; color: rgba(255,255,255,0.4); }
+
+@media (max-width: 1024px) { .footer-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 600px)  { .footer-grid { grid-template-columns: 1fr; gap: 28px; } }
+</style>
+
+<footer class="footer-wrap">
+  <div class="footer-grid">
+    <!-- Column 1: Brand -->
+    <div class="footer-brand">
+      <a href="" style="display:flex;align-items:center;gap:8px;text-decoration:none;">
+        <img src="catalog/view/theme/default/image/logo-icon.svg" alt="" width="32" height="32">
+        <span style="color:#fff;font-family:Figtree,sans-serif;font-weight:900;font-size:18px;">GenScript</span>
+      </a>
+      <p>Premium research-grade peptides, third-party tested and documented to the batch.</p>
+      <span class="footer-coa-badge">★ COA ON FILE</span>
+      <div class="footer-payments">
+        <span>VISA</span><span>MC</span><span>AMEX</span><span>BTC</span>
+      </div>
+    </div>
+
+    <!-- Column 2: SHOP -->
+    <div>
+      <h5>SHOP</h5>
+      <ul>
+        <li><a href="index.php?route=product/category&path=59">All Compounds</a></li>
+        <li><a href="#">Metabolic</a></li>
+        <li><a href="#">Recovery</a></li>
+        <li><a href="#">Longevity</a></li>
+      </ul>
+    </div>
+
+    <!-- Column 3: LEARN -->
+    <div>
+      <h5>LEARN</h5>
+      <ul>
+        <li><a href="index.php?route=information/information&information_id=7">COA Library</a></li>
+        <li><a href="index.php?route=information/information&information_id=8">Research Blog</a></li>
+        <li><a href="#">Peptide Reference</a></li>
+        <li><a href="#">Rewards</a></li>
+        <li><a href="#">Affiliates</a></li>
+        <li><a href="index.php?route=information/information&information_id=4">About</a></li>
+      </ul>
+    </div>
+
+    <!-- Column 4: SUPPORT -->
+    <div>
+      <h5>SUPPORT</h5>
+      <ul>
+        <li><a href="index.php?route=information/contact">Contact</a></li>
+        <li><a href="http://localhost:8081/index.php?route=account/account">Account</a></li>
+        <li><a href="">Cart</a></li>
+      </ul>
+    </div>
+
+    <!-- Column 5: LEGAL -->
+    <div>
+      <h5>LEGAL</h5>
+      <ul>
+        <li><a href="index.php?route=information/information&information_id=5">Terms &amp; Conditions</a></li>
+        <li><a href="index.php?route=information/information&information_id=3">Privacy Policy</a></li>
+        <li><a href="#">Research Use Policy</a></li>
+        <li><a href="#">Shipping Policy</a></li>
+        <li><a href="#">Return Policy</a></li>
+      </ul>
+    </div>
+  </div>
+
+  </footer>
+
+
+<!-- ==============================================
+  OpenCart scripts (cart/wishlist popups)
+  ============================================== -->
+
+<script type="text/javascript">
+  var showAlert = function(type, content) {
+    if (type == 'cart') {
+      redirectButtonText = '';
+      redirectButtonLocation = 'http://localhost:8081/index.php?route=checkout/cart';
+    } else if (type == 'wishlist') {
+      redirectButtonText = '';
+      redirectButtonLocation = 'http://localhost:8081/index.php?route=account/wishlist';
+    } else if (type == 'compare') {
+      redirectButtonText = '';
+      redirectButtonLocation = 'http://localhost:8081/index.php?route=product/compare';
+    }
+    layer.open({
+      title: '',
+      skin: 'layer-alert',
+      shadeClose: true,
+      content: content,
+      btn: [redirectButtonText, ''],
+      yes: function() { location = redirectButtonLocation; }
+    });
+  }
+</script>
+
+<!-- Core JS -->
+<script src="catalog/view/javascript/layer/layer.js"></script>
+<script src="catalog/view/javascript/common.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-migrate/1.4.1/jquery-migrate.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Swiper/3.4.2/js/swiper.jquery.min.js"></script>
+<script src="catalog/view/theme/default/javascript/genscript/login-manager.js"></script>
+<script src="catalog/view/theme/default/javascript/genscript/search-autocomplete.js"></script>
+<script src="catalog/view/theme/default/javascript/genscript/cart-manager.js"></script>
+<script src="catalog/view/theme/default/javascript/genscript/homepage-init.js"></script>
+
+
+
+<!-- ════ Back-to-Top (only one instance) ════ -->
+<style>
+#back-to-top {
+  position: fixed; bottom: 30px; right: 30px; z-index: 9998;
+  width: 48px; height: 48px; border-radius: 50%;
+  background: var(--primary-green, #10B981);
+  color: #ffffff; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 700;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  opacity: 0; pointer-events: none;
+  transition: all 0.3s ease;
+}
+#back-to-top.show { opacity: 1; pointer-events: auto; }
+#back-to-top:hover { transform: translateY(-3px); box-shadow: 0 6px 22px rgba(0,0,0,0.22); }
+</style>
+<button id="back-to-top" aria-label="Back to top">↑</button>
+<script>
+(function(){
+  var btn = document.getElementById('back-to-top');
+  if (!btn) return;
+  window.addEventListener('scroll', function() {
+    btn.classList.toggle('show', window.scrollY > 300);
+  });
+  btn.addEventListener('click', function() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+})();
+</script>
+
+</body></html>
+

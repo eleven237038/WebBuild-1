@@ -1,0 +1,93 @@
+/* ==========================================================================
+ *  preview-float.css - shared floating real-time preview window shell
+ *  Used by admin > 商品卡片管理 & 商品详情页管理. The inner preview canvas
+ *  (#pcard-preview-frame / #pdp-preview-frame) stays per-page; this file only
+ *  styles the draggable/minimizable/closable window chrome around it.
+ * ========================================================================== */
+
+/* The floating window: fixed top-right, stays put while the form scrolls. */
+.pf-window {
+  position: fixed;
+  top: 64px;            /* clear the admin top navbar */
+  right: 16px;
+  width: 300px;
+  max-height: calc(100vh - 80px);
+  z-index: 1060;
+  background: #fff;
+  border: 1px solid #d8dce1;
+  border-radius: 8px;
+  box-shadow: 0 8px 28px rgba(15, 23, 42, 0.18);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+/* When collapsed (minimized) only the header bar remains. */
+.pf-window.pf-collapsed { max-height: 40px; }
+.pf-window.pf-collapsed .pf-body { display: none; }
+/* When closed, hide entirely; the FAB reopens it. */
+.pf-window.pf-hidden { display: none; }
+
+/* Header = drag handle. */
+.pf-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 6px 0 12px;
+  background: linear-gradient(#2b3440, #1f2730);
+  color: #fff;
+  cursor: move;
+  user-select: none;
+  flex: 0 0 auto;
+}
+.pf-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  flex: 1 1 auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pf-title i { margin-right: 6px; }
+.pf-actions { display: flex; gap: 2px; flex: 0 0 auto; }
+.pf-btn {
+  width: 26px; height: 26px;
+  border: none; background: transparent; color: #cbd2dc;
+  border-radius: 4px; cursor: pointer; font-size: 12px;
+  display: flex; align-items: center; justify-content: center;
+}
+.pf-btn:hover { background: rgba(255,255,255,0.16); color: #fff; }
+
+/* Body: scrollable preview canvas. */
+.pf-body {
+  padding: 10px;
+  overflow: auto;
+  flex: 1 1 auto;
+  background: #f5f6f8;
+}
+.pf-body .pcard-preview-hint { font-size: 11px; color: #888; margin: 0 0 8px; }
+
+/* Reopen button shown after the window is closed. */
+.pf-fab {
+  position: fixed;
+  right: 16px;
+  top: 64px;
+  z-index: 1060;
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: #10B981;
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.45);
+  cursor: pointer;
+  font-size: 16px;
+  display: none;        /* shown only when window is hidden */
+  align-items: center;
+  justify-content: center;
+}
+.pf-fab.pf-show { display: flex; }
+.pf-fab:hover { background: #059669; }
+
+/* Dragging cursor feedback. */
+.pf-window.pf-dragging { box-shadow: 0 12px 36px rgba(15, 23, 42, 0.28); }

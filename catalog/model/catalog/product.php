@@ -1,5 +1,9 @@
 <?php
+require_once DIR_SYSTEM . 'library/ProductPreviewDefaultsTrait.php';
+
 class ModelCatalogProduct extends Model {
+	use ProductPreviewDefaultsTrait;
+
 	public function updateViewed($product_id) {
 		$this->db->query("UPDATE " . DB_PREFIX . "product SET viewed = (viewed + 1) WHERE product_id = '" . (int)$product_id . "'");
 	}
@@ -622,25 +626,102 @@ class ModelCatalogProduct extends Model {
 			$cfg['map_' . $slot] = $v;
 		}
 
-		// Boolean action-button toggles (still 1/0).
+		// Boolean action-button toggles + sizing/text/colors: single source of
+		// truth = cardDefaults() (shared with the admin 商品卡片 form defaults).
+		$defs = $this->cardDefaults();
 		foreach (array('show_wishlist' => 'product_card_show_wishlist', 'show_add_button' => 'product_card_show_add_button') as $k => $key) {
-			$cfg[$k] = array_key_exists($key, $s) ? (int)$s[$key] : 1;
+			$cfg[$k] = array_key_exists($key, $s) ? (int)$s[$key] : (int)$defs[$key];
 		}
-
-		// Sizing / text / colors.
-		$raw = array(
-			'image_height' => 200, 'desc_length' => 100, 'desc_clamp' => 2,
-			'name_font_size' => 15, 'price_font_size' => 22, 'add_btn_text' => '+',
-			'primary_color' => '#10B981', 'name_color' => '#0F172A', 'price_color' => '#10B981',
+		$short_map = array(
+			'image_height'    => 'product_card_image_height',
+			'desc_length'     => 'product_card_desc_length',
+			'desc_clamp'      => 'product_card_desc_clamp',
+			'name_font_size'  => 'product_card_name_font_size',
+			'price_font_size' => 'product_card_price_font_size',
+			'add_btn_text'    => 'product_card_add_btn_text',
+			'primary_color'   => 'product_card_primary_color',
+			'name_color'      => 'product_card_name_color',
+			'price_color'     => 'product_card_price_color',
 		);
-		foreach ($raw as $k => $def) {
-			$key = 'product_card_' . $k;
-			$cfg[$k] = array_key_exists($key, $s) ? $s[$key] : $def;
+		foreach ($short_map as $k => $key) {
+			$cfg[$k] = array_key_exists($key, $s) ? $s[$key] : $defs[$key];
 		}
 
 		$cfg['fields'] = $fields;
 		$cache[$type_id] = $cfg;
 		return $cfg;
+	}
+
+	/**
+	 * Single source of truth for 商品卡片 (product_card) defaults.
+	 * Shared by getCardConfig() (frontend) and the admin 商品卡片 form so the
+	 * two never diverge. Keys are the full setting names (product_card_*).
+	 */
+	// cardDefaults() + detailDefaults() are provided by the
+	// ProductPreviewDefaultsTrait (shared with the admin model so both
+	// contexts keep one source of truth for preview defaults).
+
+	/**
+	 * Read the 商品详情页 (PDP) appearance config for a product type.
+	 * Mirrors getCardConfig(): type 1 = global default ('product_detail'),
+	 * type N>1 = per-type override 'product_detail_N' (falls back to global
+	 * when that type was never customized). Returns the 'pdp' array shape
+	 * consumed by product/product.twig. Defaults come from detailDefaults().
+	 */
+	public function getDetailConfig($type_id = 0) {
+		static $cache = array();
+		$type_id = (int)$type_id;
+		if ($type_id < 1) { $type_id = 1; } // type 0 (no type) -> global default (type 1)
+		if (isset($cache[$type_id])) { return $cache[$type_id]; }
+
+		$this->load->model('setting/setting');
+		$code = ($type_id > 1) ? 'product_detail_' . $type_id : 'product_detail';
+		$s = $this->model_setting_setting->getSetting($code, 0);
+		if ($type_id > 1 && empty($s)) {
+			$s = $this->model_setting_setting->getSetting('product_detail', 0);
+		}
+
+		// Start from defaults, overlay saved values (saved wins when present).
+		$d = $this->detailDefaults();
+		foreach ($d as $key => $def) {
+			$d[$key] = array_key_exists($key, $s) ? $s[$key] : $def;
+		}
+
+		$pdp = array(
+			'show_breadcrumb'     => $d['product_detail_show_breadcrumb'],
+			'show_gallery'        => $d['product_detail_show_gallery'],
+			'show_badges'         => $d['product_detail_show_badges'],
+			'show_trust_box'      => $d['product_detail_show_trust_box'],
+			'show_tabs'           => $d['product_detail_show_tabs'],
+			'show_related'        => $d['product_detail_show_related'],
+			'show_research'       => $d['product_detail_show_research'],
+			'title_font_size'     => $d['product_detail_title_font_size'],
+			'body_font_size'      => $d['product_detail_body_font_size'],
+			'coa_badge_text'      => $d['product_detail_coa_badge_text'],
+			'batch_verified_text' => $d['product_detail_batch_verified_text'],
+			'tab_details_label'   => $d['product_detail_tab_details_label'],
+			'tab_coa_label'       => $d['product_detail_tab_coa_label'],
+			'tab_shipping_label'  => $d['product_detail_tab_shipping_label'],
+			'tab_details_body'    => $d['product_detail_tab_details_body'],
+			'tab_coa_body'        => $d['product_detail_tab_coa_body'],
+			'tab_shipping_body'   => $d['product_detail_tab_shipping_body'],
+			'trust_item_1'        => $d['product_detail_trust_item_1'],
+			'trust_item_2'        => $d['product_detail_trust_item_2'],
+			'trust_item_3'        => $d['product_detail_trust_item_3'],
+			'related_title'       => $d['product_detail_related_title'],
+			'research_title'      => $d['product_detail_research_title'],
+			'research_links'      => array(
+				array('label' => $d['product_detail_research_link_1_label'], 'url' => $d['product_detail_research_link_1_url']),
+				array('label' => $d['product_detail_research_link_2_label'], 'url' => $d['product_detail_research_link_2_url']),
+				array('label' => $d['product_detail_research_link_3_label'], 'url' => $d['product_detail_research_link_3_url']),
+				array('label' => $d['product_detail_research_link_4_label'], 'url' => $d['product_detail_research_link_4_url']),
+			),
+			'primary_color'       => $d['product_detail_primary_color'],
+			'bg_navy'             => $d['product_detail_bg_navy'],
+		);
+
+		$cache[$type_id] = $pdp;
+		return $pdp;
 	}
 
 	public function handleSingleProduct($product, $thumb_width = 100, $thumb_height = 100, $href = null, $custom_tags = null) {

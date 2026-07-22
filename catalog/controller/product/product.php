@@ -431,126 +431,23 @@ class ControllerProductProduct extends Controller {
 
 
 			// ----- PDP appearance config (admin > 商品目录 > 商品详情页管理) -----
-			// Per product type: type 1 = global default ('product_detail'); type N>1 = 'product_detail_N'
-			// (falls back to global if that type was never customized).
-			$this->load->model('setting/setting');
+			// Read via model so frontend PDP + admin form share one source of truth
+			// (detailDefaults). type 1 = global ('product_detail'); type N>1 =
+			// 'product_detail_N' (inherits global until customized).
 			$_pdp_type_id = isset($product_info['product_type_id']) ? (int)$product_info['product_type_id'] : 0;
-			$_pdp_code = ($_pdp_type_id > 1) ? 'product_detail_' . $_pdp_type_id : 'product_detail';
-			$_pdp_saved = $this->model_setting_setting->getSetting($_pdp_code, 0);
-			if ($_pdp_type_id > 1 && empty($_pdp_saved)) {
-				$_pdp_saved = $this->model_setting_setting->getSetting('product_detail', 0);
-			}
-			$_pdp_def = array(
-				'product_detail_show_breadcrumb'       => 1,
-				'product_detail_show_gallery'          => 1,
-				'product_detail_show_badges'           => 1,
-				'product_detail_show_trust_box'        => 1,
-				'product_detail_show_tabs'             => 1,
-				'product_detail_show_related'          => 1,
-				'product_detail_show_research'         => 1,
-				'product_detail_title_font_size'       => 38,
-				'product_detail_body_font_size'        => 15,
-				'product_detail_coa_badge_text'        => '★ COA ON FILE',
-				'product_detail_batch_verified_text'   => 'BATCH-VERIFIED',
-				'product_detail_tab_details_label'     => 'DETAILS',
-				'product_detail_tab_coa_label'         => 'CERTIFICATE OF ANALYSIS',
-				'product_detail_tab_shipping_label'    => 'SHIPPING & RETURNS',
-				'product_detail_tab_details_body'      => 'Premium research-grade compound. Third-party HPLC tested with batch-specific Certificate of Analysis. Each order includes full documentation for complete traceability.',
-				'product_detail_tab_coa_body'          => "Every batch of this compound undergoes independent third-party High-Performance Liquid Chromatography (HPLC) and Mass Spectrometry (MS) verification. A Certificate of Analysis (COA) is included with every order, documenting batch-specific purity data, molecular weight confirmation, and analytical methodology.\n\nTo request a specific batch COA, contact our support team with your order number.",
-				'product_detail_tab_shipping_body'     => "Orders placed before 2 PM EST ship same business day via express courier with temperature-controlled packaging. Domestic delivery typically arrives within 2-3 business days. International orders ship within 24 hours and arrive in 5-10 business days depending on customs clearance.\n\nReturns accepted within 30 days for unopened products. If a product does not meet stated purity specifications, a full refund is issued upon verification.",
-				'product_detail_trust_item_1'          => '30-day lab-verified guarantee',
-				'product_detail_trust_item_2'          => 'Free shipping over $150',
-				'product_detail_trust_item_3'          => 'Certificate of Analysis included',
-				'product_detail_related_title'         => 'MORE COMPOUNDS',
-				'product_detail_research_title'        => 'RESEARCH LIBRARY',
-				'product_detail_research_link_1_label' => 'The Complete Guide to HPLC Testing for Research Peptides',
-				'product_detail_research_link_1_url'   => '#',
-				'product_detail_research_link_2_label' => 'Understanding Mass Spectrometry for Peptide Verification',
-				'product_detail_research_link_2_url'   => '#',
-				'product_detail_research_link_3_label' => 'Cold-Chain Logistics: Best Practices for Peptide Storage',
-				'product_detail_research_link_3_url'   => '#',
-				'product_detail_research_link_4_label' => 'Endotoxin Testing in Peptide Research: Why It Matters',
-				'product_detail_research_link_4_url'   => '#',
-				'product_detail_primary_color'         => '#10B981',
-				'product_detail_bg_navy'               => '#0F172A',
-			);
-			$_pdp = array_merge($_pdp_def, $_pdp_saved);
-			$data['pdp'] = array(
-				'show_breadcrumb'     => $_pdp['product_detail_show_breadcrumb'],
-				'show_gallery'        => $_pdp['product_detail_show_gallery'],
-				'show_badges'         => $_pdp['product_detail_show_badges'],
-				'show_trust_box'      => $_pdp['product_detail_show_trust_box'],
-				'show_tabs'           => $_pdp['product_detail_show_tabs'],
-				'show_related'        => $_pdp['product_detail_show_related'],
-				'show_research'       => $_pdp['product_detail_show_research'],
-				'title_font_size'     => $_pdp['product_detail_title_font_size'],
-				'body_font_size'      => $_pdp['product_detail_body_font_size'],
-				'coa_badge_text'      => $_pdp['product_detail_coa_badge_text'],
-				'batch_verified_text' => $_pdp['product_detail_batch_verified_text'],
-				'tab_details_label'   => $_pdp['product_detail_tab_details_label'],
-				'tab_coa_label'       => $_pdp['product_detail_tab_coa_label'],
-				'tab_shipping_label'  => $_pdp['product_detail_tab_shipping_label'],
-				'tab_details_body'    => $_pdp['product_detail_tab_details_body'],
-				'tab_coa_body'        => $_pdp['product_detail_tab_coa_body'],
-				'tab_shipping_body'   => $_pdp['product_detail_tab_shipping_body'],
-				'trust_item_1'        => $_pdp['product_detail_trust_item_1'],
-				'trust_item_2'        => $_pdp['product_detail_trust_item_2'],
-				'trust_item_3'        => $_pdp['product_detail_trust_item_3'],
-				'related_title'       => $_pdp['product_detail_related_title'],
-				'research_title'      => $_pdp['product_detail_research_title'],
-				'research_links'      => array(
-					array('label' => $_pdp['product_detail_research_link_1_label'], 'url' => $_pdp['product_detail_research_link_1_url']),
-					array('label' => $_pdp['product_detail_research_link_2_label'], 'url' => $_pdp['product_detail_research_link_2_url']),
-					array('label' => $_pdp['product_detail_research_link_3_label'], 'url' => $_pdp['product_detail_research_link_3_url']),
-					array('label' => $_pdp['product_detail_research_link_4_label'], 'url' => $_pdp['product_detail_research_link_4_url']),
-				),
-				'primary_color'       => $_pdp['product_detail_primary_color'],
-				'bg_navy'             => $_pdp['product_detail_bg_navy'],
-			);
+			$data['pdp'] = $this->model_catalog_product->getDetailConfig($_pdp_type_id);
 
 $data['products'] = array();
 
 			$results = $this->model_catalog_product->getProductRelated($this->request->get['product_id']);
 
+			// Related cards go through handleSingleProduct() so they carry the same
+			// full card data (pcards / show_* / *_value) as home & category cards -
+			// keeps product_card.twig free of bare-data fallbacks.
+			$rel_w = $this->config->get('theme_' . $this->config->get('config_theme') . '_image_related_width');
+			$rel_h = $this->config->get('theme_' . $this->config->get('config_theme') . '_image_related_height');
 			foreach ($results as $result) {
-				$image = $this->model_tool_image->resize($result['image'], $this->config->get('theme_' . $this->config->get('config_theme') . '_image_related_width'), $this->config->get('theme_' . $this->config->get('config_theme') . '_image_related_height'));
-
-				if ($this->customer->isLogged() || !$this->config->get('config_customer_price')) {
-					$price = $this->currency->format($this->tax->calculate($result['price'], $result['tax_class_id'], $this->config->get('config_tax')), $this->session->data['currency']);
-				} else {
-					$price = false;
-				}
-
-				if ((float)$result['special']) {
-					$special = $this->currency->format($this->tax->calculate($result['special'], $result['tax_class_id'], $this->config->get('config_tax')), $this->session->data['currency']);
-				} else {
-					$special = false;
-				}
-
-				if ($this->config->get('config_tax')) {
-					$tax = $this->currency->format((float)$result['special'] ? $result['special'] : $result['price'], $this->session->data['currency']);
-				} else {
-					$tax = false;
-				}
-
-				if ($this->config->get('config_review_status')) {
-					$rating = (int)$result['rating'];
-				} else {
-					$rating = false;
-				}
-
-				$data['products'][] = array(
-					'product_id'  => $result['product_id'],
-					'thumb'       => $image,
-					'name'        => $result['name'],
-					'description' => utf8_substr(trim(strip_tags(html_entity_decode($result['description'], ENT_QUOTES, 'UTF-8'))), 0, $this->config->get('theme_' . $this->config->get('config_theme') . '_product_description_length')) . '..',
-					'price'       => $price,
-					'special'     => $special,
-					'tax'         => $tax,
-					'minimum'     => $result['minimum'] > 0 ? $result['minimum'] : 1,
-					'rating'      => $rating,
-					'href'        => $this->url->link('product/product', 'product_id=' . $result['product_id'])
-				);
+				$data['products'][] = $this->model_catalog_product->handleSingleProduct($result, $rel_w, $rel_h, $this->url->link('product/product', 'product_id=' . $result['product_id']));
 			}
 
 			$data['tags'] = array();

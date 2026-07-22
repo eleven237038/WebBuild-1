@@ -1,0 +1,333 @@
+<b>Warning</b>: filemtime(): stat failed for /var/www/html/system/storage/cache/content.ver in <b>/var/www/html/system/framework.php</b> on line <b>169</b><b>Warning</b>: Cannot modify header information - headers already sent by (output started at /var/www/html/system/framework.php:44) in <b>/var/www/html/catalog/controller/startup/session.php</b> on line <b>25</b><b>Warning</b>: Cannot modify header information - headers already sent by (output started at /var/www/html/system/framework.php:44) in <b>/var/www/html/catalog/controller/startup/startup.php</b> on line <b>136</b><b>Warning</b>: Cannot modify header information - headers already sent by (output started at /var/www/html/system/framework.php:44) in <b>/var/www/html/catalog/controller/startup/startup.php</b> on line <b>187</b><!DOCTYPE html>
+<html dir="ltr" lang="zh_cn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<title>此商品不存在！</title>
+<base href="http://localhost:8081/">
+
+
+<!-- Facebook share -->
+<meta property="og:site_name" content="InsightWellnessLab">
+<meta property="og:url" content="http://localhost:8081/index.php?route=product/product&amp;product_id=58">
+<meta property="og:type" content="website">
+<meta property="og:title" content="此商品不存在！">
+<meta property="og:description" content="">
+<meta property="og:image" content="http://localhost:8081/image/cache/catalog/logo-600x315.png">
+<meta property="og:image:width" content="600">
+<meta property="og:image:height" content="315">
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧬</text></svg>">
+
+<!-- External CDN CSS -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="preconnect" href="https://cdnjs.cloudflare.com">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800;900&display=swap">
+
+<!-- jQuery (must load first —  layer.js and common.js depend on it) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+
+<!-- InsightWellnessLab Custom CSS (our design system) -->
+<link rel="stylesheet" href="catalog/view/theme/default/stylesheet/genscript/index-performance.css">
+<link rel="stylesheet" href="catalog/view/theme/default/stylesheet/genscript/header-nav.css">
+<link rel="stylesheet" href="catalog/view/theme/default/stylesheet/genscript/header-nav-screen.css">
+<link rel="stylesheet" href="catalog/view/theme/default/stylesheet/genscript/home.css">
+<link rel="stylesheet" href="catalog/view/theme/default/stylesheet/genscript/product-card.css">
+<link rel="stylesheet" href="catalog/view/theme/default/stylesheet/genscript/redesign.css">
+<link rel="stylesheet" href="catalog/view/theme/default/stylesheet/genscript/iconfont.css">
+<link rel="stylesheet" href="catalog/view/theme/default/stylesheet/login.css">
+
+<!-- Deferred non-critical CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Swiper/3.4.2/css/swiper.min.css" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" media="print" onload="this.media='all'">
+
+<link href="http://localhost:8081/image/catalog/favicon.png" rel="icon">
+
+<style>:root{--pcard-primary:#10B981;--pcard-name-color:#0F172A;--pcard-price-color:#10B981;--pdp-primary:#10B981;--pdp-bg-navy:#0F172A;}</style>
+</head>
+<body class="product-product">
+
+<!-- ========================================================================= -->
+<!--  HEADER — Single-Row Flex Flat Layout (Modern)                            -->
+<!--  [Logo] —— [Main Nav Menu] —— [🔍Icon] [👤Icon] [🌐] [🛒Cart Button]    -->
+<!--  Mega Menu + responsive hamburger logic FULLY PRESERVED                   -->
+<!-- ========================================================================= -->
+<header id="header">
+  <div class="header-inner">
+
+    <!-- ===== Mobile Toolbar (hidden on desktop) ===== -->
+    <div class="header-mobile-tools" style="justify-content:center; gap:18px;">
+      <button class="mob-icon mob-icon-search" aria-label="Search">
+        <i class="fa-solid fa-magnifying-glass"></i>
+      </button>
+      <a href="http://localhost:8081/index.php?route=information/contact" class="mob-icon" aria-label="Contact Us">
+        <i class="fa-solid fa-phone"></i>
+      </a>
+      <a href="http://localhost:8081/index.php?route=checkout/cart" class="mob-icon" aria-label="Shopping Cart">
+        <i class="fa-solid fa-cart-shopping"></i>
+      </a>
+      <button class="mob-icon mob-icon-menu" id="menu-toggle" aria-label="Open Menu">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+    </div>
+
+    <!-- ===== Single-Row Flex: Logo | Nav | Icons+Cart ===== -->
+    <div class="header-row">
+
+      <!-- Left: Logo -->
+      <a href="http://localhost:8081/" class="header-logo" aria-label="InsightWellnessLab Home">
+        <img src="catalog/view/theme/default/image/logo-icon.svg" alt="" class="logo-icon-img" width="40" height="40">
+        <div class="logo-text-group">
+          <span class="logo-main-text">InsightWellnessLab</span>
+          <span class="logo-tagline">Scripting Possibilities</span>
+        </div>
+      </a>
+
+      <!-- Center: Main Nav (Mega Menu anchor — structure FULLY PRESERVED) -->
+      <nav class="main-nav">
+        <ul class="nav-list">
+          <li><a href="index.php?route=product/category&path=59" class="nav-link-item">SHOP</a></li>
+          <li><a href="index.php?route=information/information&information_id=7" class="nav-link-item">LAB RESULTS</a></li>
+          <li><a href="index.php?route=information/information&information_id=4" class="nav-link-item">ABOUT</a></li>
+          <li><a href="index.php?route=information/information&information_id=8" class="nav-link-item">ARTICLES</a></li>
+          <li><a href="index.php?route=information/contact" class="nav-link-item">CONTACT</a></li>
+        </ul>
+      </nav>
+
+      <!-- Right: Icon buttons + Cart -->
+      <div class="header-actions-right">
+        <!-- Search icon button -->
+        <button class="header-icon-btn" id="btn-toggle-search" aria-label="Search">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+
+                <a href="http://localhost:8081/index.php?route=account/login" class="header-icon-btn" aria-label="Sign In">
+          <i class="fa-regular fa-user"></i>
+        </a>
+        
+        <!-- Wishlist -->
+        <a href="#" class="header-icon-btn" aria-label="Wishlist">
+          <i class="fa-regular fa-heart"></i>
+        </a>
+
+        <!-- Cart button (solid, prominent) -->
+        <a href="http://localhost:8081/index.php?route=checkout/cart" class="header-cart-btn" id="get-box" aria-label="Shopping Cart">
+          <i class="fa-solid fa-cart-shopping"></i>
+          <span>Cart</span>
+        </a>
+      </div>
+
+    </div><!-- /.header-row -->
+
+  </div>
+</header>
+
+<!-- ====== Mobile Drawer Menu (slides in from right, ≤1024px) ====== -->
+<div class="drawer-overlay" id="drawer-overlay"></div>
+
+<aside id="mobile-menu" class="mobile-drawer">
+  <button class="drawer-close" id="drawer-close" aria-label="Close Menu">
+    <i class="fa-solid fa-times"></i>
+  </button>
+
+  <nav class="drawer-nav">
+    <a href="index.php?route=product/category&path=59" class="drawer-link">SHOP <span class="drawer-arrow">&gt;</span></a>
+    <a href="index.php?route=information/information&information_id=7" class="drawer-link">LAB RESULTS <span class="drawer-arrow">&gt;</span></a>
+    <a href="index.php?route=information/information&information_id=4" class="drawer-link">ABOUT <span class="drawer-arrow">&gt;</span></a>
+    <a href="index.php?route=information/information&information_id=8" class="drawer-link">ARTICLES <span class="drawer-arrow">&gt;</span></a>
+    <a href="index.php?route=information/contact" class="drawer-link">CONTACT <span class="drawer-arrow">&gt;</span></a>
+    <hr class="drawer-divider">
+  </nav>
+
+  <div class="drawer-auth">
+        <a href="http://localhost:8081/index.php?route=account/login" class="drawer-link">SIGN IN <span class="drawer-arrow">&gt;</span></a>
+    <a href="http://localhost:8081/index.php?route=account/register" class="drawer-link">REGISTER <span class="drawer-arrow">&gt;</span></a>
+      </div>
+</aside>
+<!-- ==== Mega Menu JS (deferred) ==== -->
+
+<div id="error-not-found" class="container">
+  <ul class="breadcrumb">
+    <li><a href="http://localhost:8081/"><i class="fa fa-home"></i></a></li>
+    <li><a href="http://localhost:8081/index.php?route=product/product&amp;product_id=58">此商品不存在！</a></li>
+  </ul>
+
+  <div class="row">
+                <div id="content" class="col-sm-12">
+      <h1></h1>
+      <p>此商品不存在！</p>
+      </div>
+    </div>
+</div>
+<!-- ==========================================================================
+ *  GenScript Footer — 5-Column Layout
+ *  Brand: --bg-navy #0F172A | --primary-green #10B981
+ * ========================================================================== -->
+<style>
+.footer-wrap { background: var(--bg-navy, #0F172A); color: rgba(255,255,255,0.72); }
+.footer-grid { max-width: 1260px; margin: 0 auto; padding: 60px 32px 40px; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 40px; }
+.footer-grid h5 { color: #ffffff; font-family: "Figtree",sans-serif; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 14px; }
+.footer-grid ul { list-style: none; padding: 0; margin: 0; }
+.footer-grid ul li { margin-bottom: 7px; }
+.footer-grid ul li a { color: rgba(255,255,255,0.55); font-size: 13px; text-decoration: none; transition: color 0.15s; }
+.footer-grid ul li a:hover { color: var(--primary-green, #10B981); }
+.footer-brand { }
+.footer-brand p { font-size: 13px; line-height: 1.55; color: rgba(255,255,255,0.5); margin: 12px 0; }
+.footer-coa-badge { display: inline-block; background: var(--primary-green, #10B981); color: #fff; font-size: 10px; font-weight: 700; padding: 4px 12px; border-radius: 4px; letter-spacing: 0.5px; margin-bottom: 12px; }
+.footer-payments { display: flex; gap: 8px; margin-top: 8px; }
+.footer-payments span { padding: 4px 8px; background: rgba(255,255,255,0.08); border-radius: 4px; font-size: 10px; color: rgba(255,255,255,0.6); }
+.footer-bottom { border-top: 1px solid rgba(255,255,255,0.06); max-width: 1260px; margin: 0 auto; padding: 20px 32px; }
+.footer-disclaimer { font-size: 11px; color: rgba(255,255,255,0.35); line-height: 1.65; margin: 0 0 14px; }
+.footer-copyright { font-size: 12px; color: rgba(255,255,255,0.4); }
+
+@media (max-width: 1024px) { .footer-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 600px)  { .footer-grid { grid-template-columns: 1fr; gap: 28px; } }
+</style>
+
+<footer class="footer-wrap">
+  <div class="footer-grid">
+    <!-- Column 1: Brand -->
+    <div class="footer-brand">
+      <a href="" style="display:flex;align-items:center;gap:8px;text-decoration:none;">
+        <img src="catalog/view/theme/default/image/logo-icon.svg" alt="" width="32" height="32">
+        <span style="color:#fff;font-family:Figtree,sans-serif;font-weight:900;font-size:18px;">GenScript</span>
+      </a>
+      <p>Premium research-grade peptides, third-party tested and documented to the batch.</p>
+      <span class="footer-coa-badge">★ COA ON FILE</span>
+      <div class="footer-payments">
+        <span>VISA</span><span>MC</span><span>AMEX</span><span>BTC</span>
+      </div>
+    </div>
+
+    <!-- Column 2: SHOP -->
+    <div>
+      <h5>SHOP</h5>
+      <ul>
+        <li><a href="index.php?route=product/category&path=59">All Compounds</a></li>
+        <li><a href="#">Metabolic</a></li>
+        <li><a href="#">Recovery</a></li>
+        <li><a href="#">Longevity</a></li>
+      </ul>
+    </div>
+
+    <!-- Column 3: LEARN -->
+    <div>
+      <h5>LEARN</h5>
+      <ul>
+        <li><a href="index.php?route=information/information&information_id=7">COA Library</a></li>
+        <li><a href="index.php?route=information/information&information_id=8">Research Blog</a></li>
+        <li><a href="#">Peptide Reference</a></li>
+        <li><a href="#">Rewards</a></li>
+        <li><a href="#">Affiliates</a></li>
+        <li><a href="index.php?route=information/information&information_id=4">About</a></li>
+      </ul>
+    </div>
+
+    <!-- Column 4: SUPPORT -->
+    <div>
+      <h5>SUPPORT</h5>
+      <ul>
+        <li><a href="index.php?route=information/contact">Contact</a></li>
+        <li><a href="http://localhost:8081/index.php?route=account/account">Account</a></li>
+        <li><a href="">Cart</a></li>
+      </ul>
+    </div>
+
+    <!-- Column 5: LEGAL -->
+    <div>
+      <h5>LEGAL</h5>
+      <ul>
+        <li><a href="index.php?route=information/information&information_id=5">Terms &amp; Conditions</a></li>
+        <li><a href="index.php?route=information/information&information_id=3">Privacy Policy</a></li>
+        <li><a href="#">Research Use Policy</a></li>
+        <li><a href="#">Shipping Policy</a></li>
+        <li><a href="#">Return Policy</a></li>
+      </ul>
+    </div>
+  </div>
+
+  </footer>
+
+
+<!-- ==============================================
+  OpenCart scripts (cart/wishlist popups)
+  ============================================== -->
+
+<script type="text/javascript">
+  var showAlert = function(type, content) {
+    if (type == 'cart') {
+      redirectButtonText = '去结账';
+      redirectButtonLocation = 'http://localhost:8081/index.php?route=checkout/cart';
+    } else if (type == 'wishlist') {
+      redirectButtonText = '收藏';
+      redirectButtonLocation = 'http://localhost:8081/index.php?route=account/wishlist';
+    } else if (type == 'compare') {
+      redirectButtonText = '对比';
+      redirectButtonLocation = 'http://localhost:8081/index.php?route=product/compare';
+    }
+    layer.open({
+      title: '成功',
+      skin: 'layer-alert',
+      shadeClose: true,
+      content: content,
+      btn: [redirectButtonText, '继续购物'],
+      yes: function() { location = redirectButtonLocation; }
+    });
+  }
+</script>
+
+<!-- Core JS -->
+<script src="catalog/view/javascript/layer/layer.js"></script>
+<script src="catalog/view/javascript/common.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-migrate/1.4.1/jquery-migrate.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Swiper/3.4.2/js/swiper.jquery.min.js"></script>
+<script src="catalog/view/theme/default/javascript/genscript/login-manager.js"></script>
+<script src="catalog/view/theme/default/javascript/genscript/search-autocomplete.js"></script>
+<script src="catalog/view/theme/default/javascript/genscript/cart-manager.js"></script>
+<script src="catalog/view/theme/default/javascript/genscript/homepage-init.js"></script>
+
+
+
+<!-- ════ Back-to-Top (only one instance) ════ -->
+<style>
+#back-to-top {
+  position: fixed; bottom: 30px; right: 30px; z-index: 9998;
+  width: 48px; height: 48px; border-radius: 50%;
+  background: var(--primary-green, #10B981);
+  color: #ffffff; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 700;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  opacity: 0; pointer-events: none;
+  transition: all 0.3s ease;
+}
+#back-to-top.show { opacity: 1; pointer-events: auto; }
+#back-to-top:hover { transform: translateY(-3px); box-shadow: 0 6px 22px rgba(0,0,0,0.22); }
+</style>
+<button id="back-to-top" aria-label="Back to top">↑</button>
+<script>
+(function(){
+  var btn = document.getElementById('back-to-top');
+  if (!btn) return;
+  window.addEventListener('scroll', function() {
+    btn.classList.toggle('show', window.scrollY > 300);
+  });
+  btn.addEventListener('click', function() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+})();
+</script>
+
+</body></html>
+
