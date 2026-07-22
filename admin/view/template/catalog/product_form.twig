@@ -128,13 +128,14 @@
   </div>
 </div>
 <script type="text/javascript"><!--
-// 商品类型 -> 实时显示/隐藏对应字段: 系统字段 (system_column) 恒显; EAV/结构体按 product_type_id 匹配。
-// 隐藏用 display:none 而非 disabled -> 隐藏字段仍随表单提交, 其已存值由 setProductTags 保留 (切换类型不丢数据)。
+// 商品类型 -> 实时显示/隐藏对应字段: 所有字段 (含系统/核心字段) 一律按 product_type_id 匹配,
+// 仅显示当前类型在"商品类型"中配置的字段, 非该类型的字段一律隐藏 (严格按类型作用域)。
+// 隐藏用 display:none 而非 disabled -> 隐藏字段仍随表单提交, 其已存值由 setProductTags/editProduct 保留
+// (切换类型/编辑不丢数据; 新增商品时隐藏字段提交默认值, 如 status 默认启用)。
 function applyProductTypeFields() {
   var T = String($('#input-product-type').val());
   $('#form-product [data-type-id]').each(function() {
     var $el = $(this);
-    if ($el.attr('data-is-system') === '1') { $el.show(); return; }
     $el.toggle($el.attr('data-type-id') === T);
   });
 }

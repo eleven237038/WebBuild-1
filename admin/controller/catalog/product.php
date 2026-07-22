@@ -1325,12 +1325,24 @@ class ControllerCatalogProduct extends Controller {
 			$this->error['warning'] = $this->language->get('error_permission');
 		}
 
+		// 严格按商品类型作用域: 仅当该类型配置了 name / meta_title 系统字段时才校验必填。
+		// 类型未配置这两个字段时 (如仅含自定义字段的类型) 允许为空, 避免阻断保存;
+		// 隐藏的核心字段仍随表单提交其已存值, 编辑时不丢数据。
+		$product_type_id = (int)($this->request->post['product_type_id'] ?? 0);
+		$this->load->model('catalog/custom_tag');
+		$_has_name = false;
+		$_has_meta_title = false;
+		foreach ($this->model_catalog_custom_tag->getTagsByType($product_type_id) as $_t) {
+			if (!empty($_t['system_column']) && $_t['system_column'] === 'name') $_has_name = true;
+			if (!empty($_t['system_column']) && $_t['system_column'] === 'meta_title') $_has_meta_title = true;
+		}
+
 		foreach ($this->request->post['product_description'] as $language_id => $value) {
-			if ((utf8_strlen($value['name']) < 1) || (utf8_strlen($value['name']) > 255)) {
+			if ($_has_name && ((utf8_strlen($value['name']) < 1) || (utf8_strlen($value['name']) > 255))) {
 				$this->error['name'][$language_id] = $this->language->get('error_name');
 			}
 
-			if ((utf8_strlen($value['meta_title']) < 1) || (utf8_strlen($value['meta_title']) > 255)) {
+			if ($_has_meta_title && ((utf8_strlen($value['meta_title']) < 1) || (utf8_strlen($value['meta_title']) > 255))) {
 				$this->error['meta_title'][$language_id] = $this->language->get('error_meta_title');
 			}
 		}
