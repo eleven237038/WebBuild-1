@@ -39,7 +39,7 @@
 
     {# --- 单行文本 --- #}
     {% elseif field.tag_type is defined and field.tag_type == 'text' %}
-      <input type="text" name="{{ name }}" value="{{ val }}" id="input-{{ idk }}" class="form-control" placeholder="{{ cfg.placeholder is defined and cfg.placeholder is not empty ? cfg.placeholder : label }}"{% if cfg.maxlength is defined and cfg.maxlength > 0 %} maxlength="{{ cfg.maxlength }}"{% endif %}/>
+      <input type="text" name="{{ name }}" value="{{ val }}" id="input-{{ idk }}" class="form-control" placeholder="{{ cfg.placeholder is defined and cfg.placeholder is not empty ? cfg.placeholder : label }}"/>
 
     {# --- 多行文本 (Summernote 富文本) --- #}
     {% elseif field.tag_type is defined and field.tag_type == 'textarea' %}
@@ -104,7 +104,7 @@
       {% if has_unit %}
       <div class="input-group">
       {% endif %}
-        <input type="number" name="{{ name }}" value="{{ val }}" id="input-{{ idk }}" class="form-control"{% if cfg.min is defined and cfg.min != '' %} min="{{ cfg.min }}"{% endif %}{% if cfg.max is defined and cfg.max != '' %} max="{{ cfg.max }}"{% endif %}{% if cfg.step is defined and cfg.step != '' %} step="{{ cfg.step }}"{% endif %}/>
+        <input type="number" name="{{ name }}" value="{{ val }}" id="input-{{ idk }}" class="form-control" step="any"{% if cfg.min is defined and cfg.min != '' %} min="{{ cfg.min }}"{% endif %}{% if cfg.max is defined and cfg.max != '' %} max="{{ cfg.max }}"{% endif %}/>
       {% if has_unit %}
         <span class="input-group-addon">{{ cfg.unit }}</span>
       </div>

@@ -27,11 +27,12 @@
             </div>
           </div>
 
-          <div class="form-group">
+          <div class="form-group required">
             <label class="col-sm-2 control-label" for="input-display-label">后端显示</label>
             <div class="col-sm-10">
               <input type="text" name="display_label" value="{{ display_label }}" id="input-display-label" class="form-control" maxlength="128"/>
-              <div class="help-block">后台商品表单显示的标签,留空则使用前端显示</div>
+              <div class="help-block">后台商品表单显示的标签</div>
+              {% if error_display_label %}<div class="text-danger">{{ error_display_label }}</div>{% endif %}
             </div>
           </div>
 
@@ -49,7 +50,7 @@
             </div>
           </div>
 
-          <div class="form-group">
+          <div class="form-group required">
             <label class="col-sm-2 control-label" for="input-tag-type">类型</label>
             <div class="col-sm-10">
               <select name="tag_type" id="input-tag-type" class="form-control">
@@ -63,6 +64,7 @@
                 <option value="struct"   {{ tag_type == 'struct'   ? 'selected' }}>结构体</option>
               </select>
               <div class="help-block" id="type-hint-struct" style="display:none;">结构体是容器字段,本身不存值;在列表页拖拽其它字段到其下即建立父子分组。结构体可嵌套子结构体,最多 3 层。</div>
+              {% if error_tag_type %}<div class="text-danger">{{ error_tag_type }}</div>{% endif %}
             </div>
           </div>
 
@@ -73,14 +75,13 @@
               <div id="option-rows" style="margin-bottom:8px;">
                 {% for opt in tag_options %}
                 <div class="opt-row" style="display:flex;gap:6px;margin-bottom:6px;">
-                  <input type="text" name="options[value][]" value="{{ opt.value }}" class="form-control" placeholder="选项值 (存库)" style="flex:0 0 30%;"/>
-                  <input type="text" name="options[label][]" value="{{ opt.text }}" class="form-control" placeholder="显示文字 (留空则用选项值)" style="flex:1;"/>
+                  <input type="text" name="options[text][]" value="{{ opt.text != '' ? opt.text : opt.value }}" class="form-control" placeholder="选项文字" style="flex:1;"/>
                   <button type="button" class="btn btn-danger opt-remove"><i class="fa fa-times"></i></button>
                 </div>
                 {% endfor %}
               </div>
               <button type="button" class="btn btn-default btn-sm" id="opt-add"><i class="fa fa-plus"></i> 添加选项</button>
-              <div class="help-block">"选项值"是存入数据库的值,"显示文字"是商品表单与前台规格中展示的文字。留空全部选项则作为 是/否 布尔下拉 (如 上架/下架 对应 1/0)。</div>
+              <div class="help-block">每个选项既是存入数据库的值,也是商品表单与前台规格展示的文字。留空全部选项则作为 是/否 布尔下拉。</div>
             </div>
           </div>
 
@@ -91,20 +92,16 @@
                 <div style="flex:1;min-width:120px;"><input type="text" name="config_unit" value="{{ config_unit }}" class="form-control" placeholder="单位 (如 mg)"/></div>
                 <div style="flex:1;min-width:100px;"><input type="number" name="config_min" value="{{ config_min }}" class="form-control" placeholder="最小值" step="any"/></div>
                 <div style="flex:1;min-width:100px;"><input type="number" name="config_max" value="{{ config_max }}" class="form-control" placeholder="最大值" step="any"/></div>
-                <div style="flex:1;min-width:100px;"><input type="number" name="config_step" value="{{ config_step }}" class="form-control" placeholder="步长" step="any"/></div>
               </div>
-              <div class="help-block">单位会作为后缀显示在输入框旁;最小/最大/步长约束商品表单的数字输入。全部可选。</div>
+              <div class="help-block">单位会作为后缀显示在输入框旁;最小/最大约束商品表单的数字输入 (步长不限制)。全部可选。</div>
             </div>
           </div>
 
           <div class="form-group type-config" data-for="text" style="display:none;">
             <label class="col-sm-2 control-label">文本配置</label>
             <div class="col-sm-10">
-              <div style="display:flex;gap:8px;">
-                <input type="text" name="config_placeholder" value="{{ config_placeholder }}" class="form-control" placeholder="占位符 (输入框灰字提示)" style="flex:1;"/>
-                <input type="number" name="config_maxlength" value="{{ config_maxlength }}" class="form-control" placeholder="最大长度" min="0" style="flex:0 0 140px;"/>
-              </div>
-              <div class="help-block">占位符显示在输入框内作为提示;最大长度为 0 或留空表示不限制。全部可选。</div>
+              <input type="text" name="config_placeholder" value="{{ config_placeholder }}" class="form-control" placeholder="占位符 (输入框灰字提示)"/>
+              <div class="help-block">占位符显示在输入框内作为提示;最大长度不限制。可选。</div>
             </div>
           </div>
 
@@ -175,8 +172,7 @@ $(function () {
     var $cont = $(containerSel);
     $(addBtnSel).on('click', function () {
       var row = '<div class="opt-row" style="display:flex;gap:6px;margin-bottom:6px;">' +
-        '<input type="text" name="options[value][]" class="form-control" placeholder="选项值 (存库)" style="flex:0 0 30%;"/>' +
-        '<input type="text" name="options[label][]" class="form-control" placeholder="显示文字 (留空则用选项值)" style="flex:1;"/>' +
+        '<input type="text" name="options[text][]" class="form-control" placeholder="选项文字" style="flex:1;"/>' +
         '<button type="button" class="btn btn-danger opt-remove"><i class="fa fa-times"></i></button>' +
         '</div>';
       $cont.append(row);

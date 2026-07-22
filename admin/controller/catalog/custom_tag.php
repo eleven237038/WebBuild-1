@@ -124,6 +124,8 @@ class ControllerCatalogCustomTag extends Controller {
 		$data['user_token'] = $this->session->data['user_token'];
 		if (isset($this->error['warning'])) { $data['error_warning'] = $this->error['warning']; } else { $data['error_warning'] = ''; }
 		if (isset($this->error['name']))     { $data['error_name']     = $this->error['name'];     } else { $data['error_name'] = '';     }
+		if (isset($this->error['display_label'])) { $data['error_display_label'] = $this->error['display_label']; } else { $data['error_display_label'] = ''; }
+		if (isset($this->error['tag_type']))     { $data['error_tag_type']     = $this->error['tag_type'];     } else { $data['error_tag_type'] = '';     }
 		if (isset($this->error['parent']))   { $data['error_parent']   = $this->error['parent'];   } else { $data['error_parent'] = '';  }
 
 		$tag_id = isset($this->request->get['tag_id']) ? (int)$this->request->get['tag_id'] : 0;
@@ -162,8 +164,8 @@ class ControllerCatalogCustomTag extends Controller {
 		$data['tag_options'] = $tag_id ? $this->model_catalog_custom_tag->getTagOptions($tag_id) : array();
 		// 类型专属配置回填 (POST 优先 - 校验失败重显)
 		$cfg_defaults = array(
-			'config_unit' => '', 'config_min' => '', 'config_max' => '', 'config_step' => '',
-			'config_placeholder' => '', 'config_maxlength' => '', 'config_max_count' => '',
+			'config_unit' => '', 'config_min' => '', 'config_max' => '',
+			'config_placeholder' => '', 'config_max_count' => '',
 		);
 		foreach ($cfg_defaults as $k => $def) {
 			if (isset($this->request->post[$k])) {
@@ -171,8 +173,8 @@ class ControllerCatalogCustomTag extends Controller {
 			} elseif ($tag_id) {
 				$saved = $this->model_catalog_custom_tag->getTagConfig($tag_id);
 				$map = array(
-					'config_unit' => 'unit', 'config_min' => 'min', 'config_max' => 'max', 'config_step' => 'step',
-					'config_placeholder' => 'placeholder', 'config_maxlength' => 'maxlength', 'config_max_count' => 'max_count',
+					'config_unit' => 'unit', 'config_min' => 'min', 'config_max' => 'max',
+					'config_placeholder' => 'placeholder', 'config_max_count' => 'max_count',
 				);
 				$key = $map[$k];
 				$data[$k] = isset($saved[$key]) ? $saved[$key] : $def;
@@ -287,17 +289,14 @@ class ControllerCatalogCustomTag extends Controller {
 		$this->response->setOutput(json_encode(['success' => true]));
 	}
 
-	// 把 POST 里并行的 options[value][] / options[label][] 组装成 [{value,text}, ...]
+	// 把 POST 里 options[text][] 组装成 [{value,text}, ...] (选项值与显示文字已合并: 既是存库值也是展示文字)
 	protected function collectTagOptions() {
-		$values = $this->request->post['options']['value'] ?? array();
-		$labels = $this->request->post['options']['label'] ?? array();
+		$texts = $this->request->post['options']['text'] ?? array();
 		$out = array();
-		$max = max(count($values), count($labels));
-		for ($i = 0; $i < $max; $i++) {
-			$v = isset($values[$i]) ? trim((string)$values[$i]) : '';
-			$l = isset($labels[$i]) ? trim((string)$labels[$i]) : '';
-			if ($v === '' && $l === '') { continue; }
-			$out[] = array('value' => $v, 'text' => ($l !== '') ? $l : $v);
+		foreach ($texts as $t) {
+			$t = trim((string)$t);
+			if ($t === '') { continue; }
+			$out[] = array('value' => $t, 'text' => $t);
 		}
 		return $out;
 	}
@@ -307,14 +306,12 @@ class ControllerCatalogCustomTag extends Controller {
 		$cfg = array();
 		switch ($tag_type) {
 			case 'number':
-				foreach (array('unit', 'min', 'max', 'step') as $k) {
+				foreach (array('unit', 'min', 'max') as $k) {
 					$cfg[$k] = trim((string)($this->request->post['config_' . $k] ?? ''));
 				}
 				break;
 			case 'text':
 				$cfg['placeholder'] = trim((string)($this->request->post['config_placeholder'] ?? ''));
-				$ml = (int)($this->request->post['config_maxlength'] ?? 0);
-				if ($ml > 0) { $cfg['maxlength'] = $ml; }
 				break;
 			case 'textarea':
 				$cfg['placeholder'] = trim((string)($this->request->post['config_placeholder'] ?? ''));
@@ -333,10 +330,17 @@ class ControllerCatalogCustomTag extends Controller {
 		if ((utf8_strlen($this->request->post['name']) < 1) || (utf8_strlen($this->request->post['name']) > 64)) {
 			$this->error['name'] = '字段名称必须在 1-64 字符之间';
 		}
+		if ((utf8_strlen($this->request->post['display_label']) < 1) || (utf8_strlen($this->request->post['display_label']) > 128)) {
+			$this->error['display_label'] = '后端显示必须在 1-128 字符之间';
+		}
 		// 成环校验(仅编辑已有字段时)
 		$tag_id    = isset($this->request->get['tag_id']) ? (int)$this->request->get['tag_id'] : 0;
 		$parent_id = (int)($this->request->post['parent_id'] ?? 0);
 		$tt        = (string)($this->request->post['tag_type'] ?? 'text');
+		$valid_types = array('text','textarea','number','date','image_single','image_multi','select','struct');
+		if (!in_array($tt, $valid_types, true)) {
+			$this->error['tag_type'] = '请选择有效的字段类型';
+		}
 		// 成环校验(仅编辑已有字段时)
 		if ($tag_id && $parent_id && $this->model_catalog_custom_tag->wouldCreateCycle($tag_id, $parent_id)) {
 			$this->error['parent'] = '不能将父字段设为它自己或它的子字段';

@@ -98,7 +98,7 @@ class ModelCatalogCustomTag extends Model {
 		}
 	}
 
-	// 读类型专属配置 JSON (number 的 unit/min/max/step, text 的 placeholder/maxlength,
+	// 读类型专属配置 JSON (number 的 unit/min/max, text 的 placeholder,
 	// textarea 的 placeholder, image_multi 的 max_count); 失败/空返 []。
 	public function getTagConfig($tag_id) {
 		$tag = $this->getTag($tag_id);
