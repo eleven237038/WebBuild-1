@@ -10,6 +10,7 @@ class ModelCatalogProduct extends Model {
 		if ($query->num_rows) {
 			return array(
 				'product_id'       => $query->row['product_id'],
+				'product_type_id'  => $query->row['product_type_id'],
 				'name'             => $query->row['name'],
 				'description'      => $query->row['description'],
 				'meta_title'       => $query->row['meta_title'],
@@ -75,6 +76,7 @@ class ModelCatalogProduct extends Model {
 		foreach ($query->rows as $query) {
 			$map[(int)$query['product_id']] = array(
 				'product_id'       => $query['product_id'],
+				'product_type_id'  => $query['product_type_id'],
 				'name'             => $query['name'],
 				'description'      => $query['description'],
 				'meta_title'       => $query['meta_title'],
@@ -568,24 +570,33 @@ class ModelCatalogProduct extends Model {
 		}
 	}
 
-	public function getCardConfig() {
-		static $cache = null;
-		if ($cache === null) {
-			$this->load->model('setting/setting');
+	public function getCardConfig($type_id = 0) {
+		static $cache = array();
+		$type_id = (int)$type_id;
+		if ($type_id < 1) { $type_id = 1; } // type 0 (no type) -> global default (type 1)
+		if (isset($cache[$type_id])) { return $cache[$type_id]; }
+
+		$this->load->model('setting/setting');
+		// type 1 = global default (code 'product_card'); type N>1 = per-type override 'product_card_N'
+		$code = ($type_id > 1) ? 'product_card_' . $type_id : 'product_card';
+		$s = $this->model_setting_setting->getSetting($code, 0);
+		// unsaved type -> inherit global (type 1) settings until customized
+		if ($type_id > 1 && empty($s)) {
 			$s = $this->model_setting_setting->getSetting('product_card', 0);
-			$defaults = array(
-				'show_image' => 1, 'show_name' => 1, 'show_description' => 1, 'show_price' => 1,
-				'show_wishlist' => 1, 'show_badges' => 1, 'show_add_button' => 1,
-				'image_height' => 200, 'desc_length' => 100, 'desc_clamp' => 2,
-				'name_font_size' => 15, 'price_font_size' => 22, 'add_btn_text' => '+',
-			);
-			$cache = array();
-			foreach ($defaults as $k => $v) {
-				$key = 'product_card_' . $k;
-				$cache[$k] = array_key_exists($key, $s) ? $s[$key] : $v;
-			}
 		}
-		return $cache;
+		$defaults = array(
+			'show_image' => 1, 'show_name' => 1, 'show_description' => 1, 'show_price' => 1,
+			'show_wishlist' => 1, 'show_badges' => 1, 'show_add_button' => 1,
+			'image_height' => 200, 'desc_length' => 100, 'desc_clamp' => 2,
+			'name_font_size' => 15, 'price_font_size' => 22, 'add_btn_text' => '+',
+			'primary_color' => '#10B981', 'name_color' => '#0F172A', 'price_color' => '#10B981',
+		);
+		$cache[$type_id] = array();
+		foreach ($defaults as $k => $v) {
+			$key = 'product_card_' . $k;
+			$cache[$type_id][$k] = array_key_exists($key, $s) ? $s[$key] : $v;
+		}
+		return $cache[$type_id];
 	}
 
 	public function handleSingleProduct($product, $thumb_width = 100, $thumb_height = 100, $href = null) {
@@ -627,7 +638,7 @@ class ModelCatalogProduct extends Model {
 			'minimum'     => $product['minimum'] ?: 1,
 			'rating'      => $rating,
 			'href'        => $href ?: $this->url->link('product/product', 'product_id=' . $product['product_id']),
-			'pcards'       => $this->getCardConfig()
+			'pcards'       => $this->getCardConfig(isset($product['product_type_id']) ? $product['product_type_id'] : 0)
 		);
 	}
 

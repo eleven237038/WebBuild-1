@@ -38,6 +38,26 @@ class ModelSettingSetting extends Model {
 		$this->invalidateSettingsCache();
 	}
 
+	// Same as editSetting() but WITHOUT the key-prefix guard. Needed when the
+	// storage code is not a prefix of the keys — e.g. per-product-type overrides
+	// stored under code 'product_card_6' / 'product_detail_6' but whose keys are
+	// still 'product_card_*' / 'product_detail_*' (so the read side and frontend
+	// can use one key scheme). editSetting()'s substr($key,0,strlen($code))==$code
+	// check would silently drop every key here and write 0 rows.
+	public function editSettingCode($code, $data, $store_id = 0) {
+		$this->db->query("DELETE FROM `" . DB_PREFIX . "setting` WHERE store_id = '" . (int)$store_id . "' AND `code` = '" . $this->db->escape($code) . "'");
+
+		foreach ($data as $key => $value) {
+			if (!is_array($value)) {
+				$this->db->query("INSERT INTO " . DB_PREFIX . "setting SET store_id = '" . (int)$store_id . "', `code` = '" . $this->db->escape($code) . "', `key` = '" . $this->db->escape($key) . "', `value` = '" . $this->db->escape($value) . "'");
+			} else {
+				$this->db->query("INSERT INTO " . DB_PREFIX . "setting SET store_id = '" . (int)$store_id . "', `code` = '" . $this->db->escape($code) . "', `key` = '" . $this->db->escape($key) . "', `value` = '" . $this->db->escape(json_encode($value, true)) . "', serialized = '1'");
+			}
+		}
+
+		$this->invalidateSettingsCache();
+	}
+
 	public function deleteSetting($code, $store_id = 0) {
 		$this->db->query("DELETE FROM " . DB_PREFIX . "setting WHERE store_id = '" . (int)$store_id . "' AND `code` = '" . $this->db->escape($code) . "'");
 

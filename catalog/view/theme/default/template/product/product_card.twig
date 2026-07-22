@@ -8,9 +8,10 @@
   'show_image': 1, 'show_name': 1, 'show_description': 1, 'show_price': 1,
   'show_wishlist': 1, 'show_badges': 1, 'show_add_button': 1,
   'image_height': 200, 'desc_length': 100, 'desc_clamp': 2,
-  'name_font_size': 15, 'price_font_size': 22, 'add_btn_text': '+'
+  'name_font_size': 15, 'price_font_size': 22, 'add_btn_text': '+',
+  'primary_color': '#10B981', 'name_color': '#0F172A', 'price_color': '#10B981'
 } %}
-<div class="product-card">
+<div class="product-card" style="--pcard-primary:{{ pc.primary_color is defined ? pc.primary_color : '#10B981' }};--pcard-name-color:{{ pc.name_color is defined ? pc.name_color : '#0F172A' }};--pcard-price-color:{{ pc.price_color is defined ? pc.price_color : '#10B981' }};">
   <!-- Dynamic Custom Tags -> parent_name: tag_name or tag_name -->
   {% if pc.show_badges and product.custom_tags is defined and product.custom_tags is not empty %}
     {% for tag in product.custom_tags %}

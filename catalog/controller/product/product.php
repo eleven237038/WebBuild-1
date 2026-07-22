@@ -431,8 +431,15 @@ class ControllerProductProduct extends Controller {
 
 
 			// ----- PDP appearance config (admin > 商品目录 > 商品详情页管理) -----
+			// Per product type: type 1 = global default ('product_detail'); type N>1 = 'product_detail_N'
+			// (falls back to global if that type was never customized).
 			$this->load->model('setting/setting');
-			$_pdp_saved = $this->model_setting_setting->getSetting('product_detail', 0);
+			$_pdp_type_id = isset($product_info['product_type_id']) ? (int)$product_info['product_type_id'] : 0;
+			$_pdp_code = ($_pdp_type_id > 1) ? 'product_detail_' . $_pdp_type_id : 'product_detail';
+			$_pdp_saved = $this->model_setting_setting->getSetting($_pdp_code, 0);
+			if ($_pdp_type_id > 1 && empty($_pdp_saved)) {
+				$_pdp_saved = $this->model_setting_setting->getSetting('product_detail', 0);
+			}
 			$_pdp_def = array(
 				'product_detail_show_breadcrumb'       => 1,
 				'product_detail_show_gallery'          => 1,

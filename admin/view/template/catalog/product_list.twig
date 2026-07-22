@@ -32,19 +32,6 @@
       .product-type-panel .type-chips::-webkit-scrollbar { height:6px; }
       .product-type-panel .type-chips::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:3px; }
     </style>
-    <div class="panel panel-default product-type-panel" style="margin-bottom:12px;">
-      <div class="panel-body" style="padding:8px 12px;">
-        <div style="display:flex;align-items:center;gap:10px;">
-          <span style="color:#64748b;font-weight:600;white-space:nowrap;">商品类型</span>
-          <div class="type-chips" style="display:flex;gap:8px;overflow-x:auto;padding:2px 0;white-space:nowrap;flex:1;">
-            <a href="{{ product_type_all_url }}" class="btn btn-{{ not filter_product_type ? 'primary' : 'default' }} btn-sm" style="white-space:nowrap;">全部 <span class="badge">{{ product_type_total }}</span></a>
-            {% for pt in product_types %}
-              <a href="{{ pt.url }}" class="btn btn-{{ filter_product_type == pt.product_type_id ? 'primary' : 'default' }} btn-sm" style="white-space:nowrap;">{{ pt.name }} <span class="badge">{{ pt.count }}</span></a>
-            {% endfor %}
-          </div>
-        </div>
-      </div>
-    </div>
     <div class="row">
       <div id="filter-product" class="col-sm-12 hidden-sm hidden-xs">
         <div class="panel panel-default">
@@ -74,6 +61,21 @@
                     {% endfor %}
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-12">
+        <div class="panel panel-default product-type-panel" style="margin-bottom:12px;">
+          <div class="panel-body" style="padding:8px 12px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="color:#64748b;font-weight:600;white-space:nowrap;">商品类型</span>
+              <div class="type-chips" style="display:flex;gap:8px;overflow-x:auto;padding:2px 0;white-space:nowrap;flex:1;">
+                <a href="{{ product_type_all_url }}" class="btn btn-{{ not filter_product_type ? 'primary' : 'default' }} btn-sm" style="white-space:nowrap;">全部 <span class="badge">{{ product_type_total }}</span></a>
+                {% for pt in product_types %}
+                  <a href="{{ pt.url }}" class="btn btn-{{ filter_product_type == pt.product_type_id ? 'primary' : 'default' }} btn-sm" style="white-space:nowrap;">{{ pt.name }} <span class="badge">{{ pt.count }}</span></a>
+                {% endfor %}
               </div>
             </div>
           </div>

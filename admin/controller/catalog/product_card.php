@@ -66,6 +66,11 @@ class ControllerCatalogProductCard extends Controller {
 		$this->document->setTitle($this->language->get('heading_title'));
 		$this->load->model('setting/setting');
 
+		// Per product type: type 1 = global default (code 'product_card'); type N>1 = 'product_card_N'.
+		$product_type_id = isset($this->request->get['product_type_id']) ? (int)$this->request->get['product_type_id'] : 1;
+		if ($product_type_id < 1) { $product_type_id = 1; }
+		$code = ($product_type_id > 1) ? $this->code . '_' . $product_type_id : $this->code;
+
 		if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validate()) {
 			$save = array();
 			foreach ($this->keys as $key) {
@@ -75,9 +80,12 @@ class ControllerCatalogProductCard extends Controller {
 					$save[$key] = isset($this->request->post[$key]) ? $this->request->post[$key] : '';
 				}
 			}
-			$this->model_setting_setting->editSetting($this->code, $save);
+			// editSettingCode (not editSetting): the per-type code 'product_card_N'
+			// is not a prefix of the 'product_card_*' keys, so editSetting's key
+			// guard would silently write 0 rows. See ModelSettingSetting::editSettingCode.
+			$this->model_setting_setting->editSettingCode($code, $save);
 			$this->session->data['success'] = $this->language->get('text_success');
-			$this->response->redirect($this->url->link('catalog/product_card', 'user_token=' . $this->session->data['user_token'], true));
+			$this->response->redirect($this->url->link('catalog/product_card', 'user_token=' . $this->session->data['user_token'] . '&product_type_id=' . $product_type_id, true));
 		}
 
 		$data['user_token'] = $this->session->data['user_token'];
@@ -95,11 +103,15 @@ class ControllerCatalogProductCard extends Controller {
 			'href' => $this->url->link('catalog/product_card', 'user_token=' . $this->session->data['user_token'], true)
 		);
 
-		$data['action'] = $this->url->link('catalog/product_card', 'user_token=' . $this->session->data['user_token'], true);
+		$data['action'] = $this->url->link('catalog/product_card', 'user_token=' . $this->session->data['user_token'] . '&product_type_id=' . $product_type_id, true);
 		$data['cancel'] = $this->url->link('common/dashboard', 'user_token=' . $this->session->data['user_token'], true);
 
 		// Load current values: prefer POST (re-display on error), else DB, else default.
-		$saved = $this->model_setting_setting->getSetting($this->code, 0);
+		// Unsaved type N>1 inherits the global (type 1) settings until customized.
+		$saved = $this->model_setting_setting->getSetting($code, 0);
+		if ($product_type_id > 1 && empty($saved)) {
+			$saved = $this->model_setting_setting->getSetting($this->code, 0);
+		}
 		foreach ($this->keys as $key) {
 			if (isset($this->request->post[$key])) {
 				$data[$key] = $this->request->post[$key];
@@ -109,6 +121,20 @@ class ControllerCatalogProductCard extends Controller {
 				$data[$key] = isset($this->defaults[$key]) ? $this->defaults[$key] : '';
 			}
 		}
+
+		// 商品类型 chip bar (per-type editing)
+		$this->load->model('catalog/custom_tag');
+		$data['product_types'] = array();
+		foreach ($this->model_catalog_custom_tag->getProductTypes() as $_pt) {
+			$_tid = (int)$_pt['product_type_id'];
+			$data['product_types'][] = array(
+				'product_type_id' => $_tid,
+				'name'            => $_pt['name'],
+				'url'             => $this->url->link('catalog/product_card', 'user_token=' . $this->session->data['user_token'] . '&product_type_id=' . $_tid, true),
+				'active'          => ($_tid == $product_type_id),
+			);
+		}
+		$data['product_type_id'] = $product_type_id;
 
 		// Shared strings
 		$data['heading_title']        = $this->language->get('heading_title');

@@ -22,6 +22,20 @@
     <div class="alert alert-success"><i class="fa fa-check-circle"></i> {{ success }}<button type="button" class="close" data-dismiss="alert">&times;</button></div>
     {% endif %}
 
+    {# 商品类型 chip bar: 切换编辑不同商品类型的详情页设置 (type 1 = 全局默认) #}
+    <div class="panel panel-default" style="margin-bottom:12px;">
+      <div class="panel-body" style="padding:8px 12px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="color:#64748b;font-weight:600;white-space:nowrap;">商品类型</span>
+          <div style="display:flex;gap:8px;overflow-x:auto;padding:2px 0;white-space:nowrap;flex:1;">
+            {% for pt in product_types %}
+              <a href="{{ pt.url }}" class="btn btn-{{ pt.active ? 'primary' : 'default' }} btn-sm" style="white-space:nowrap;">{{ pt.name }}</a>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="panel panel-default">
       <div class="panel-heading">
         <h3 class="panel-title"><i class="fa fa-file-text-o"></i> {{ text_form }}</h3>

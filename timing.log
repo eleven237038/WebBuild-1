@@ -128,3 +128,8 @@ vqmod_boot:0.0617 startup:0.1277 framework(dispatch+render):2.6744 total:2.8639
 vqmod_boot:0.0761 startup:0.4694 framework(dispatch+render):3.7490 total:4.2944
 vqmod_boot:0.0395 startup:0.0702 framework(dispatch+render):1.7946 total:1.9042
 vqmod_boot:0.0544 startup:0.4512 framework(dispatch+render):2.3544 total:2.8600
+vqmod_boot:0.0742 startup:0.4998 framework(dispatch+render):6.6780 total:7.2520
+vqmod_boot:0.0555 startup:0.0685 framework(dispatch+render):1.5563 total:1.6804
+vqmod_boot:0.0697 startup:0.1311 framework(dispatch+render):2.8357 total:3.0364
+vqmod_boot:0.0649 startup:0.4724 framework(dispatch+render):3.0012 total:3.5385
+vqmod_boot:0.0585 startup:0.4854 framework(dispatch+render):3.7377 total:4.2816
