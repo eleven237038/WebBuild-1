@@ -42,6 +42,17 @@
              其字段 (商品描述 / Meta / 标签 / 主图) 迁移为带 system_column 的 custom_tag 记录, 可拖拽排序。 #}
           {# 统一渲染所有字段 (预序: 结构体紧跟其子字段): 有 system_column 走真实列, 否则走 EAV。
              结构体 (tag_type=struct) 作为可视容器, 开 fieldset 把其后 parent_id=该结构体 的子字段包起来。 #}
+          <div class="form-group required" style="border:1px solid #e2e8f0;border-radius:4px;padding:12px 16px;margin-bottom:14px;background:#f8fafc;">
+            <label class="col-sm-2 control-label" for="input-product-type">商品类型</label>
+            <div class="col-sm-10">
+              <select name="product_type_id" id="input-product-type" class="form-control" style="max-width:360px;">
+                {% for pt in product_types %}
+                  <option value="{{ pt.product_type_id }}" {% if product_type_id == pt.product_type_id %}selected="selected"{% endif %}>{{ pt.name }}</option>
+                {% endfor %}
+              </select>
+              <span style="display:block;margin-top:4px;color:#94a3b8;font-size:12px;">选择商品所属类型, 用于商品管理页按类型筛选。</span>
+            </div>
+          </div>
           {% if form_fields is not empty %}
             <fieldset>
               {% for field in form_fields %}
@@ -50,9 +61,10 @@
                 {% if _cb %}{% for i in 1.._cb %}</fieldset>{% endfor %}{% endif %}
                 {# 结构体字段: 开新 fieldset 分组 (结构体本身不渲染输入; 可嵌套子结构体最多 3 层) #}
                 {% if field.tag_type is defined and field.tag_type == 'struct' %}
-                  <fieldset class="struct-group" style="border:1px solid #e2e8f0;border-radius:4px;padding:12px 16px 4px;margin:12px 0;">
+                  <fieldset class="struct-group" data-type-id="{{ field.product_type_id }}" data-is-system="0" style="border:1px solid #e2e8f0;border-radius:4px;padding:12px 16px 4px;margin:12px 0;">
                     <legend style="font-size:14px;font-weight:600;color:#334155;width:auto;border-bottom:none;padding:0 8px;margin-bottom:8px;">{{ field.name }}</legend>
                 {% else %}
+                <div class="ff-row" data-type-id="{{ field.product_type_id }}" data-is-system="{{ field.system_column is not empty ? 1 : 0 }}">
                 {% if field.system_column is not empty %}
                 {% if field.field_type == 'core_text_ml' %}
                   {# 多语言系统字段 (商品名称/描述/Meta标题/Meta描述/Meta关键字/商品标签):
@@ -98,6 +110,7 @@
                   {% set pcv = product_custom_tag[field.tag_id] is defined ? product_custom_tag[field.tag_id].value : '' %}
                   {{ eav.renderField(field, pcv, 'product_custom_tag[' ~ field.tag_id ~ '][value]', [], 'cf_' ~ field.tag_id, eav_ui) }}
                 {% endif %}
+                </div>
                 {% endif %}
               {% endfor %}
               {% if struct_final_close|default(0) %}{% for i in 1..struct_final_close %}</fieldset>{% endfor %}{% endif %}
@@ -114,6 +127,22 @@
     </div>
   </div>
 </div>
+<script type="text/javascript"><!--
+// 商品类型 -> 实时显示/隐藏对应字段: 系统字段 (system_column) 恒显; EAV/结构体按 product_type_id 匹配。
+// 隐藏用 display:none 而非 disabled -> 隐藏字段仍随表单提交, 其已存值由 setProductTags 保留 (切换类型不丢数据)。
+function applyProductTypeFields() {
+  var T = String($('#input-product-type').val());
+  $('#form-product [data-type-id]').each(function() {
+    var $el = $(this);
+    if ($el.attr('data-is-system') === '1') { $el.show(); return; }
+    $el.toggle($el.attr('data-type-id') === T);
+  });
+}
+$(function() {
+  $('#input-product-type').on('change', applyProductTypeFields);
+  applyProductTypeFields();
+});
+//--></script>
 <script type="text/javascript"><!--
 // Manufacturer
 $('input[name=\'manufacturer\']').autocomplete({

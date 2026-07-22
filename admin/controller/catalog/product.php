@@ -109,7 +109,7 @@ class ControllerCatalogProduct extends Controller {
 		// would otherwise be wiped to 0/'' by editProduct's whitelist SET). status is the critical one (auto-delist bug).
 		$existing = $this->model_catalog_product->getProduct($this->request->get['product_id']);
 		if ($existing) {
-			$preserve = array('model','sku','upc','ean','jan','isbn','mpn','location','quantity','minimum','subtract','stock_status_id','date_available','manufacturer_id','shipping','price','points','weight','weight_class_id','length','width','height','length_class_id','status','show_on_homepage','tax_class_id','sort_order');
+			$preserve = array('product_type_id','model','sku','upc','ean','jan','isbn','mpn','location','quantity','minimum','subtract','stock_status_id','date_available','manufacturer_id','shipping','price','points','weight','weight_class_id','length','width','height','length_class_id','status','show_on_homepage','tax_class_id','sort_order');
 			foreach ($preserve as $pf) {
 				if (!isset($this->request->post[$pf]) && isset($existing[$pf])) {
 					$this->request->post[$pf] = $existing[$pf];
@@ -220,10 +220,12 @@ class ControllerCatalogProduct extends Controller {
 		$this->document->addStyle('view/javascript/jquery/jquery-ui/jquery-ui.min.css');
 
 		// ── 自定义字段筛选 (filter_cf): session 持久化, cf_apply 时同步, 全新进入则清空 ──
+		// ── 商品类型筛选 (filter_product_type): 同样 session 持久化, 点击类型标签时同步, 全新进入则清空 ──
 		$fresh_nav = !isset($this->request->get['sort'])
 			&& !isset($this->request->get['order'])
 			&& !isset($this->request->get['page'])
-			&& !isset($this->request->get['cf_apply']);
+			&& !isset($this->request->get['cf_apply'])
+			&& !isset($this->request->get['filter_product_type']);
 
 		if (isset($this->request->get['cf_apply'])) {
 			if (isset($this->request->get['filter_cf']) && is_array($this->request->get['filter_cf'])) {
@@ -234,6 +236,13 @@ class ControllerCatalogProduct extends Controller {
 		} elseif ($fresh_nav) {
 			unset($this->session->data['product_filter_cf']);
 		}
+
+		if (isset($this->request->get['filter_product_type'])) {
+			$this->session->data['product_filter_type'] = (int)$this->request->get['filter_product_type'];
+		} elseif ($fresh_nav) {
+			unset($this->session->data['product_filter_type']);
+		}
+		$filter_product_type = !empty($this->session->data['product_filter_type']) ? (int)$this->session->data['product_filter_type'] : 0;
 
 		$filter_cf = array();
 		if (!empty($this->session->data['product_filter_cf']) && is_array($this->session->data['product_filter_cf'])) {
@@ -289,7 +298,8 @@ class ControllerCatalogProduct extends Controller {
 			'href' => $this->url->link('catalog/product', 'user_token=' . $this->session->data['user_token'] . $url)
 		);
 
-		$data['add'] = $this->url->link('catalog/product/add', 'user_token=' . $this->session->data['user_token'] . $url);
+		$_add_ptype = $filter_product_type ? '&product_type_id=' . $filter_product_type : '';
+		$data['add'] = $this->url->link('catalog/product/add', 'user_token=' . $this->session->data['user_token'] . $url . $_add_ptype);
 		$data['copy'] = $this->url->link('catalog/product/copy', 'user_token=' . $this->session->data['user_token'] . $url);
 		$data['delete'] = $this->url->link('catalog/product/delete', 'user_token=' . $this->session->data['user_token'] . $url);
 
@@ -367,14 +377,35 @@ class ControllerCatalogProduct extends Controller {
 			);
 		}
 
+		// ── 商品类型横向选择栏: 类型列表 + 每类型商品数 + 切换 URL ──
+		$_type_counts = $this->model_catalog_product->getProductCountByType();
+		$_type_total = 0;
+		$data['product_types'] = array();
+		foreach ($this->model_catalog_custom_tag->getProductTypes() as $pt) {
+			$_tid = (int)$pt['product_type_id'];
+			$_cnt = isset($_type_counts[$_tid]) ? $_type_counts[$_tid] : 0;
+			$_type_total += $_cnt;
+			$data['product_types'][] = array(
+				'product_type_id' => $_tid,
+				'name'            => $pt['name'],
+				'count'           => $_cnt,
+				'url'             => $this->url->link('catalog/product', 'user_token=' . $this->session->data['user_token'] . '&filter_product_type=' . $_tid),
+				'active'          => ($filter_product_type == $_tid),
+			);
+		}
+		$data['product_type_all_url'] = $this->url->link('catalog/product', 'user_token=' . $this->session->data['user_token'] . '&filter_product_type=0');
+		$data['product_type_total']   = $_type_total;
+		$data['filter_product_type']  = $filter_product_type;
+
 		$data['products'] = array();
 
 		$filter_data = array(
-			'filter_cf'       => $filter_cf_model,
-			'sort'            => $sort,
-			'order'           => $order,
-			'start'           => ($page - 1) * $this->config->get('config_limit_admin'),
-			'limit'           => $this->config->get('config_limit_admin')
+			'filter_cf'           => $filter_cf_model,
+			'filter_product_type' => $filter_product_type,
+			'sort'                => $sort,
+			'order'               => $order,
+			'start'               => ($page - 1) * $this->config->get('config_limit_admin'),
+			'limit'               => $this->config->get('config_limit_admin')
 		);
 
 		$this->load->model('tool/image');
@@ -615,6 +646,19 @@ class ControllerCatalogProduct extends Controller {
 			$data['product_id'] = $this->request->get['product_id'];
 		} else {
 			$data['product_id'] = 0;
+		}
+
+		// 商品类型选择器: 类型列表 + 当前商品的 product_type_id (新增时取 URL 传入或首类型)
+		$this->load->model('catalog/custom_tag');
+		$data['product_types'] = $this->model_catalog_custom_tag->getProductTypes();
+		if (isset($this->request->post['product_type_id'])) {
+			$data['product_type_id'] = (int)$this->request->post['product_type_id'];
+		} elseif (!empty($product_info)) {
+			$data['product_type_id'] = (int)$product_info['product_type_id'];
+		} elseif (isset($this->request->get['product_type_id'])) {
+			$data['product_type_id'] = (int)$this->request->get['product_type_id'];
+		} else {
+			$data['product_type_id'] = !empty($data['product_types']) ? (int)$data['product_types'][0]['product_type_id'] : 0;
 		}
 
 		$this->load->model('localisation/language');
