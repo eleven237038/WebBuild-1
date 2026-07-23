@@ -5,7 +5,7 @@ class ControllerInformationContact extends Controller {
 	public function index() {
 		$this->load->language('information/contact');
 
-		$this->document->setTitle($this->language->get('heading_title'));
+		$this->document->setTitle('Contact Us - ' . $this->config->get('config_name'));
 
 		if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validate()) {
 			$mail = new Mail($this->config->get('config_mail_engine'));
@@ -20,8 +20,18 @@ class ControllerInformationContact extends Controller {
 			$mail->setFrom($this->config->get('config_email'));
 			$mail->setReplyTo($this->request->post['email']);
 			$mail->setSender(html_entity_decode($this->request->post['name'], ENT_QUOTES, 'UTF-8'));
-			$mail->setSubject(html_entity_decode(sprintf($this->language->get('email_subject'), $this->request->post['name']), ENT_QUOTES, 'UTF-8'));
-			$mail->setText($this->request->post['enquiry']);
+
+			// Optional Subject field (custom, spartalabs-style). If provided, fold it
+			// into the email subject + body; otherwise fall back to the native format.
+			$subject_custom = isset($this->request->post['subject']) ? trim($this->request->post['subject']) : '';
+
+			if ($subject_custom !== '') {
+				$mail->setSubject(html_entity_decode('[Contact] ' . $subject_custom . ' - ' . $this->request->post['name'], ENT_QUOTES, 'UTF-8'));
+				$mail->setText("Subject: " . $subject_custom . "\r\n\r\n" . $this->request->post['enquiry']);
+			} else {
+				$mail->setSubject(html_entity_decode(sprintf($this->language->get('email_subject'), $this->request->post['name']), ENT_QUOTES, 'UTF-8'));
+				$mail->setText($this->request->post['enquiry']);
+			}
 			$mail->send();
 
 			$this->response->redirect($this->url->link('information/contact/success'));
@@ -60,12 +70,14 @@ class ControllerInformationContact extends Controller {
 		$data['button_submit'] = $this->language->get('button_submit');
 
 		$data['action'] = $this->url->link('information/contact');
+		$data['home'] = $this->url->link('common/home');
 
 		$this->load->model('tool/image');
 
 		$data['image'] = $this->model_tool_image->resize($this->config->get('config_image'), $this->config->get('theme_' . $this->config->get('config_theme') . '_image_location_width'), $this->config->get('theme_' . $this->config->get('config_theme') . '_image_location_height'), false);
 
 		$data['store'] = $this->config->get('config_name');
+		$data['store_email'] = $this->config->get('config_email');
 		$data['address'] = nl2br($this->config->get('config_address'));
 		$data['geocode'] = $this->config->get('config_geocode');
 		$data['geocode_hl'] = $this->config->get('config_language');
@@ -116,6 +128,12 @@ class ControllerInformationContact extends Controller {
 			$data['enquiry'] = '';
 		}
 
+		if (isset($this->request->post['subject'])) {
+			$data['subject'] = $this->request->post['subject'];
+		} else {
+			$data['subject'] = '';
+		}
+
 		// Captcha
 		if ($this->config->get('captcha_' . $this->config->get('config_captcha') . '_status') && in_array('contact', (array)$this->config->get('config_captcha_page'))) {
 			$data['captcha'] = $this->load->controller('extension/captcha/' . $this->config->get('config_captcha'), $this->error);
@@ -134,16 +152,19 @@ class ControllerInformationContact extends Controller {
 	}
 
 	protected function validate() {
+		// English overrides - the redesigned contact page is English-facing, so the
+		// validation messages are localised here rather than pulled from the (zh-cn)
+		// language file to stay consistent with the page copy.
 		if ((utf8_strlen($this->request->post['name']) < 3) || (utf8_strlen($this->request->post['name']) > 32)) {
-			$this->error['name'] = $this->language->get('error_name');
+			$this->error['name'] = 'Name must be between 3 and 32 characters!';
 		}
 
 		if (!filter_var($this->request->post['email'], FILTER_VALIDATE_EMAIL)) {
-			$this->error['email'] = $this->language->get('error_email');
+			$this->error['email'] = 'E-Mail Address does not appear to be valid!';
 		}
 
 		if ((utf8_strlen($this->request->post['enquiry']) < 10) || (utf8_strlen($this->request->post['enquiry']) > 3000)) {
-			$this->error['enquiry'] = $this->language->get('error_enquiry');
+			$this->error['enquiry'] = 'Enquiry must be between 10 and 3000 characters!';
 		}
 
 		// Captcha
@@ -161,7 +182,7 @@ class ControllerInformationContact extends Controller {
 	public function success() {
 		$this->load->language('information/contact');
 
-		$this->document->setTitle($this->language->get('heading_title'));
+		$this->document->setTitle('Contact Us - ' . $this->config->get('config_name'));
 
 		$data['breadcrumbs'] = array();
 
