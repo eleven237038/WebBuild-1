@@ -172,7 +172,9 @@ var cart = {
             $('#cart > button #cart-total').html(json['total']);
           }, 100);
 
-          showAlert('cart', json['success']);
+          // Success popup suppressed per request - cart-total + dropdown refresh
+          // are enough feedback (matches the wishlist.toggle silent behavior).
+          // showAlert('cart', json['success']);
 
           $('#cart > ul').load('index.php?route=common/cart/info ul li');
         }

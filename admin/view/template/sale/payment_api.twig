@@ -1,0 +1,210 @@
+{{ header }}{{ column_left }}
+<style>
+  /* 横向滚动支付方式选择栏 */
+  .pm-chip-bar {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    gap: 8px;
+    padding: 10px 4px;
+    white-space: nowrap;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 18px;
+  }
+  .pm-chip-bar::-webkit-scrollbar { height: 8px; }
+  .pm-chip-bar::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+  .pm-chip-bar::-webkit-scrollbar-track { background: #f5f5f5; }
+  .pm-chip {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 16px;
+    background: #f4f4f4;
+    color: #555;
+    border: 1px solid #e0e0e0;
+    text-decoration: none;
+    font-size: 13px;
+    transition: all .12s;
+  }
+  .pm-chip:hover { background: #eaeaea; color: #333; text-decoration: none; }
+  .pm-chip.is-active {
+    background: #1e91cf;
+    color: #fff;
+    border-color: #1e91cf;
+    box-shadow: 0 1px 4px rgba(30,145,207,.4);
+  }
+  .pm-chip .pm-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #c9c9c9; display: inline-block;
+  }
+  .pm-chip.is-installed .pm-dot { background: #5cb85c; }
+  .pm-chip.is-installed.is-enabled .pm-dot { background: #5cb85c; box-shadow: 0 0 0 2px rgba(92,184,92,.3); }
+  .pm-chip.is-not-installed .pm-dot { background: #d9534f; }
+  .pm-chip.is-installed.is-disabled .pm-dot { background: #f0ad4e; }
+  .pm-rt-badge {
+    display: inline-block; padding: 2px 8px; border-radius: 10px;
+    background: #dff0d8; color: #3c763d; font-size: 11px; margin-left: 8px;
+    vertical-align: middle;
+  }
+  /* 调试详情 */
+  .pm-detail h4 { margin-top: 22px; margin-bottom: 10px; border-left: 3px solid #1e91cf; padding-left: 8px; }
+  .pm-detail h4:first-child { margin-top: 0; }
+  .pm-info-grid { display: grid; grid-template-columns: 160px 1fr; gap: 6px 14px; font-size: 13px; }
+  .pm-info-grid dt { color: #888; font-weight: normal; }
+  .pm-info-grid dd { margin: 0; word-break: break-all; }
+  .pm-state-ok { color: #5cb85c; font-weight: bold; }
+  .pm-state-bad { color: #d9534f; font-weight: bold; }
+  .pm-file-path { font-family: Menlo, Consolas, monospace; font-size: 12px; color: #667; word-break: break-all; }
+  .pm-route { font-family: Menlo, Consolas, monospace; font-size: 12px; }
+  .pm-settings-val { font-family: Menlo, Consolas, monospace; font-size: 12px; white-space: pre-wrap; word-break: break-all; max-height: 180px; overflow: auto; }
+  .pm-sel-name { font-size: 18px; font-weight: 600; }
+  .pm-sel-code { font-family: Menlo, Consolas, monospace; color: #888; margin-left: 8px; }
+</style>
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <h1>{{ heading_title }} <span class="pm-rt-badge"><i class="fa fa-bolt"></i> {{ text_realtime }}</span></h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+
+    {% if methods %}
+    {# ===== 横向滚动选择栏 ===== #}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-list"></i> {{ text_list }} <span class="pm-rt-badge"><i class="fa fa-bolt"></i> {{ text_realtime }}</span></h3>
+      </div>
+      <div class="panel-body">
+        <div class="pm-chip-bar" id="pm-chip-bar">
+          {% for m in methods %}
+          <a href="{{ m.href }}"
+             class="pm-chip {{ m.installed ? 'is-installed' : 'is-not-installed' }} {{ m.status ? 'is-enabled' : 'is-disabled' }} {{ m.code == selected ? 'is-active' : '' }}"
+             title="{{ m.name }} ({{ m.code }})">
+            <span class="pm-dot"></span>
+            <span>{{ m.name }}</span>
+            {% if not m.installed %}<span style="opacity:.6;font-size:11px;">[{{ text_not_installed }}]</span>{% endif %}
+            {% if m.installed and not m.status %}<span style="opacity:.6;font-size:11px;">[{{ text_disabled }}]</span>{% endif %}
+          </a>
+          {% endfor %}
+        </div>
+        <p class="text-muted" style="margin-top:8px;font-size:12px;">{{ text_select_hint }}</p>
+      </div>
+    </div>
+
+    {# ===== 调试详情 ===== #}
+    {% if detail %}
+    <div class="panel panel-default pm-detail">
+      <div class="panel-heading">
+        <h3 class="panel-title">
+          <i class="fa fa-bug"></i>
+          <span class="pm-sel-name">{{ detail.name }}</span>
+          <span class="pm-sel-code">{{ detail.code }}</span>
+          <a href="{{ detail.edit_href }}" class="btn btn-primary btn-xs" style="margin-left:12px;"><i class="fa fa-pencil"></i> {{ text_edit }}</a>
+        </h3>
+      </div>
+      <div class="panel-body">
+
+        {# --- 基本信息 --- #}
+        <h4>{{ text_section_info }}</h4>
+        <dl class="pm-info-grid">
+          <dt>{{ column_key }}</dt><dd><code>{{ detail.code }}</code></dd>
+          <dt>{{ text_installed }}</dt>
+          <dd>{% if detail.installed %}<span class="pm-state-ok">{{ text_yes }}</span>{% else %}<span class="pm-state-bad">{{ text_no }}</span>{% endif %}</dd>
+          <dt>{{ text_enabled }}</dt>
+          <dd>{% if detail.status %}<span class="pm-state-ok">{{ text_enabled }}</span>{% else %}<span class="pm-state-bad">{{ text_disabled }}</span>{% endif %}</dd>
+          <dt>{{ column_state }}</dt><dd>{{ detail.sort_order }}</dd>
+          <dt>{{ text_section_routes }}</dt><dd><code class="pm-route">extension/payment/{{ detail.code }}</code></dd>
+        </dl>
+
+        {# --- 文件存在性 --- #}
+        <h4>{{ text_section_files }}</h4>
+        <div class="table-responsive">
+          <table class="table table-bordered table-condensed">
+            <thead>
+              <tr>
+                <td class="text-left" style="width:200px;">{{ column_file }}</td>
+                <td class="text-left">{{ column_file }}</td>
+                <td class="text-center" style="width:90px;">{{ column_state }}</td>
+              </tr>
+            </thead>
+            <tbody>
+              {% for f in detail.files %}
+              <tr>
+                <td class="text-left"><code>{{ f.label }}</code></td>
+                <td class="text-left"><span class="pm-file-path">{{ f.path }}</span></td>
+                <td class="text-center">{% if f.exists %}<span class="pm-state-ok">{{ text_found }}</span>{% else %}<span class="pm-state-bad">{{ text_missing }}</span>{% endif %}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        {# --- 路由 --- #}
+        <h4>{{ text_section_routes }}</h4>
+        <div class="table-responsive">
+          <table class="table table-bordered table-condensed">
+            <thead>
+              <tr>
+                <td class="text-left" style="width:200px;">{{ column_file }}</td>
+                <td class="text-left">{{ column_key }}</td>
+                <td class="text-center" style="width:120px;">{{ text_edit }}</td>
+              </tr>
+            </thead>
+            <tbody>
+              {% for r in detail.routes %}
+              <tr>
+                <td class="text-left"><code>{{ r.label }}</code></td>
+                <td class="text-left"><code class="pm-route">{{ r.route }}</code></td>
+                <td class="text-center">{% if r.href %}<a href="{{ r.href }}" class="btn btn-xs btn-default" target="_blank"><i class="fa fa-external-link"></i></a>{% else %}<span class="text-muted">—</span>{% endif %}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        {# --- 配置项 (实时) --- #}
+        <h4>{{ text_section_settings }} <span class="pm-rt-badge"><i class="fa fa-bolt"></i> {{ text_realtime }}</span> <span class="text-muted" style="font-weight:normal;font-size:12px;">({{ detail.settings_count }})</span></h4>
+        {% if detail.settings %}
+        <div class="table-responsive">
+          <table class="table table-bordered table-condensed">
+            <thead>
+              <tr>
+                <td class="text-left" style="width:34%;">{{ column_key }}</td>
+                <td class="text-left">{{ column_value }}</td>
+                <td class="text-center" style="width:80px;">{{ column_serialized }}</td>
+              </tr>
+            </thead>
+            <tbody>
+              {% for s in detail.settings %}
+              <tr>
+                <td class="text-left"><code class="pm-file-path">{{ s.key }}</code></td>
+                <td class="text-left"><div class="pm-settings-val">{{ s.value }}</div></td>
+                <td class="text-center">{% if s.serialized %}{{ text_yes }}{% else %}{{ text_no }}{% endif %}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">{{ text_no_settings|format(detail.code) }}</div>
+        {% endif %}
+
+      </div>
+    </div>
+    {% endif %}
+    {% else %}
+    <div class="alert alert-warning"><i class="fa fa-exclamation-triangle"></i> {{ text_no_method }}</div>
+    {% endif %}
+
+  </div>
+</div>
+{{ footer }}

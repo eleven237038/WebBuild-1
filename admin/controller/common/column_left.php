@@ -263,12 +263,19 @@ class ControllerCommonColumnLeft extends Controller {
 			);
 		}
 
-		// 支付管理 (顶级, 与前端内容同级): 支付模块 (从插件管理完整移植到 sale/payment 全页)
+		// 支付管理 (顶级, 与前端内容同级): 支付模块 (从插件管理完整移植到 sale/payment 全页) + 支付接口 (实时调试详情)
 		$payment = array();
 		if ($this->user->hasPermission("access", "sale/payment")) {
 			$payment[] = array(
 				"name"     => "支付模块",
 				"href"     => $this->url->link("sale/payment", "user_token=" . $this->session->data["user_token"]),
+				"children" => array()
+			);
+		}
+		if ($this->user->hasPermission("access", "sale/payment_api")) {
+			$payment[] = array(
+				"name"     => "支付接口",
+				"href"     => $this->url->link("sale/payment_api", "user_token=" . $this->session->data["user_token"]),
 				"children" => array()
 			);
 		}
