@@ -168,10 +168,17 @@ class ControllerProductCategory extends Controller {
 
 			$results = $this->model_catalog_product->getProducts($filter_data);
 
+			// Batch the custom-tag fetch (was N+1: one getProductCustomTags() per
+			// product = one query per card; now a single getProductsCustomTags()).
+			// Mirrors home.php so shop cards are built through the identical pipeline.
+			$_pids = array();
+			foreach ($results as $_r) { $_pids[] = (int)$_r['product_id']; }
+			$_tags_map = $this->model_catalog_product->getProductsCustomTags($_pids);
+
 			foreach ($results as $result) {
 				$href = $this->url->link('product/product', 'path=' . $this->request->get['path'] . '&product_id=' . $result['product_id'] . $url);
-				$ct = $this->model_catalog_product->getProductCustomTags($result['product_id']);
-				$data['products'][] = $this->model_catalog_product->handleSingleProduct($result, $this->config->get('theme_' . $this->config->get('config_theme') . '_image_product_width'), $this->config->get('theme_' . $this->config->get('config_theme') . '_image_product_height'), $href, $ct);
+				$_ct = isset($_tags_map[(int)$result['product_id']]) ? $_tags_map[(int)$result['product_id']] : array();
+				$data['products'][] = $this->model_catalog_product->handleSingleProduct($result, $this->config->get('theme_' . $this->config->get('config_theme') . '_image_product_width'), $this->config->get('theme_' . $this->config->get('config_theme') . '_image_product_height'), $href, $_ct);
 			}
 
 			$url = '';

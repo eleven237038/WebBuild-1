@@ -792,6 +792,24 @@ class ModelCatalogProduct extends Model {
 					}
 				}
 			}
+			// Core-slot fallback: a product card must always identify the product.
+			// When the product's type has no field mapping for image/name/price/
+			// description (e.g. a type whose custom_tags omit system_column entries),
+			// the slot would otherwise resolve empty and the card renders blank.
+			// Fall back to the product's own column data so the card is never empty.
+			if ($val === '') {
+				if ($slot === 'image') {
+					if (!empty($product['image'])) {
+						$val = $this->model_tool_image->resize($product['image'], $thumb_width, $thumb_height);
+					}
+				} elseif ($slot === 'name') {
+					$val = isset($product['name']) ? $product['name'] : '';
+				} elseif ($slot === 'price') {
+					$val = $price;
+				} elseif ($slot === 'description') {
+					$val = isset($product['description']) ? $product['description'] : '';
+				}
+			}
 			$slot_values[$slot] = $val;
 		}
 
@@ -810,6 +828,12 @@ class ModelCatalogProduct extends Model {
 			'tax'         => $tax,
 			'minimum'     => $product['minimum'] ?: 1,
 			'rating'      => $rating,
+			// Stock + review data for the card's auto affordances (out-of-stock
+			// badge, review count). Additive only - no caller reads these yet.
+			'quantity'    => isset($product['quantity']) ? (int)$product['quantity'] : 0,
+			'subtract'    => isset($product['subtract']) ? (int)$product['subtract'] : 0,
+			'reviews'     => isset($product['reviews']) ? (int)$product['reviews'] : 0,
+			'stock_status'=> isset($product['stock_status']) ? $product['stock_status'] : '',
 			'href'        => $href ?: $this->url->link('product/product', 'product_id=' . $product['product_id']),
 			'pcards'      => $pc,
 			'custom_tags' => $custom_tags,

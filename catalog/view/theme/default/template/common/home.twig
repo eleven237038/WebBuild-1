@@ -208,7 +208,10 @@
         </ul>
       </div>
       <div style="display:flex;justify-content:center;">
-        {% set featured_product = products|first %}
+        {# Distinct from the Best Sellers grid (which uses products|first):
+           pick the last surfaced product so the Proof block showcases a
+           different compound, still via the same product_card.twig pipeline. #}
+        {% set featured_product = products|length ? products|last : null %}
       {% if featured_product %}
       {% include 'default/template/product/product_card.twig' with {'product': featured_product} %}
       {% endif %}

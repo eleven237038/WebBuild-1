@@ -112,6 +112,12 @@ class ControllerCatalogProduct extends Controller {
 		// addProduct 不写 oc_product_to_store -> 前台 p2s.store_id=0 过滤隐藏该商品 (已上架却不在首页/shop);
 		// editProduct 先 DELETE 既有门店关联却不重插 -> 原可见商品编辑后消失。默认归属 store_id=0。
 		if (!isset($this->request->post['product_store'])) { $this->request->post['product_store'] = array(0); }
+		// 同理: 表单无分类选择器, POST 不含 product_category。editProduct 会先 DELETE
+		// oc_product_to_category 再按 POST 重插; 缺省则既有分类关联被清空, 商品从对应分类/shop
+		// 列表消失 (status=1 且 store 正常却看不到)。缺省时保留既有分类。
+		if (!isset($this->request->post['product_category'])) {
+			$this->request->post['product_category'] = $this->model_catalog_product->getProductCategories($this->request->get['product_id']);
+		}
 		$this->mirrorChineseToAllLanguages();
 		// Preserve scalar system columns absent from POST (form is custom_tag-driven; fields without a custom_tag
 		// would otherwise be wiped to 0/'' by editProduct's whitelist SET). status is the critical one (auto-delist bug).

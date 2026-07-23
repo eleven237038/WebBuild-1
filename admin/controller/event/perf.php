@@ -8,6 +8,9 @@
  */
 class ControllerEventPerf extends Controller {
 	public function bump() {
-		@touch(DIR_CACHE . 'content.ver');
+		// Monotonic counter (not filemtime): avoids 1-second mtime-resolution
+		// collisions so rapid successive edits always invalidate every worker.
+		$f = DIR_CACHE . 'content.ver';
+		@file_put_contents($f, ((int)@file_get_contents($f)) + 1);
 	}
 }

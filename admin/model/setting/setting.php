@@ -2,8 +2,11 @@
 class ModelSettingSetting extends Model {
 	// Bump the file-version stamp so every worker's APCu settings cache misses on
 	// next request and re-reads from the DB. Cross-process safe (file is shared).
+	// Monotonic counter (not filemtime): avoids 1-second mtime-resolution
+	// collisions so rapid successive setting saves always invalidate every worker.
 	private function invalidateSettingsCache() {
-		@touch(DIR_CACHE . 'settings.ver');
+		$f = DIR_CACHE . 'settings.ver';
+		@file_put_contents($f, ((int)@file_get_contents($f)) + 1);
 	}
 
 	public function getSetting($code, $store_id = 0) {

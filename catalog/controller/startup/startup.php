@@ -18,13 +18,15 @@ class ControllerStartupStartup extends Controller {
 
 		// Settings (APCu-cached; invalidated by a file-version stamp bumped on
 		// admin editSetting). The full oc_setting scan + 229-row hydration is ~80ms
-		// per request; settings only change on admin save. A filemtime() stamp is
-		// used in the cache key so invalidation works across all prefork workers
-		// (APCu itself is per-process), at the cost of one fast stat per request.
+		// per request; settings only change on admin save. A monotonic integer
+		// counter stored IN the stamp file is used in the cache key so invalidation
+		// works across all prefork workers (APCu itself is per-process). The counter
+		// (vs filemtime) avoids 1-second mtime-resolution collisions that let rapid
+		// successive edits serve stale cache.
 		$settings_store_id = (int)$this->config->get('config_store_id');
 		$ver_file = DIR_CACHE . 'settings.ver';
-		$ver = @filemtime($ver_file);
-		if (!$ver) { $ver = 1; @touch($ver_file); }
+		$ver = (int)@file_get_contents($ver_file);
+		if (!$ver) { $ver = 1; @file_put_contents($ver_file, '1'); }
 		$apcu_key = 'oc_settings:' . $ver . ':' . $settings_store_id;
 		$config_data = null;
 		$hit = false;

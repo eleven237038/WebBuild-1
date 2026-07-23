@@ -155,6 +155,16 @@ if (!is_admin() && isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD
 		}
 	}
 	$__fw_cacheable = ($__fw_route === 'common/home' || $__fw_route === 'product/category' || $__fw_route === 'product/product');
+	// Dev/test bypass: ?nocache=1 skips the full-page cache so changes are seen
+	// immediately without fighting APCu per-worker staleness on Docker mounts.
+	// Restricted to private/local IPs (same gate as opcache-reset.php) so it can't
+	// be abused to force cache misses from the outside.
+	if (!empty($_GET['nocache'])) {
+		$__rip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '';
+		if ($__rip === '127.0.0.1' || $__rip === '::1' || preg_match('/^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.)/', $__rip)) {
+			$__fw_cacheable = false;
+		}
+	}
 	if ($__fw_cacheable) {
 		$__fw_cust = !empty($session->data['customer_id']) ? (int)$session->data['customer_id'] : 0;
 		$__fw_cart = isset($session->data['cart']) ? count($session->data['cart']) : 0;
@@ -166,8 +176,8 @@ if (!is_admin() && isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD
 			} elseif ($__fw_route === 'product/product' && isset($_GET['product_id'])) {
 				$__fw_params = 'p' . (int)$_GET['product_id'];
 			}
-			$__cver = @filemtime(DIR_CACHE . 'content.ver') ?: 1;
-			$__sver = @filemtime(DIR_CACHE . 'settings.ver') ?: 1;
+			$__cver = (int)@file_get_contents(DIR_CACHE . 'content.ver') ?: 1;
+			$__sver = (int)@file_get_contents(DIR_CACHE . 'settings.ver') ?: 1;
 			$__page_fw_key = 'page_fw:' . $__fw_route . ':' . $__cver . ':' . $__sver . ':' . (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '') . ':' . (isset($session->data['language']) ? $session->data['language'] : '') . ':' . (isset($session->data['currency']) ? $session->data['currency'] : '') . ':' . $__fw_params;
 			if (function_exists('apcu_fetch')) {
 				$__fw_hit = false;

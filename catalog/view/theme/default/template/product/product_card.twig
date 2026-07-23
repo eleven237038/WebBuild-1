@@ -4,45 +4,88 @@
  *  Every caller passes a fully-resolved product from handleSingleProduct()
  *  (home / category / PDP related / bestseller / featured / latest modules),
  *  so pcards, show_* and *_value are always present - no bare-data fallbacks.
+ *
  *  Card appearance is configurable from admin > 商品目录 > 商品卡片管理.
- *  Content slots (image/name/description/price/badges) each map to a custom_tag
- *  field of the product's type; the mapped field's value feeds that slot
- *  (blank mapping = hide). Action buttons (wishlist/add) stay boolean toggles.
+ *  The backend "商品卡片" format is the single source of truth:
+ *    - 5 field-mapping slots (image/name/description/price/badges): tag_id or '' (blank = hide)
+ *    - 2 boolean toggles (wishlist / add_button)
+ *    - sizing (image_height / desc_length / desc_clamp / name_font_size / price_font_size)
+ *    - text (add_btn_text) + colors (primary / name / price)
+ *  Card markup respects every one of those knobs so it stays in lockstep with
+ *  the admin editor (which reuses product-card.css + the same slot structure).
+ *
+ *  Best-practice affordances (web research) are DATA-DRIVEN, not new config:
+ *  they auto-show only when the underlying data exists, so the "same format"
+ *  contract is preserved:
+ *    - SALE badge + strikethrough original price  -> only when product.special
+ *    - OUT OF STOCK badge                         -> only when subtract && quantity<=0
+ *    - rating stars + review count                -> only when product.rating (config_review_status)
+ *    - "…" on description                         -> only when actually truncated
  * ========================================================================== #}
 {% set pc = product.pcards %}
-<div class="product-card" style="--pcard-primary:{{ pc.primary_color }};--pcard-name-color:{{ pc.name_color }};--pcard-price-color:{{ pc.price_color }};">
+<article class="product-card" style="--pcard-primary:{{ pc.primary_color }};--pcard-name-color:{{ pc.name_color }};--pcard-price-color:{{ pc.price_color }};">
+
+  {# 1. Badge layer - top-left stack, max 3 (excess hidden by CSS) #}
   {% if product.show_badges and product.badge_value is not empty %}
-  <span class="pcard-badge-dynamic">{{ product.badge_value }}</span>
+  <span class="pcard-badge pcard-badge--tag">{{ product.badge_value }}</span>
+  {% endif %}
+  {% if product.special %}
+  <span class="pcard-badge pcard-badge--sale">{{ text_sale|default('SALE') }}</span>
+  {% endif %}
+  {% if product.subtract and product.quantity <= 0 %}
+  <span class="pcard-badge pcard-badge--oos">{{ text_out_of_stock|default('OUT OF STOCK') }}</span>
   {% endif %}
 
+  {# 2. Image area - also the click target into PDP #}
   {% if product.show_image %}
-  <a href="{{ product.href }}" class="pcard-img-wrap" style="text-decoration:none;display:flex;align-items:center;justify-content:center;height:{{ pc.image_height }}px;">
+  <a href="{{ product.href }}" class="pcard-img-wrap" style="height:{{ pc.image_height }}px;">
     {% if pc.show_wishlist %}
-    <button class="pcard-wishlist" aria-label="Wishlist" onclick="event.preventDefault();event.stopPropagation();">
+    <button type="button" class="pcard-wishlist" aria-label="{{ button_wishlist|default('Add to wishlist') }}" onclick="event.preventDefault();event.stopPropagation();wishlist.add('{{ product.product_id }}');">
       <i class="fa-regular fa-heart"></i>
     </button>
     {% endif %}
     {% if product.image_value %}
-    <img src="{{ product.image_value }}" alt="{{ product.name }}" loading="lazy">
+    <img src="{{ product.image_value }}" alt="{{ product.name_value }}" loading="lazy">
     {% else %}
-    <span style="font-size:60px;">🧪</span>
+    <span class="pcard-img-fallback" aria-hidden="true">🧪</span>
     {% endif %}
   </a>
   {% endif %}
 
+  {# 3. Body #}
   <div class="pcard-body">
     {% if product.show_name %}
-    <a href="{{ product.href }}" style="text-decoration:none;color:inherit;"><h3 class="pcard-name" style="font-size:{{ pc.name_font_size }}px;">{{ product.name_value }}</h3></a>
+    <a href="{{ product.href }}" class="pcard-name-link"><h3 class="pcard-name" style="font-size:{{ pc.name_font_size }}px;">{{ product.name_value }}</h3></a>
     {% endif %}
-    {% if product.show_description %}
-    <p class="pcard-desc" style="-webkit-line-clamp:{{ pc.desc_clamp }};">{{ product.description_value|striptags|slice(0, pc.desc_length) ~ '...' }}</p>
+
+    {% if product.show_description and product.description_value %}
+      {% set _desc = product.description_value|striptags %}
+      <p class="pcard-desc" style="-webkit-line-clamp:{{ pc.desc_clamp }};">{% if _desc|length > pc.desc_length %}{{ _desc|slice(0, pc.desc_length) }}…{% else %}{{ _desc }}{% endif %}</p>
+    {% endif %}
+
+    {% if product.rating %}
+    <div class="pcard-rating" aria-label="Rating {{ product.rating }} of 5">
+      {% for i in 1..5 %}<i class="fa{{ i <= product.rating ? '-solid' : '-regular' }} fa-star"></i>{% endfor %}
+      {% if product.reviews %}<span class="pcard-reviews">({{ product.reviews }})</span>{% endif %}
+    </div>
     {% endif %}
 
     {% if product.show_price or pc.show_add_button %}
     <div class="pcard-bottom">
-      {% if product.show_price %}<p class="pcard-price" style="font-size:{{ pc.price_font_size }}px;">{{ product.price_value }}</p>{% endif %}
-      {% if pc.show_add_button %}<button class="pcard-add" onclick="cart.add('{{ product.product_id }}', '1');">{{ pc.add_btn_text }}</button>{% endif %}
+      {% if product.show_price %}
+      <div class="pcard-price-wrap">
+        {% if product.special %}
+        <span class="pcard-price-old">{{ product.price_value }}</span>
+        <span class="pcard-price" style="font-size:{{ pc.price_font_size }}px;">{{ product.special }}</span>
+        {% else %}
+        <span class="pcard-price" style="font-size:{{ pc.price_font_size }}px;">{{ product.price_value }}</span>
+        {% endif %}
+      </div>
+      {% endif %}
+      {% if pc.show_add_button %}
+      <button type="button" class="pcard-add" onclick="cart.add('{{ product.product_id }}', '{{ product.minimum }}');">{{ pc.add_btn_text }}</button>
+      {% endif %}
     </div>
     {% endif %}
   </div>
-</div>
+</article>

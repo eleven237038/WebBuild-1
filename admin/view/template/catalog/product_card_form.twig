@@ -272,19 +272,22 @@
   }
 
   // 构建卡片 HTML - 严格对应 catalog/.../product/product_card.twig 的渲染分支
+  // (article + pcard-badge--tag + pcard-name-link + pcard-price-wrap)。
+  // 数据驱动的增强位 (SALE/OUT OF STOCK/评分) 依赖具体商品数据, 非后台配置项,
+  // 故预览只反映可配置的 5 内容位 + 2 开关 + 尺寸 + 配色。
   // 每个可点部分带 data-jump, 点击跳转到对应设置项
   function build(s) {
-    var html = '<div class="product-card">';
+    var html = '<article class="product-card">';
     // 动态标签徽章 (单字段映射: 预览取首个示例标签)
     if (s.show_badges) {
       var t = SAMPLE.tags[0];
-      html += '<span class="pcard-badge-dynamic" data-jump="product_card_show_badges">' + esc((t.parent ? t.parent + ': ' : '') + t.name) + '</span>';
+      html += '<span class="pcard-badge pcard-badge--tag" data-jump="product_card_show_badges">' + esc((t.parent ? t.parent + ': ' : '') + t.name) + '</span>';
     }
     // 图片区
     if (s.show_image) {
-      html += '<a href="#" class="pcard-img-wrap" data-jump="product_card_show_image" style="text-decoration:none;display:flex;align-items:center;justify-content:center;height:' + s.image_height + 'px;">';
+      html += '<a href="#" class="pcard-img-wrap" data-jump="product_card_show_image" style="height:' + s.image_height + 'px;">';
       if (s.show_wishlist) {
-        html += '<button class="pcard-wishlist" type="button" data-jump="product_card_show_wishlist" aria-label="Wishlist"><i class="fa-regular fa-heart">&#9825;</i></button>';
+        html += '<button class="pcard-wishlist" type="button" data-jump="product_card_show_wishlist" aria-label="Wishlist"><i class="fa-regular fa-heart"></i></button>';
       }
       html += '<img src="' + SAMPLE.thumb + '" alt="' + esc(SAMPLE.name) + '" loading="lazy">';
       html += '</a>';
@@ -292,23 +295,25 @@
     // 卡片正文
     html += '<div class="pcard-body">';
     if (s.show_name) {
-      html += '<a href="#" data-jump="product_card_show_name" style="text-decoration:none;color:inherit;"><h3 class="pcard-name" style="font-size:' + s.name_font_size + 'px;">' + esc(SAMPLE.name) + '</h3></a>';
+      html += '<a href="#" class="pcard-name-link" data-jump="product_card_show_name"><h3 class="pcard-name" style="font-size:' + s.name_font_size + 'px;">' + esc(SAMPLE.name) + '</h3></a>';
     }
     if (s.show_description) {
-      var desc = SAMPLE.description.substr(0, s.desc_length) + '...';
-      html += '<p class="pcard-desc" data-jump="product_card_show_description" style="-webkit-line-clamp:' + s.desc_clamp + ';">' + esc(desc) + '</p>';
+      var desc = SAMPLE.description;
+      html += '<p class="pcard-desc" data-jump="product_card_show_description" style="-webkit-line-clamp:' + s.desc_clamp + ';">';
+      html += desc.length > s.desc_length ? esc(desc.substr(0, s.desc_length)) + '…' : esc(desc);
+      html += '</p>';
     }
     if (s.show_price || s.show_add_button) {
       html += '<div class="pcard-bottom">';
       if (s.show_price) {
-        html += '<p class="pcard-price" data-jump="product_card_show_price" style="font-size:' + s.price_font_size + 'px;">' + esc(SAMPLE.price) + '</p>';
+        html += '<div class="pcard-price-wrap"><span class="pcard-price" data-jump="product_card_show_price" style="font-size:' + s.price_font_size + 'px;">' + esc(SAMPLE.price) + '</span></div>';
       }
       if (s.show_add_button) {
         html += '<button class="pcard-add" type="button" data-jump="product_card_show_add_button">' + esc(s.add_btn_text) + '</button>';
       }
       html += '</div>';
     }
-    html += '</div></div>';
+    html += '</div></article>';
     return html;
   }
 
