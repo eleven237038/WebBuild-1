@@ -1,60 +1,195 @@
 {{ header }}
-<div id="account-wishlist" class="container">
-  {{ include(helper.template('_partial/breadcrumb')) }}
+<!-- ==========================================================================
+ *  InsightWellnessLab - Wishlist Page (spartalabs.net/us/wishlist style)
+ *  Hero ("// SAVED" + "Wishlist") + Empty state OR grid of saved product cards.
+ *  Each card: image, filled-heart remove, name, stock, price/special, add-to-cart.
+ *  Brand: Deep Navy var(--bg-navy) | Accent Green var(--primary-green)
+ * ========================================================================== -->
+<style>
+/* ═══════ Page ═══════ */
+.wl-page { width: 100%; overflow-x: hidden; }
+.wl-wrap { max-width: 1200px; margin: 0 auto; padding: 0 32px; }
+
+/* ═══════ Hero ═══════ */
+.wl-hero {
+  background-color: #ffffff;
+  background-image:
+    linear-gradient(rgba(0,11,71,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,11,71,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  padding: 72px 0 64px; text-align: center;
+  position: relative;
+}
+.wl-hero::before {
+  content: ""; position: absolute; top: -120px; left: 50%; transform: translateX(-50%);
+  width: 560px; height: 280px;
+  background: radial-gradient(ellipse at center, rgba(16,185,129,0.10) 0%, transparent 70%);
+  pointer-events: none;
+}
+.wl-tag {
+  font-size: 12px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 2px; color: var(--primary-green); margin: 0 0 14px;
+}
+.wl-title {
+  font-family: "Figtree",sans-serif; font-weight: 900; font-size: 52px;
+  color: var(--bg-navy); text-transform: uppercase; line-height: 1.1;
+  margin: 0 0 14px;
+}
+.wl-sub {
+  font-size: 16px; color: #666; margin: 0 auto; max-width: 540px; line-height: 1.55;
+}
+
+/* ═══════ Alert ═══════ */
+.wl-alert {
+  max-width: 760px; margin: 20px auto 0; padding: 14px 20px;
+  border-radius: 8px; font-size: 14px; font-weight: 600; text-align: center;
+}
+.wl-alert--ok { background: #e6f7ee; color: #166534; border: 1px solid #bbf7d0; }
+
+/* ═══════ Main ═══════ */
+.wl-main { padding: 48px 32px 88px; }
+
+/* --- Empty state --- */
+.wl-empty { text-align: center; padding: 40px 20px 20px; }
+.wl-empty-ic {
+  width: 96px; height: 96px; margin: 0 auto 24px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(16,185,129,0.10); color: var(--primary-green);
+  border-radius: 50%; font-size: 40px;
+}
+.wl-empty-title {
+  font-family: "Figtree",sans-serif; font-weight: 800; font-size: 26px;
+  color: var(--bg-navy); margin: 0 0 10px;
+}
+.wl-empty-sub { font-size: 15px; color: #666; margin: 0 0 28px; }
+.wl-empty-btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 14px 34px; background: var(--primary-green); color: #fff;
+  border-radius: 8px; font-family: "Figtree",sans-serif; font-size: 15px;
+  font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+  text-decoration: none; box-shadow: 0 8px 20px rgba(16,185,129,0.22);
+  transition: background 0.2s, transform 0.15s;
+}
+.wl-empty-btn:hover { background: #01926a; color: #fff; transform: translateY(-1px); text-decoration: none; }
+
+/* --- Grid of saved items --- */
+.wl-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+}
+.wl-item {
+  position: relative; background: #fff; border: 1px solid #eef1f6;
+  border-radius: 14px; overflow: hidden;
+  display: flex; flex-direction: column;
+  transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s;
+}
+.wl-item:hover { border-color: #d6efe4; transform: translateY(-3px); box-shadow: 0 14px 40px rgba(15,23,42,0.08); }
+/* Remove heart - reuses .pcard-wishlist filled style, positioned over the image */
+.wl-item .pcard-wishlist { top: 12px; right: 12px; }
+.wl-item-img {
+  display: block; height: 200px; background: var(--bg-navy);
+  overflow: hidden;
+}
+.wl-item-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.25s ease; }
+.wl-item:hover .wl-item-img img { transform: scale(1.05); }
+.wl-item-body { padding: 18px; display: flex; flex-direction: column; flex: 1; }
+.wl-item-name {
+  font-family: "Figtree",sans-serif; font-weight: 700; font-size: 15px;
+  color: var(--bg-navy); text-decoration: none; line-height: 1.4; margin: 0 0 8px;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  min-height: 42px;
+}
+.wl-item-name:hover { color: var(--primary-green); text-decoration: none; }
+.wl-item-stock { font-size: 12px; color: #94a0b2; margin: 0 0 10px; font-weight: 600; }
+.wl-item-price { margin: 0 0 16px; display: flex; align-items: baseline; gap: 8px; }
+.wl-price { font-family: "Figtree",sans-serif; font-weight: 800; font-size: 20px; color: var(--bg-navy); }
+.wl-price-old { font-size: 14px; color: #b3bac6; text-decoration: line-through; }
+.wl-item-actions { margin-top: auto; }
+.wl-btn-cart {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 12px 16px; background: var(--primary-green); color: #fff;
+  border: none; border-radius: 8px; cursor: pointer;
+  font-family: "Figtree",sans-serif; font-size: 14px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.4px;
+  transition: background 0.2s;
+}
+.wl-btn-cart:hover { background: #01926a; }
+
+/* ═══════ Responsive ═══════ */
+@media (max-width: 980px) {
+  .wl-grid { grid-template-columns: repeat(2, 1fr); }
+  .wl-title { font-size: 40px; }
+}
+@media (max-width: 640px) {
+  .wl-grid { grid-template-columns: 1fr; }
+  .wl-hero { padding: 52px 0 44px; }
+  .wl-title { font-size: 30px; }
+  .wl-wrap, .wl-main { padding-left: 20px; padding-right: 20px; }
+  .wl-main { padding-top: 36px; padding-bottom: 64px; }
+}
+</style>
+
+<div class="wl-page">
+
+  <!-- ═══════ Hero ═══════ -->
+  <section class="wl-hero">
+    <div class="wl-wrap">
+      <p class="wl-tag">// SAVED</p>
+      <h1 class="wl-title">Wishlist</h1>
+      <p class="wl-sub">
+        {% if products %}{{ products|length }} item{{ products|length > 1 ? 's' : '' }} saved for later.{% else %}Save the compounds you're eyeing for later.{% endif %}
+      </p>
+    </div>
+  </section>
+
+  <!-- ═══════ Success alert ═══════ -->
   {% if success %}
-  <div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> {{ success }}
-    <button type="button" class="close" data-dismiss="alert">&times;</button>
-  </div>
+  <div class="wl-alert wl-alert--ok">{{ success }}</div>
   {% endif %}
-  <div class="row">{{ column_left }}
-    {% if column_left and column_right %}
-    {% set class = 'col-sm-6' %}
-    {% elseif column_left or column_right %}
-    {% set class = 'col-sm-9' %}
+
+  <!-- ═══════ Main ═══════ -->
+  <div class="wl-wrap wl-main">
+
+    {% if products %}
+    <div class="wl-grid">
+      {% for product in products %}
+      <div class="wl-item">
+        <button type="button" class="pcard-wishlist is-active wl-remove" data-product-id="{{ product.product_id }}" aria-label="Remove from wishlist" onclick="wishlist.toggle('{{ product.product_id }}', this);">
+          <i class="fa-solid fa-heart"></i>
+        </button>
+        <a href="{{ product.href }}" class="wl-item-img">
+          <img src="{{ product.thumb }}" alt="{{ product.name }}" loading="lazy">
+        </a>
+        <div class="wl-item-body">
+          <a href="{{ product.href }}" class="wl-item-name">{{ product.name }}</a>
+          <div class="wl-item-stock">{{ product.stock }}</div>
+          <div class="wl-item-price">
+            {% if product.special %}
+            <span class="wl-price-old">{{ product.price }}</span>
+            <span class="wl-price">{{ product.special }}</span>
+            {% else %}
+            <span class="wl-price">{{ product.price }}</span>
+            {% endif %}
+          </div>
+          <div class="wl-item-actions">
+            <button type="button" class="wl-btn-cart" onclick="cart.add('{{ product.product_id }}');">
+              <i class="fa-solid fa-cart-plus"></i> Add to Cart
+            </button>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
     {% else %}
-    {% set class = 'col-sm-12' %}
+    <div class="wl-empty">
+      <div class="wl-empty-ic"><i class="fa-regular fa-heart"></i></div>
+      <h2 class="wl-empty-title">Your wishlist is empty.</h2>
+      <p class="wl-empty-sub">Tap the heart on any product to save it here for later.</p>
+      <a href="{{ shop_url }}" class="wl-empty-btn">Browse Products <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
     {% endif %}
-    <div id="content" class="{{ class }}">{{ content_top }}
-      <h2>{{ heading_title }}</h2>
-      {% if products %}
-      <div class="table-responsive">
-        <table class="table table-bordered table-hover">
-          <thead>
-            <tr>
-              <td class="text-center">{{ column_image }}</td>
-              <td class="text-left">{{ column_name }}</td>
-              <td class="text-left">{{ column_model }}</td>
-              <td class="text-right">{{ column_stock }}</td>
-              <td class="text-right">{{ column_price }}</td>
-              <td class="text-right">{{ column_action }}</td>
-            </tr>
-          </thead>
-          <tbody>
-          {% for product in products %}
-          <tr>
-            <td class="text-center">{% if product.thumb %}<a href="{{ product.href }}"><img src="{{ product.thumb }}" alt="{{ product.name }}" title="{{ product.name }}" /></a>{% endif %}</td>
-            <td class="text-left"><a href="{{ product.href }}">{{ product.name }}</a></td>
-            <td class="text-left">{{ product.model }}</td>
-            <td class="text-right">{{ product.stock }}</td>
-            <td class="text-right">{% if product.price %}
-              <div class="price"> {% if not product.special %}
-                {{ product.price }}
-                {% else %} <b>{{ product.special }}</b> <s>{{ product.price }}</s> {% endif %} </div>
-              {% endif %}</td>
-            <td class="text-right"><button type="button" onclick="cart.add('{{ product.product_id }}');" data-toggle="tooltip" title="{{ button_cart }}" class="btn btn-primary"><i class="fa fa-shopping-cart"></i></button>
-              <a href="{{ product.remove }}" data-toggle="tooltip" title="{{ button_remove }}" class="btn btn-danger"><i class="fa fa-times"></i></a></td>
-          </tr>
-          {% endfor %}
-            </tbody>
-        </table>
-      </div>
-      {% else %}
-      <div class="no-items">
-        <img src="catalog/view/theme/default/image/no_items.png" class="img-responsive">
-        <span>{{ text_no_results }}</span>
-      </div>
-      {% endif %}
-      {{ content_bottom }}</div>
-    {{ column_right }}</div>
+
+  </div>
+
 </div>
+
 {{ footer }}

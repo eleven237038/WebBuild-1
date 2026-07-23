@@ -107,6 +107,16 @@
   color: var(--pcard-primary, var(--primary-green));
   background: rgba(16,185,129,0.12);
 }
+.pcard-wishlist.is-active {
+  background: var(--pcard-primary, var(--primary-green));
+  border-color: var(--pcard-primary, var(--primary-green));
+  color: #fff;
+}
+.pcard-wishlist.is-active:hover {
+  background: var(--pcard-primary, var(--primary-green));
+  color: #fff;
+  opacity: 0.88;
+}
 
 /* ---- Body ---- */
 .pcard-body { padding: 16px; display: flex; flex-direction: column; flex: 1; }

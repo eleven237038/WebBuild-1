@@ -69,6 +69,18 @@
 {% endfor %}
 {{ helper.debug_bar.renderHead }}
 <style>:root{--pcard-primary:{{ pcard_primary_color|default('#10B981') }};--pcard-name-color:{{ pcard_name_color|default('#0F172A') }};--pcard-price-color:{{ pcard_price_color|default('#10B981') }};--pdp-primary:{{ pdp_primary_color|default('#10B981') }};--pdp-bg-navy:{{ pdp_bg_navy|default('#0F172A') }};}</style>
+<style>
+/* Wishlist count badge on header heart icon */
+.header-wishlist-btn { position: relative; }
+.header-wish-count {
+  position: absolute; top: 2px; right: 2px;
+  min-width: 16px; height: 16px; padding: 0 4px;
+  background: var(--primary-green, #10B981); color: #fff;
+  border-radius: 9px; font-size: 10px; font-weight: 800;
+  line-height: 16px; text-align: center; box-sizing: border-box;
+  font-family: "Figtree", sans-serif;
+}
+</style>
 </head>
 <body class="{{ class }}">
 
@@ -138,8 +150,9 @@
         {% endif %}
 
         <!-- Wishlist -->
-        <a href="#" class="header-icon-btn" aria-label="Wishlist">
+        <a href="{{ wishlist }}" class="header-icon-btn header-wishlist-btn" aria-label="Wishlist">
           <i class="fa-regular fa-heart"></i>
+          <span class="header-wish-count" id="wishlist-count"{% if wishlist_count < 1 %} style="display:none"{% endif %}>{{ wishlist_count }}</span>
         </a>
 
         <!-- Cart button (solid, prominent) -->

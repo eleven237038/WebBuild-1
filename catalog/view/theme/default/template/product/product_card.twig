@@ -40,7 +40,7 @@
   {% if product.show_image %}
   <a href="{{ product.href }}" class="pcard-img-wrap" style="height:{{ pc.image_height }}px;">
     {% if pc.show_wishlist %}
-    <button type="button" class="pcard-wishlist" aria-label="{{ button_wishlist|default('Add to wishlist') }}" onclick="event.preventDefault();event.stopPropagation();wishlist.add('{{ product.product_id }}');">
+    <button type="button" class="pcard-wishlist" data-product-id="{{ product.product_id }}" aria-label="{{ button_wishlist|default('Add to wishlist') }}" onclick="event.preventDefault();event.stopPropagation();wishlist.toggle('{{ product.product_id }}', this);">
       <i class="fa-regular fa-heart"></i>
     </button>
     {% endif %}

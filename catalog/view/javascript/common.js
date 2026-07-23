@@ -246,8 +246,105 @@ var wishlist = {
         $('#wishlist-total').attr('title', json['total']);
       }
     });
+  },
+  // Toggle a product in/out of the wishlist. `el` is the heart button.
+  'toggle': function(product_id, el) {
+    var $btn = $(el);
+    $.ajax({
+      url: 'index.php?route=account/wishlist/toggle',
+      type: 'post',
+      data: 'product_id=' + product_id,
+      dataType: 'json',
+      beforeSend: function() {},  // suppress global loading overlay for a snappy heart click
+      complete: function() {},
+      success: function(json) {
+        if (json['redirect']) {
+          location = json['redirect'];
+          return;
+        }
+        if (typeof json['in_wishlist'] !== 'undefined') {
+          wishlist.setHeart($btn, json['in_wishlist']);
+          wishlist.setCount(json['total']);
+
+          if (json['action'] === 'added' && typeof showAlert === 'function') {
+            var msg = (json['product_name'] ? json['product_name'] + ' — saved to your wishlist.' : 'Saved to your wishlist.');
+            showAlert('wishlist', msg);
+          }
+
+          // On the wishlist page, removing an item fades its card out.
+          if (json['action'] === 'removed' && $btn.hasClass('wl-remove')) {
+            var $card = $btn.closest('.wl-item');
+            if ($card.length) {
+              $card.fadeOut(220, function() {
+                $card.remove();
+                if (!$('.wl-item').length) {
+                  $('.wl-grid').remove();
+                  $('.wl-empty').show();
+                }
+              });
+            }
+          }
+        }
+      }
+    });
+  },
+  // Set the filled/outline state of a heart button.
+  'setHeart': function($btn, inWishlist) {
+    if (!$btn || !$btn.length) return;
+    var $icon = $btn.find('i');
+    if (inWishlist) {
+      $btn.addClass('is-active');
+      $icon.removeClass('fa-regular').addClass('fa-solid');
+    } else {
+      $btn.removeClass('is-active');
+      $icon.removeClass('fa-solid').addClass('fa-regular');
+    }
+  },
+  // Update the header heart count badge.
+  'setCount': function(total) {
+    var $c = $('#wishlist-count');
+    if (!$c.length) {
+      $('.header-wishlist-btn').append('<span class="header-wish-count" id="wishlist-count"></span>');
+      $c = $('#wishlist-count');
+    }
+    $c.text(total);
+    if (total > 0) { $c.show(); } else { $c.hide(); }
+  },
+  // Fill every heart whose product_id is in `ids`.
+  'markHearts': function(ids) {
+    var set = {};
+    if (ids && ids.length) {
+      for (var i = 0; i < ids.length; i++) {
+        set[String(ids[i])] = true;
+      }
+    }
+    $('.pcard-wishlist').each(function() {
+      var pid = String($(this).data('product-id'));
+      wishlist.setHeart($(this), !!set[pid]);
+    });
+  },
+  // On load, fetch the user's wishlist ids and mark matching hearts.
+  'init': function() {
+    $.ajax({
+      url: 'index.php?route=account/wishlist/ids',
+      type: 'get',
+      dataType: 'json',
+      beforeSend: function() {},
+      complete: function() {},
+      success: function(json) {
+        if (json && json['ids']) {
+          wishlist.markHearts(json['ids']);
+        }
+      }
+    });
   }
 }
+
+$(document).ready(function() {
+  if (typeof wishlist !== 'undefined' && wishlist.init) {
+    wishlist.init();
+  }
+});
 
 var compare = {
   'add': function(product_id) {
