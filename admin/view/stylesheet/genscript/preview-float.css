@@ -11,6 +11,7 @@
   top: 64px;            /* clear the admin top navbar */
   right: 16px;
   width: 300px;
+  min-width: 280px;     /* horizontal-resize floor */
   max-height: calc(100vh - 80px);
   z-index: 1060;
   background: #fff;
@@ -44,13 +45,16 @@
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.3px;
-  flex: 1 1 auto;
+  flex: 0 1 auto;          /* shrink-to-content so device icons sit right after the text */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .pf-title i { margin-right: 6px; }
-.pf-actions { display: flex; gap: 2px; flex: 0 0 auto; }
+/* Device-size toggle group (phone / desktop), placed immediately after the title. */
+.pf-devices { display: flex; gap: 2px; flex: 0 0 auto; margin-left: 4px; }
+.pf-device.pf-active { background: rgba(16,185,129,0.30); color: #fff; }
+.pf-actions { display: flex; gap: 2px; flex: 0 0 auto; margin-left: auto; }   /* push min/close to the right edge */
 .pf-btn {
   width: 26px; height: 26px;
   border: none; background: transparent; color: #cbd2dc;
@@ -91,3 +95,15 @@
 
 /* Dragging cursor feedback. */
 .pf-window.pf-dragging { box-shadow: 0 12px 36px rgba(15, 23, 42, 0.28); }
+
+/* ---- horizontal resize handle (window left edge) ----
+ * Drag it left to widen, right to narrow; the right edge stays put.
+ * Absolute over the window (fixed already establishes a containing block). */
+.pf-resize {
+  position: absolute;
+  top: 0; bottom: 0; left: 0;
+  width: 6px;
+  cursor: ew-resize;
+  z-index: 3;
+}
+.pf-resize:hover, .pf-resize.pf-resizing { background: rgba(16,185,129,0.28); }

@@ -39,7 +39,7 @@
 
     {# 复用前台 product-card.css (相关商品卡片) + 共享浮窗样式 #}
     <link rel="stylesheet" href="../catalog/view/theme/default/stylesheet/genscript/product-card.css">
-    <link rel="stylesheet" href="view/stylesheet/genscript/preview-float.css">
+    <link rel="stylesheet" href="view/stylesheet/genscript/preview-float.css?v=20260723b">
     <style>
       {# 商品类型 chip bar: 始终吸顶可见 #}
       .pdp-typebar { position: sticky; top: 0; z-index: 1050; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
@@ -235,10 +235,15 @@
         </div>
       </div>
 
-      {# ===== 实时预览浮窗 (可拖拽/最小化/关闭, 右上角固定) ===== #}
+      {# ===== 实时预览浮窗 (可拖拽/最小化/关闭, 右上角固定; 左边可横向拉伸, 标题右侧一键切换手机/电脑尺寸) ===== #}
       <div id="pf-window" class="pf-window">
+        <div class="pf-resize" id="pf-resize" title="横向拉伸"></div>
         <div class="pf-header" id="pf-header">
           <span class="pf-title"><i class="fa fa-eye"></i> {{ text_preview }}</span>
+          <span class="pf-devices">
+            <button type="button" class="pf-btn pf-device" id="pf-device-phone" title="手机尺寸"><i class="fa fa-mobile"></i></button>
+            <button type="button" class="pf-btn pf-device" id="pf-device-desktop" title="电脑尺寸"><i class="fa fa-desktop"></i></button>
+          </span>
           <span class="pf-actions">
             <button type="button" class="pf-btn" id="pf-min" title="最小化"><i class="fa fa-minus"></i></button>
             <button type="button" class="pf-btn" id="pf-close" title="关闭"><i class="fa fa-times"></i></button>
@@ -253,7 +258,7 @@
   </div>
 </div>
 
-<script src="view/javascript/genscript/preview-float.js"></script>
+<script src="view/javascript/genscript/preview-float.js?v=20260723b"></script>
 <script>
 (function () {
   // 示例商品数据 (用于预览渲染; 与前台 product.twig 结构保持一致)

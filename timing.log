@@ -801,3 +801,4 @@ vqmod_boot:0.0353 startup:0.0766 framework(dispatch+render):0.9213 total:1.0331
 vqmod_boot:0.0594 startup:0.4932 framework(dispatch+render):2.1194 total:2.6721
 vqmod_boot:0.0437 startup:0.0772 framework(dispatch+render):1.2595 total:1.3804
 vqmod_boot:0.0499 startup:0.1026 framework(dispatch+render):1.7914 total:1.9439
+vqmod_boot:0.0383 startup:0.0723 framework(dispatch+render):2.0223 total:2.1329

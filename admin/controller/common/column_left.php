@@ -222,14 +222,29 @@ class ControllerCommonColumnLeft extends Controller {
 				);
 			}
 
-		// Sales - direct link to order list (order mgmt merged into sale, returns removed)
+		// Sales - 订单销售 (父级): 订单管理 (原订单详情页 sale/order) + 运费管理 (sale/shipping)
+		$sale = array();
 		if ($this->user->hasPermission('access', 'sale/order')) {
+			$sale[] = array(
+				'name'     => '订单管理',
+				'href'     => $this->url->link('sale/order', 'user_token=' . $this->session->data['user_token']),
+				'children' => array()
+			);
+		}
+		if ($this->user->hasPermission('access', 'sale/shipping')) {
+			$sale[] = array(
+				'name'     => '运费管理',
+				'href'     => $this->url->link('sale/shipping', 'user_token=' . $this->session->data['user_token']),
+				'children' => array()
+			);
+		}
+		if ($sale) {
 			$data['menus'][] = array(
 				'id'       => 'menu-sale',
 				'icon'     => 'fa-shopping-cart',
 				'name'     => $this->language->get('text_sale'),
-				'href'     => $this->url->link('sale/order', 'user_token=' . $this->session->data['user_token']),
-				'children' => array()
+				'href'     => '',
+				'children' => $sale
 			);
 		}
 
