@@ -142,6 +142,12 @@ function applyProductTypeFields() {
 $(function() {
   $('#input-product-type').on('change', applyProductTypeFields);
   applyProductTypeFields();
+  // 防止重复提交: 双击保存会并发触发两次 editProduct, 两次 DELETE+INSERT 交错时
+  // 撞 oc_product_description 主键 'pid-lang' 报 Duplicate entry 导致保存失败。
+  // 表单 submit 后立即禁用提交按钮, 确保一次只发一次。(校验失败重渲染时按钮自动恢复)
+  $('#form-product').on('submit', function() {
+    $(this).find('button[type="submit"]').prop('disabled', true);
+  });
 });
 //--></script>
 <script type="text/javascript"><!--

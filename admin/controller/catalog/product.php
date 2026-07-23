@@ -56,6 +56,10 @@ class ControllerCatalogProduct extends Controller {
 		if (!isset($this->request->post['product_download'])) { $this->request->post['product_download'] = array(); }
 		if (!isset($this->request->post['product_filter'])) { $this->request->post['product_filter'] = array(); }
 		if (!isset($this->request->post['product_layout'])) { $this->request->post['product_layout'] = array(); }
+		// 自定义字段表单移除了门店选择器, 故 POST 不含 product_store。若不补默认值:
+		// addProduct 不写 oc_product_to_store -> 前台 p2s.store_id=0 过滤隐藏该商品 (已上架却不在首页/shop);
+		// editProduct 先 DELETE 既有门店关联却不重插 -> 原可见商品编辑后消失。默认归属 store_id=0。
+		if (!isset($this->request->post['product_store'])) { $this->request->post['product_store'] = array(0); }
 		$this->mirrorChineseToAllLanguages();
 		$this->model_catalog_product->addProduct($this->request->post);
 
@@ -104,6 +108,10 @@ class ControllerCatalogProduct extends Controller {
 		if (!isset($this->request->post['product_download'])) { $this->request->post['product_download'] = array(); }
 		if (!isset($this->request->post['product_filter'])) { $this->request->post['product_filter'] = array(); }
 		if (!isset($this->request->post['product_layout'])) { $this->request->post['product_layout'] = array(); }
+		// 自定义字段表单移除了门店选择器, 故 POST 不含 product_store。若不补默认值:
+		// addProduct 不写 oc_product_to_store -> 前台 p2s.store_id=0 过滤隐藏该商品 (已上架却不在首页/shop);
+		// editProduct 先 DELETE 既有门店关联却不重插 -> 原可见商品编辑后消失。默认归属 store_id=0。
+		if (!isset($this->request->post['product_store'])) { $this->request->post['product_store'] = array(0); }
 		$this->mirrorChineseToAllLanguages();
 		// Preserve scalar system columns absent from POST (form is custom_tag-driven; fields without a custom_tag
 		// would otherwise be wiped to 0/'' by editProduct's whitelist SET). status is the critical one (auto-delist bug).

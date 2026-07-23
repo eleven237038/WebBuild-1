@@ -799,7 +799,12 @@ class ModelCatalogProduct extends Model {
 			'product_id'  => $product['product_id'],
 			'thumb'       => $image,
 			'name'        => $product['name'],
-			'description' => utf8_substr(trim(strip_tags(html_entity_decode($product['description'], ENT_QUOTES, 'UTF-8'))), 0, $this->config->get('theme_' . $this->config->get('config_theme') . '_product_description_length')) . '..',
+			// 'description' intentionally omitted: card rendering uses 'description_value'
+			// (resolved per the type's map_description slot) which product_card.twig
+			// truncates via |striptags|slice(0, pc.desc_length). The legacy PHP-side
+			// truncation here was dead code (no template read this key) and used the
+			// non-configurable theme_product_description_length, inconsistent with the
+			// admin-configurable pc.desc_length. Single source of truth = the slot.
 			'price'       => $price,
 			'special'     => $special,
 			'tax'         => $tax,

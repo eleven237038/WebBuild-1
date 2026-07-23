@@ -331,7 +331,7 @@ class ModelCatalogCustomTag extends Model {
 					$value  = '';
 				}
 				if ($tag_id) {
-					$this->db->query("INSERT INTO " . DB_PREFIX . "product_to_custom_tag SET product_id = '" . (int)$product_id . "', tag_id = '" . $tag_id . "', `value` = '" . $this->db->escape($value) . "'");
+					$this->db->query("INSERT INTO " . DB_PREFIX . "product_to_custom_tag SET product_id = '" . (int)$product_id . "', tag_id = '" . $tag_id . "', `value` = '" . $this->db->escape($value) . "' ON DUPLICATE KEY UPDATE `value` = VALUES(`value`)");
 				}
 			}
 		}

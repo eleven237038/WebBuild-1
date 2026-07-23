@@ -144,3 +144,6 @@ vqmod_boot:0.0413 startup:0.2000 framework(dispatch+render):3.2540 total:3.4953
 vqmod_boot:0.0619 startup:0.4279 framework(dispatch+render):2.3425 total:2.8323
 vqmod_boot:0.0352 startup:0.0849 framework(dispatch+render):1.4011 total:1.5212
 vqmod_boot:0.0318 startup:0.1928 framework(dispatch+render):1.7558 total:1.9803
+vqmod_boot:0.0488 startup:0.0879 framework(dispatch+render):3.6449 total:3.7817
+vqmod_boot:0.0434 startup:0.0728 framework(dispatch+render):1.2261 total:1.3424
+vqmod_boot:0.0405 startup:0.0456 framework(dispatch+render):1.5713 total:1.6574
