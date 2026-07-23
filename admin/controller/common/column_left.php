@@ -103,6 +103,15 @@ class ControllerCommonColumnLeft extends Controller {
 			);
 		}
 
+		// 活动设置 - 首页可配置促销活动区块
+		if ($this->user->hasPermission('access', 'catalog/activity')) {
+			$frontend_content[] = array(
+				'name'     => '活动设置',
+				'href'     => $this->url->link('catalog/activity', 'user_token=' . $this->session->data['user_token']),
+				'children' => array()
+			);
+		}
+
 		if ($frontend_content) {
 			$data['menus'][] = array(
 				'id'       => 'menu-frontend-content',

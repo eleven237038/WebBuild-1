@@ -48,6 +48,34 @@
             <div class="col-sm-10"><input type="text" name="shipping_free_threshold" value="{{ shipping_free_threshold }}" class="form-control" style="max-width:240px;" /></div>
           </div>
 
+          {# ===== 运费阶梯 repeater (table-rate; 动态增删, 存为 JSON 数组) ===== #}
+          <legend>{{ text_section_tier }}</legend>
+          <div class="form-group">
+            <label class="col-sm-2 control-label">{{ entry_shipping_tiers }}</label>
+            <div class="col-sm-10">
+              <div id="tiers-repeater" class="ship-repeater">
+                {% for t in shipping_tiers %}
+                <div class="ship-rep-row" style="display:flex;gap:10px;margin-bottom:8px;align-items:center;flex-wrap:wrap;">
+                  <label style="display:flex;align-items:center;gap:4px;font-weight:normal;margin:0;"><span style="font-size:12px;color:#888;white-space:nowrap;">{{ text_tier_threshold }}</span><input type="text" name="shipping_tiers[{{ loop.index0 }}][threshold]" data-name="shipping_tiers[{i}][threshold]" value="{{ t.threshold }}" class="form-control ship-tier-threshold" style="width:110px;"></label>
+                  <label style="display:flex;align-items:center;gap:4px;font-weight:normal;margin:0;"><span style="font-size:12px;color:#888;white-space:nowrap;">{{ text_tier_rate }}</span><input type="text" name="shipping_tiers[{{ loop.index0 }}][rate]" data-name="shipping_tiers[{i}][rate]" value="{{ t.rate }}" class="form-control ship-tier-rate" style="width:110px;"></label>
+                  <label style="display:flex;align-items:center;gap:4px;font-weight:normal;margin:0;"><span style="font-size:12px;color:#888;white-space:nowrap;">{{ text_tier_label }}</span><input type="text" name="shipping_tiers[{{ loop.index0 }}][label]" data-name="shipping_tiers[{i}][label]" value="{{ t.label }}" class="form-control ship-tier-label" style="width:180px;"></label>
+                  <button type="button" class="btn btn-danger btn-sm ship-rep-remove">{{ button_remove }}</button>
+                </div>
+                {% endfor %}
+              </div>
+              <template id="tier-row-tpl">
+                <div class="ship-rep-row" style="display:flex;gap:10px;margin-bottom:8px;align-items:center;flex-wrap:wrap;">
+                  <label style="display:flex;align-items:center;gap:4px;font-weight:normal;margin:0;"><span style="font-size:12px;color:#888;white-space:nowrap;">{{ text_tier_threshold }}</span><input type="text" name="shipping_tiers[{i}][threshold]" data-name="shipping_tiers[{i}][threshold]" value="" class="form-control ship-tier-threshold" style="width:110px;"></label>
+                  <label style="display:flex;align-items:center;gap:4px;font-weight:normal;margin:0;"><span style="font-size:12px;color:#888;white-space:nowrap;">{{ text_tier_rate }}</span><input type="text" name="shipping_tiers[{i}][rate]" data-name="shipping_tiers[{i}][rate]" value="" class="form-control ship-tier-rate" style="width:110px;"></label>
+                  <label style="display:flex;align-items:center;gap:4px;font-weight:normal;margin:0;"><span style="font-size:12px;color:#888;white-space:nowrap;">{{ text_tier_label }}</span><input type="text" name="shipping_tiers[{i}][label]" data-name="shipping_tiers[{i}][label]" value="" class="form-control ship-tier-label" style="width:180px;"></label>
+                  <button type="button" class="btn btn-danger btn-sm ship-rep-remove">{{ button_remove }}</button>
+                </div>
+              </template>
+              <button type="button" class="btn btn-default btn-sm ship-rep-add" data-target="tiers-repeater" data-tpl="tier-row-tpl">{{ button_add_tier }}</button>
+              <p style="font-size:12px;color:#888;margin-top:6px;">{{ text_tier_hint }}</p>
+            </div>
+          </div>
+
           <legend>{{ text_section_text }}</legend>
           <div class="form-group">
             <label class="col-sm-2 control-label">{{ entry_shipping_delivery_text }}</label>
@@ -63,4 +91,39 @@
     </div>
   </div>
 </div>
+<script>
+(function () {
+  var form = document.getElementById('form-shipping');
+  if (!form) return;
+
+  // reindex 把 data-name 里的 {i} 替换为行序号, 保证提交为 0..N 干净数组
+  function reindexRepeater(repeater) {
+    repeater.querySelectorAll('.ship-rep-row').forEach(function (row, i) {
+      row.querySelectorAll('[data-name]').forEach(function (el) {
+        el.name = el.getAttribute('data-name').replace('{i}', i);
+      });
+    });
+  }
+  document.querySelectorAll('.ship-rep-add').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var repeater = document.getElementById(btn.getAttribute('data-target'));
+      var tpl = document.getElementById(btn.getAttribute('data-tpl'));
+      if (!repeater || !tpl) return;
+      repeater.appendChild(tpl.content.cloneNode(true));
+      reindexRepeater(repeater);
+    });
+  });
+  // 删除行 (委托; 保留 >=1 行以便始终可编辑)
+  form.addEventListener('click', function (e) {
+    if (!e.target.closest('.ship-rep-remove')) return;
+    var repeater = e.target.closest('.ship-repeater');
+    var row = e.target.closest('.ship-rep-row');
+    if (repeater && row && repeater.querySelectorAll('.ship-rep-row').length > 1) {
+      row.remove();
+      reindexRepeater(repeater);
+    }
+  });
+  document.querySelectorAll('.ship-repeater').forEach(reindexRepeater);
+})();
+</script>
 {{ footer }}

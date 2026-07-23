@@ -647,6 +647,11 @@ class ModelCatalogProduct extends Model {
 			$cfg[$k] = array_key_exists($key, $s) ? $s[$key] : $defs[$key];
 		}
 
+		// Static badges repeater (admin-defined, shown on every card of this
+		// type). getSetting already json_decoded serialized rows to arrays.
+		$cfg['badges'] = array_key_exists('product_card_badges', $s) && is_array($s['product_card_badges'])
+			? array_values($s['product_card_badges']) : array();
+
 		$cfg['fields'] = $fields;
 		$cache[$type_id] = $cfg;
 		return $cfg;
@@ -699,23 +704,11 @@ class ModelCatalogProduct extends Model {
 			'body_font_size'      => $d['product_detail_body_font_size'],
 			'coa_badge_text'      => $d['product_detail_coa_badge_text'],
 			'batch_verified_text' => $d['product_detail_batch_verified_text'],
-			'tab_details_label'   => $d['product_detail_tab_details_label'],
-			'tab_coa_label'       => $d['product_detail_tab_coa_label'],
-			'tab_shipping_label'  => $d['product_detail_tab_shipping_label'],
-			'tab_details_body'    => $d['product_detail_tab_details_body'],
-			'tab_coa_body'        => $d['product_detail_tab_coa_body'],
-			'tab_shipping_body'   => $d['product_detail_tab_shipping_body'],
-			'trust_item_1'        => $d['product_detail_trust_item_1'],
-			'trust_item_2'        => $d['product_detail_trust_item_2'],
-			'trust_item_3'        => $d['product_detail_trust_item_3'],
+			'trust_items'         => is_array($d['product_detail_trust_items']) ? array_values($d['product_detail_trust_items']) : array(),
+			'tabs'                => is_array($d['product_detail_tabs']) ? array_values($d['product_detail_tabs']) : array(),
 			'related_title'       => $d['product_detail_related_title'],
 			'research_title'      => $d['product_detail_research_title'],
-			'research_links'      => array(
-				array('label' => $d['product_detail_research_link_1_label'], 'url' => $d['product_detail_research_link_1_url']),
-				array('label' => $d['product_detail_research_link_2_label'], 'url' => $d['product_detail_research_link_2_url']),
-				array('label' => $d['product_detail_research_link_3_label'], 'url' => $d['product_detail_research_link_3_url']),
-				array('label' => $d['product_detail_research_link_4_label'], 'url' => $d['product_detail_research_link_4_url']),
-			),
+			'research_links'      => is_array($d['product_detail_research_links']) ? array_values($d['product_detail_research_links']) : array(),
 			'primary_color'       => $d['product_detail_primary_color'],
 			'bg_navy'             => $d['product_detail_bg_navy'],
 		);

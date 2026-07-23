@@ -28,56 +28,113 @@
       </div>
       <div class="panel-body">
         <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-contact" class="form-horizontal">
+
           <div class="form-group{% if error_email %} has-error{% endif %}">
             <label class="col-sm-2 control-label" for="input-telephone">{{ entry_telephone }}</label>
             <div class="col-sm-10">
-              <input type="text" name="config_telephone" value="{{ config_telephone }}" id="input-telephone" class="form-control">
+              <input type="text" name="config_telephone" value="{{ config_telephone }}" id="input-telephone" class="form-control" style="max-width:400px;">
             </div>
           </div>
-          <div class="form-group">
-            <label class="col-sm-2 control-label" for="input-fax">{{ entry_fax }}</label>
-            <div class="col-sm-10">
-              <input type="text" name="config_fax" value="{{ config_fax }}" id="input-fax" class="form-control">
-            </div>
-          </div>
+
           <div class="form-group{% if error_email %} has-error{% endif %}">
             <label class="col-sm-2 control-label" for="input-email">{{ entry_email }}</label>
             <div class="col-sm-10">
-              <input type="text" name="config_email" value="{{ config_email }}" id="input-email" class="form-control">
+              <input type="email" name="config_email" value="{{ config_email }}" id="input-email" class="form-control" style="max-width:400px;">
               {% if error_email %}<div class="text-danger">{{ error_email }}</div>{% endif %}
             </div>
           </div>
+
+          {# ── Social accounts repeater (all major global platforms) ── #}
           <div class="form-group">
-            <label class="col-sm-2 control-label" for="input-address">{{ entry_address }}</label>
+            <label class="col-sm-2 control-label">{{ entry_socials }}</label>
             <div class="col-sm-10">
-              <textarea name="config_address" rows="3" id="input-address" class="form-control">{{ config_address }}</textarea>
-              <div class="help-block">{{ help_address }}</div>
+              <div id="socials-list" style="max-width:720px;">
+                {% for s in socials %}
+                <div class="social-row" style="display:flex;gap:8px;margin-bottom:8px;align-items:center;">
+                  <select name="socials[{{ loop.index0 }}][platform]" class="form-control social-platform" style="flex:0 0 200px;">
+                    {% for key, label in social_platforms %}
+                    <option value="{{ key }}" {{ s.platform == key ? 'selected' }}>{{ label }}</option>
+                    {% endfor %}
+                  </select>
+                  <input type="text" name="socials[{{ loop.index0 }}][url]" value="{{ s.url }}" class="form-control social-url" placeholder="https://完整链接地址" style="flex:1;">
+                  <button type="button" class="btn btn-danger social-remove" title="删除"><i class="fa fa-trash-o"></i></button>
+                </div>
+                {% endfor %}
+              </div>
+              <button type="button" class="btn btn-success btn-sm" id="social-add"><i class="fa fa-plus"></i> {{ button_add_social }}</button>
+              <div class="help-block">{{ help_socials }}</div>
             </div>
           </div>
-          <div class="form-group">
-            <label class="col-sm-2 control-label" for="input-geocode">{{ entry_geocode }}</label>
-            <div class="col-sm-10">
-              <input type="text" name="config_geocode" value="{{ config_geocode }}" id="input-geocode" class="form-control">
-              <div class="help-block">{{ help_geocode }}</div>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="col-sm-2 control-label" for="input-open">{{ entry_open }}</label>
-            <div class="col-sm-10">
-              <textarea name="config_open" rows="3" id="input-open" class="form-control">{{ config_open }}</textarea>
-              <div class="help-block">{{ help_open }}</div>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="col-sm-2 control-label" for="input-comment">{{ entry_comment }}</label>
-            <div class="col-sm-10">
-              <textarea name="config_comment" rows="3" id="input-comment" class="form-control">{{ config_comment }}</textarea>
-              <div class="help-block">{{ help_comment }}</div>
-            </div>
-          </div>
+
         </form>
       </div>
     </div>
   </div>
 </div>
+
+<script>
+(function () {
+  var list = document.getElementById('socials-list');
+  var addBtn = document.getElementById('social-add');
+  if (!list || !addBtn) return;
+
+  // Platform <option> HTML (rendered once from the server-side list so JS add
+  // rows stay in sync with the controller's $social_platforms map).
+  var platformOpts = (function () {
+    var sel = list.querySelector('.social-platform');
+    return sel ? sel.innerHTML : '';
+  })();
+
+  function reindex() {
+    var rows = list.querySelectorAll('.social-row');
+    rows.forEach(function (row, i) {
+      var sel = row.querySelector('.social-platform');
+      var url = row.querySelector('.social-url');
+      if (sel) sel.name = 'socials[' + i + '][platform]';
+      if (url) url.name = 'socials[' + i + '][url]';
+    });
+  }
+
+  function addRow(platform, url) {
+    var row = document.createElement('div');
+    row.className = 'social-row';
+    row.style.cssText = 'display:flex;gap:8px;margin-bottom:8px;align-items:center;';
+    var sel = document.createElement('select');
+    sel.className = 'form-control social-platform';
+    sel.style.cssText = 'flex:0 0 200px;';
+    sel.innerHTML = platformOpts;
+    sel.value = platform || 'facebook';
+    var inp = document.createElement('input');
+    inp.type = 'text';
+    inp.className = 'form-control social-url';
+    inp.placeholder = 'https://完整链接地址';
+    inp.style.cssText = 'flex:1;';
+    inp.value = url || '';
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn btn-danger social-remove';
+    btn.title = '删除';
+    btn.innerHTML = '<i class="fa fa-trash-o"></i>';
+    btn.addEventListener('click', function () {
+      row.remove();
+      reindex();
+    });
+    row.appendChild(sel);
+    row.appendChild(inp);
+    row.appendChild(btn);
+    list.appendChild(row);
+    reindex();
+  }
+
+  addBtn.addEventListener('click', function () { addRow('facebook', ''); });
+
+  // Wire remove buttons on the server-rendered rows.
+  list.addEventListener('click', function (e) {
+    var btn = e.target.closest('.social-remove');
+    if (!btn) return;
+    btn.closest('.social-row').remove();
+    reindex();
+  });
+})();
+</script>
 {{ footer }}

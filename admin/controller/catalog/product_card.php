@@ -53,6 +53,12 @@ class ControllerCatalogProductCard extends Controller {
 		'product_card_price_color',
 	);
 
+	// JSON repeaters (stored serialized): admin-defined static badges shown on
+	// every card of this type, on top of the data-driven badges.
+	private $repeaters = array(
+		'product_card_badges',  // array of {text, bg, color}
+	);
+
 	// Defaults are owned by ModelCatalogProduct::cardDefaults() (single source
 	// of truth shared with getCardConfig on the storefront) and loaded in index().
 
@@ -85,6 +91,10 @@ class ControllerCatalogProductCard extends Controller {
 				} else {
 					$save[$key] = isset($this->request->post[$key]) ? $this->request->post[$key] : '';
 				}
+			}
+			// Repeaters: pass as PHP arrays - editSettingCode json_encodes them.
+			foreach ($this->collectRepeaters() as $rkey => $rval) {
+				$save[$rkey] = $rval;
 			}
 			// editSettingCode (not editSetting): the per-type code 'product_card_N'
 			// is not a prefix of the 'product_card_*' keys, so editSetting's key
@@ -159,6 +169,23 @@ class ControllerCatalogProductCard extends Controller {
 			}
 		}
 
+		// Repeaters: prefer sanitized POST (re-display on error), else DB (decoded
+		// array), else the default array. Always keep >=1 empty row to edit.
+		foreach ($this->repeaters as $rkey) {
+			if (isset($this->request->post[$rkey])) {
+				// collectRepeaters($only) returns array($key => $rows); extract inner.
+				$got = $this->collectRepeaters($rkey);
+				$data[$rkey] = isset($got[$rkey]) ? $got[$rkey] : array();
+			} elseif (array_key_exists($rkey, $saved) && is_array($saved[$rkey])) {
+				$data[$rkey] = array_values($saved[$rkey]);
+			} else {
+				$data[$rkey] = isset($defaults[$rkey]) && is_array($defaults[$rkey]) ? array_values($defaults[$rkey]) : array();
+			}
+		}
+		if (empty($data['product_card_badges'])) {
+			$data['product_card_badges'] = array(array('text' => '', 'bg' => '#10B981', 'color' => '#ffffff'));
+		}
+
 		// 商品类型 chip bar (per-type editing)
 		$this->load->model('catalog/custom_tag');
 		$data['product_types'] = array();
@@ -191,6 +218,13 @@ class ControllerCatalogProductCard extends Controller {
 		foreach ($this->keys as $key) {
 			$data['entry_' . $key] = $this->language->get('entry_' . $key);
 		}
+		// Repeater labels + button strings.
+		$data['entry_product_card_badges'] = $this->language->get('entry_product_card_badges');
+		$data['text_badge_text']   = $this->language->get('text_badge_text');
+		$data['text_badge_bg']     = $this->language->get('text_badge_bg');
+		$data['text_badge_color']  = $this->language->get('text_badge_color');
+		$data['button_add_badge']  = $this->language->get('button_add_badge');
+		$data['button_remove']     = $this->language->get('button_remove');
 
 		$data['header'] = $this->load->controller('common/header');
 		$data['column_left'] = $this->load->controller('common/column_left');
@@ -214,5 +248,29 @@ class ControllerCatalogProductCard extends Controller {
 	private function mapDefault($key, $sysmap) {
 		$col = isset($this->map_defaults[$key]) ? $this->map_defaults[$key] : '';
 		return ($col !== '' && isset($sysmap[$col])) ? $sysmap[$col] : '';
+	}
+
+	/**
+	 * Collect + sanitize the static-badge repeater rows from POST. Pass a single
+	 * key to fetch just that repeater (re-display on error); omit to fetch all
+	 * (used on save). Rows with no text are dropped. Returns PHP arrays - the
+	 * model's editSettingCode json_encodes them (serialized=1).
+	 */
+	private function collectRepeaters($only = null) {
+		$out = array();
+		if ($only === null || $only === 'product_card_badges') {
+			$raw = isset($this->request->post['product_card_badges']) && is_array($this->request->post['product_card_badges'])
+				? $this->request->post['product_card_badges'] : array();
+			$badges = array();
+			foreach ($raw as $row) {
+				$text  = isset($row['text'])  ? trim((string)$row['text'])  : '';
+				if ($text === '') { continue; }  // drop empty rows on save
+				$bg    = isset($row['bg'])    ? (string)$row['bg']    : '#10B981';
+				$color = isset($row['color']) ? (string)$row['color'] : '#ffffff';
+				$badges[] = array('text' => $text, 'bg' => $bg, 'color' => $color);
+			}
+			$out['product_card_badges'] = $badges;
+		}
+		return $out;
 	}
 }

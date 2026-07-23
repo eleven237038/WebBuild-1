@@ -29,25 +29,19 @@ $_['entry_product_detail_body_font_size']  = '正文字号 (px)';
 // Entry - text
 $_['entry_product_detail_coa_badge_text']      = 'COA 徽章文字';
 $_['entry_product_detail_batch_verified_text'] = '批次验证徽章文字';
-$_['entry_product_detail_tab_details_label']   = '详情标签标题';
-$_['entry_product_detail_tab_coa_label']       = 'COA 标签标题';
-$_['entry_product_detail_tab_shipping_label']  = '物流标签标题';
-$_['entry_product_detail_tab_details_body']    = '详情标签内容（无描述时显示）';
-$_['entry_product_detail_tab_coa_body']        = 'COA 标签内容';
-$_['entry_product_detail_tab_shipping_body']   = '物流标签内容';
-$_['entry_product_detail_trust_item_1']        = '保障项 1';
-$_['entry_product_detail_trust_item_2']        = '保障项 2';
-$_['entry_product_detail_trust_item_3']        = '保障项 3';
+$_['entry_product_detail_trust_items']         = '保障项（可任意增删）';
+$_['entry_product_detail_tabs']                = '详情标签页（可任意增删/排序）';
+$_['entry_product_detail_research_links']      = '研究链接（可任意增删）';
 $_['entry_product_detail_related_title']       = '相关商品标题';
 $_['entry_product_detail_research_title']      = '研究资料区标题';
-$_['entry_product_detail_research_link_1_label'] = '研究链接 1 文字';
-$_['entry_product_detail_research_link_1_url']   = '研究链接 1 地址';
-$_['entry_product_detail_research_link_2_label'] = '研究链接 2 文字';
-$_['entry_product_detail_research_link_2_url']   = '研究链接 2 地址';
-$_['entry_product_detail_research_link_3_label'] = '研究链接 3 文字';
-$_['entry_product_detail_research_link_3_url']   = '研究链接 3 地址';
-$_['entry_product_detail_research_link_4_label'] = '研究链接 4 文字';
-$_['entry_product_detail_research_link_4_url']   = '研究链接 4 地址';
+
+// Repeater row labels
+$_['text_tab_label']      = '标签标题';
+$_['text_tab_body']       = '标签内容';
+$_['text_tab_is_details'] = '此页显示商品描述与规格';
+$_['help_tab_is_details'] = '勾选后，该标签页会显示商品描述（无描述时显示上方内容）以及规格表。仅第一个勾选的标签生效。';
+$_['text_rl_label']       = '文字';
+$_['text_rl_url']         = '地址';
 
 // Entry - colors
 $_['entry_product_detail_primary_color']   = '主题色';
@@ -56,6 +50,10 @@ $_['entry_product_detail_bg_navy']         = '深色背景色';
 // Buttons
 $_['button_save']       = '保存';
 $_['button_cancel']     = '返回';
+$_['button_add_trust']  = '+ 添加保障项';
+$_['button_add_tab']    = '+ 添加标签页';
+$_['button_add_link']   = '+ 添加研究链接';
+$_['button_remove']     = '移除';
 
 // Error
 $_['error_permission']  = '警告：您没有权限修改商品详情页设置！';

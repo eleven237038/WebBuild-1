@@ -209,9 +209,9 @@
         <!-- Trust Box -->
         {% if pdp.show_trust_box %}
         <ul class="pdp-trust">
-          {% if pdp.trust_item_1 %}<li><i class="fa-solid fa-circle-check"></i> {{ pdp.trust_item_1 }}</li>{% endif %}
-          {% if pdp.trust_item_2 %}<li><i class="fa-solid fa-circle-check"></i> {{ pdp.trust_item_2 }}</li>{% endif %}
-          {% if pdp.trust_item_3 %}<li><i class="fa-solid fa-circle-check"></i> {{ pdp.trust_item_3 }}</li>{% endif %}
+          {% for ti in pdp.trust_items %}
+            {% if ti %}<li><i class="fa-solid fa-circle-check"></i> {{ ti }}</li>{% endif %}
+          {% endfor %}
         </ul>
         {% endif %}
       </div>
@@ -222,38 +222,36 @@
   <!-- ════════════════════════════════════════════════════════
     BLOCK 2: Detail Tabs
     ════════════════════════════════════════════════════════ -->
-  {% if pdp.show_tabs %}
+  {% if pdp.show_tabs and pdp.tabs is defined and pdp.tabs|length > 0 %}
   <div class="pdp-tabs-section">
     <div class="pdp-wrap">
       <nav class="pdp-tab-nav" id="pdp-tab-nav">
-        <button class="pdp-tab-link active" data-tab="tab-details">{{ pdp.tab_details_label }}</button>
-        <button class="pdp-tab-link" data-tab="tab-coa">{{ pdp.tab_coa_label }}</button>
-        <button class="pdp-tab-link" data-tab="tab-shipping">{{ pdp.tab_shipping_label }}</button>
+        {% for tab in pdp.tabs %}
+        <button class="pdp-tab-link{{ loop.first ? ' active' : '' }}" data-tab="tab-{{ loop.index0 }}">{{ tab.label }}</button>
+        {% endfor %}
       </nav>
 
-      <div class="pdp-tab-panel active" id="tab-details">
-        {% if description %}
-        <div>{{ description }}</div>
+      {% for tab in pdp.tabs %}
+      <div class="pdp-tab-panel{{ loop.first ? ' active' : '' }}" id="tab-{{ loop.index0 }}">
+        {% if tab.is_details %}
+          {% if description %}
+          <div>{{ description }}</div>
+          {% else %}
+          <p>{{ tab.body|nl2br }}</p>
+          {% endif %}
+
+          {% if specifications is defined and specifications is not empty %}
+          <table class="pdp-spec-table" style="margin-top:20px;">
+            {% for spec in specifications %}
+            <tr><th>{{ spec.label }}</th><td>{{ spec.value }}</td></tr>
+            {% endfor %}
+          </table>
+          {% endif %}
         {% else %}
-        <p>{{ pdp.tab_details_body }}</p>
-        {% endif %}
-
-        {% if specifications is defined and specifications is not empty %}
-        <table class="pdp-spec-table" style="margin-top:20px;">
-          {% for spec in specifications %}
-          <tr><th>{{ spec.label }}</th><td>{{ spec.value }}</td></tr>
-          {% endfor %}
-        </table>
+          <p>{{ tab.body|nl2br }}</p>
         {% endif %}
       </div>
-
-      <div class="pdp-tab-panel" id="tab-coa">
-        <p>{{ pdp.tab_coa_body|nl2br }}</p>
-      </div>
-
-      <div class="pdp-tab-panel" id="tab-shipping">
-        <p>{{ pdp.tab_shipping_body|nl2br }}</p>
-      </div>
+      {% endfor %}
     </div>
   </div>
   {% endif %}

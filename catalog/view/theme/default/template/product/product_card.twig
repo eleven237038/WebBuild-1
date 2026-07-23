@@ -26,6 +26,9 @@
 <article class="product-card" style="--pcard-primary:{{ pc.primary_color }};--pcard-name-color:{{ pc.name_color }};--pcard-price-color:{{ pc.price_color }};">
 
   {# 1. Badge layer - top-left stack, max 3 (excess hidden by CSS) #}
+  {% for cb in pc.badges %}
+    {% if cb.text %}<span class="pcard-badge pcard-badge--custom" style="background:{{ cb.bg is defined ? cb.bg : 'var(--pcard-primary)' }};color:{{ cb.color is defined ? cb.color : '#fff' }};">{{ cb.text }}</span>{% endif %}
+  {% endfor %}
   {% if product.show_badges and product.badge_value is not empty %}
   <span class="pcard-badge pcard-badge--tag">{{ product.badge_value }}</span>
   {% endif %}

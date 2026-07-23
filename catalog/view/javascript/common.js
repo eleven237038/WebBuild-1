@@ -266,10 +266,7 @@ var wishlist = {
           wishlist.setHeart($btn, json['in_wishlist']);
           wishlist.setCount(json['total']);
 
-          if (json['action'] === 'added' && typeof showAlert === 'function') {
-            var msg = (json['product_name'] ? json['product_name'] + ' — saved to your wishlist.' : 'Saved to your wishlist.');
-            showAlert('wishlist', msg);
-          }
+          // Success popup suppressed per request - heart fill + count badge are enough feedback on add.
 
           // On the wishlist page, removing an item fades its card out.
           if (json['action'] === 'removed' && $btn.hasClass('wl-remove')) {

@@ -86,6 +86,61 @@ class ControllerInformationContact extends Controller {
 		$data['open'] = nl2br($this->config->get('config_open'));
 		$data['comment'] = $this->config->get('config_comment');
 
+		// Social accounts (admin 联系方式目录 repeater) - decode JSON and attach
+		// icon + label per platform so the template can render brand-icon links.
+		$social_meta = array(
+			'facebook'  => array('Facebook', 'fa-brands fa-facebook'),
+			'instagram' => array('Instagram', 'fa-brands fa-instagram'),
+			'whatsapp'  => array('WhatsApp', 'fa-brands fa-whatsapp'),
+			'youtube'   => array('YouTube', 'fa-brands fa-youtube'),
+			'tiktok'    => array('TikTok', 'fa-brands fa-tiktok'),
+			'x'         => array('X', 'fa-brands fa-x-twitter'),
+			'linkedin'  => array('LinkedIn', 'fa-brands fa-linkedin'),
+			'pinterest' => array('Pinterest', 'fa-brands fa-pinterest'),
+			'threads'   => array('Threads', 'fa-brands fa-threads'),
+			'telegram'  => array('Telegram', 'fa-brands fa-telegram'),
+			'snapchat'  => array('Snapchat', 'fa-brands fa-snapchat'),
+			'reddit'    => array('Reddit', 'fa-brands fa-reddit'),
+			'discord'   => array('Discord', 'fa-brands fa-discord'),
+			'tumblr'    => array('Tumblr', 'fa-brands fa-tumblr'),
+			'wechat'    => array('WeChat', 'fa-brands fa-weixin'),
+			'weibo'     => array('Weibo', 'fa-brands fa-weibo'),
+			'medium'    => array('Medium', 'fa-brands fa-medium'),
+			'github'    => array('GitHub', 'fa-brands fa-github'),
+			'quora'     => array('Quora', 'fa-brands fa-quora'),
+			'vimeo'     => array('Vimeo', 'fa-brands fa-vimeo'),
+			'twitch'    => array('Twitch', 'fa-brands fa-twitch'),
+			'mastodon'  => array('Mastodon', 'fa-brands fa-mastodon'),
+			'vk'        => array('VK', 'fa-brands fa-vk'),
+			'line'      => array('Line', 'fa-brands fa-line'),
+			'messenger' => array('Messenger', 'fa-brands fa-facebook-messenger'),
+			'bluesky'   => array('Bluesky', 'fa-brands fa-bluesky'),
+			'custom'    => array('Link', 'fa-solid fa-link'),
+		);
+		$data['socials'] = array();
+		$_socials_raw = $this->config->get('config_social_accounts');
+		$_socials = $_socials_raw ? json_decode($_socials_raw, true) : array();
+		if (is_array($_socials)) {
+			foreach ($_socials as $_s) {
+				$_p = isset($_s['platform']) ? $_s['platform'] : 'custom';
+				$_url = isset($_s['url']) ? trim($_s['url']) : '';
+				if ($_url === '') {
+					continue;
+				}
+				// Ensure clickable (prepend https:// if no scheme).
+				if (!preg_match('#^https?://#i', $_url)) {
+					$_url = 'https://' . ltrim($_url, '/');
+				}
+				$_meta = isset($social_meta[$_p]) ? $social_meta[$_p] : $social_meta['custom'];
+				$data['socials'][] = array(
+					'platform' => $_p,
+					'url'       => $_url,
+					'label'     => $_meta[0],
+					'icon'      => $_meta[1],
+				);
+			}
+		}
+
 		$data['locations'] = array();
 
 		$this->load->model('localisation/location');

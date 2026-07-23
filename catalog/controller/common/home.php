@@ -45,6 +45,22 @@ class ControllerCommonHome extends Controller {
 			}
 		}
 
+		// ----- Activity / promo block (configurable via 前端内容 > 活动设置) -----
+		// Stored under code='config' store 0, so it rides the startup config cache
+		// (no extra query). Hidden entirely when activity_enabled is off.
+		$data['activity'] = array(
+			'enabled'      => (bool)$this->config->get('activity_enabled'),
+			'tag'          => $this->config->get('activity_tag'),
+			'title'        => $this->config->get('activity_title'),
+			'subtitle'     => $this->config->get('activity_subtitle'),
+			'badge'        => $this->config->get('activity_badge'),
+			'cta_label'    => $this->config->get('activity_cta_label'),
+			'cta_url'      => $this->config->get('activity_cta_url'),
+			'bg_color'     => $this->config->get('activity_bg_color') ?: '#0F172A',
+			'text_color'   => $this->config->get('activity_text_color') ?: '#F8FAFC',
+			'accent_color' => $this->config->get('activity_accent_color') ?: '#10B981',
+		);
+
 		$data['column_left']    = $this->load->controller('common/column_left');
 		$data['column_right']   = $this->load->controller('common/column_right');
 		$data['content_top']    = $this->load->controller('common/content_top');

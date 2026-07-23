@@ -108,6 +108,20 @@
 }
 .contact-info-note i { color: var(--primary-green); font-size: 16px; }
 
+/* --- Social links row (联系方式目录 social accounts) --- */
+.contact-social-row { display: flex; flex-wrap: wrap; gap: 12px; }
+.contact-social-link {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; border-radius: 9px;
+  background: rgba(16,185,129,0.10); color: var(--primary-green);
+  font-size: 18px; text-decoration: none;
+  transition: background 0.2s, color 0.2s, transform 0.15s, box-shadow 0.2s;
+}
+.contact-social-link:hover {
+  background: var(--primary-green); color: #ffffff; transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(16,185,129,0.28);
+}
+
 /* --- Right: Form card --- */
 .contact-form-card {
   background: #ffffff; border: 1px solid #eef1f6; border-radius: 16px;
@@ -211,6 +225,16 @@
     <!-- Left: Contact Info (config-driven, InsightWellnessLab) -->
     <div class="contact-info">
 
+      {% if telephone %}
+      <div class="contact-info-card">
+        <div class="contact-info-ic"><i class="fa-solid fa-phone"></i></div>
+        <div class="contact-info-body">
+          <p class="contact-info-label">Phone</p>
+          <p class="contact-info-value"><a href="tel:{{ telephone|replace({' ':''}) }}">{{ telephone }}</a></p>
+        </div>
+      </div>
+      {% endif %}
+
       <div class="contact-info-card">
         <div class="contact-info-ic"><i class="fa-solid fa-envelope"></i></div>
         <div class="contact-info-body">
@@ -221,21 +245,19 @@
         </div>
       </div>
 
+      {% if socials %}
       <div class="contact-info-card">
-        <div class="contact-info-ic"><i class="fa-solid fa-clock"></i></div>
+        <div class="contact-info-ic"><i class="fa-solid fa-share-nodes"></i></div>
         <div class="contact-info-body">
-          <p class="contact-info-label">Hours</p>
-          <p class="contact-info-value">{% if open %}{{ open }}{% else %}9AM &ndash; 9PM EST, 7 days a week{% endif %}</p>
+          <p class="contact-info-label">Connect</p>
+          <p class="contact-info-value contact-social-row">
+            {% for s in socials %}
+            <a href="{{ s.url }}" target="_blank" rel="noopener noreferrer" class="contact-social-link" title="{{ s.label }}"><i class="{{ s.icon }}"></i></a>
+            {% endfor %}
+          </p>
         </div>
       </div>
-
-      <div class="contact-info-card">
-        <div class="contact-info-ic"><i class="fa-solid fa-location-dot"></i></div>
-        <div class="contact-info-body">
-          <p class="contact-info-label">Location</p>
-          <p class="contact-info-value">{% if address %}{{ address }}{% else %}500 Research Way, Suite 200, Charleston, SC 29403{% endif %}</p>
-        </div>
-      </div>
+      {% endif %}
 
       <div class="contact-info-note">
         <i class="fa-solid fa-shield-halved"></i>

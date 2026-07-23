@@ -145,6 +145,23 @@
   </div>
 </section>
 
+{# ── Activity / promo block (configurable via 前端内容 > 活动设置) ── #}
+{% if activity and activity.enabled and activity.title %}
+<section class="home-block home-block--activity" style="background:{{ activity.bg_color }};color:{{ activity.text_color }};padding:56px 0;">
+  <div class="home-wrap">
+    <div class="activity-flex" style="display:flex;align-items:center;justify-content:space-between;gap:32px;flex-wrap:wrap;">
+      <div style="flex:1 1 360px;">
+        {% if activity.tag %}<p style="font-size:13px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;color:{{ activity.accent_color }};margin:0 0 10px 0;">{{ activity.tag }}</p>{% endif %}
+        <h2 style="font-size:clamp(26px,3.4vw,40px);font-weight:800;line-height:1.12;margin:0 0 12px 0;">{{ activity.title }}</h2>
+        {% if activity.subtitle %}<p style="font-size:15px;opacity:.85;max-width:580px;line-height:1.55;margin:0 0 18px 0;">{{ activity.subtitle }}</p>{% endif %}
+        {% if activity.cta_label %}<a href="{{ activity.cta_url }}" class="activity-cta" style="display:inline-block;padding:13px 26px;border-radius:999px;font-weight:700;font-size:15px;background:{{ activity.accent_color }};color:#0F172A;text-decoration:none;">{{ activity.cta_label }} <i class="fa-solid fa-arrow-right" style="margin-left:6px;"></i></a>{% endif %}
+      </div>
+      {% if activity.badge %}<div style="flex:0 0 auto;font-size:clamp(48px,6vw,68px);font-weight:900;line-height:1;color:{{ activity.accent_color }};">{{ activity.badge }}</div>{% endif %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
 <!-- ════════════════════════════════════════════════════════════
   BLOCK 2: Stats Bar
   ════════════════════════════════════════════════════════════ -->

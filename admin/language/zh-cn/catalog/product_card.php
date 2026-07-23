@@ -32,10 +32,17 @@ $_['entry_product_card_add_btn_text']    = '加购按钮文字';
 $_['entry_product_card_primary_color']   = '主题色';
 $_['entry_product_card_name_color']      = '名称颜色';
 $_['entry_product_card_price_color']     = '价格颜色';
+$_['entry_product_card_badges']          = '自定义徽章';
+$_['text_badge_text']                    = '徽章文字';
+$_['text_badge_bg']                      = '背景色';
+$_['text_badge_color']                   = '文字颜色';
+$_['text_badge_hint']                    = '留空文字的行保存时自动删除；徽章按顺序显示在卡片左上角标签徽章之前。';
 
 // Buttons
 $_['button_save']       = '保存';
 $_['button_cancel']     = '返回';
+$_['button_add_badge']  = '+ 添加徽章';
+$_['button_remove']     = '删除';
 
 // Error
 $_['error_permission']  = '警告：您没有权限修改商品卡片设置！';

@@ -163,42 +163,59 @@
                 <label class="col-sm-2 control-label" for="input-batch-verified">{{ entry_product_detail_batch_verified_text }}</label>
                 <div class="col-sm-10"><input type="text" name="product_detail_batch_verified_text" value="{{ product_detail_batch_verified_text }}" id="input-batch-verified" class="form-control" style="max-width:300px;"></div>
               </div>
+              {# ===== Trust items repeater (was capped at 3) ===== #}
               <div class="form-group">
-                <label class="col-sm-2 control-label" for="input-tab-details-label">{{ entry_product_detail_tab_details_label }}</label>
-                <div class="col-sm-10"><input type="text" name="product_detail_tab_details_label" value="{{ product_detail_tab_details_label }}" id="input-tab-details-label" class="form-control" style="max-width:300px;"></div>
+                <label class="col-sm-2 control-label">{{ entry_product_detail_trust_items }}</label>
+                <div class="col-sm-10">
+                  <div id="trust-repeater" class="pdp-repeater">
+                    {% for ti in product_detail_trust_items %}
+                    <div class="pdp-rep-row" style="display:flex;gap:8px;margin-bottom:8px;align-items:center;">
+                      <input type="text" name="product_detail_trust_items[]" value="{{ ti }}" class="form-control" style="max-width:380px;" placeholder="保障项文字">
+                      <button type="button" class="btn btn-danger btn-sm pdp-rep-remove">{{ button_remove }}</button>
+                    </div>
+                    {% endfor %}
+                  </div>
+                  <template id="trust-row-tpl">
+                    <div class="pdp-rep-row" style="display:flex;gap:8px;margin-bottom:8px;align-items:center;">
+                      <input type="text" name="product_detail_trust_items[]" value="" class="form-control" style="max-width:380px;" placeholder="保障项文字">
+                      <button type="button" class="btn btn-danger btn-sm pdp-rep-remove">{{ button_remove }}</button>
+                    </div>
+                  </template>
+                  <button type="button" class="btn btn-default btn-sm pdp-rep-add" data-target="trust-repeater" data-tpl="trust-row-tpl">{{ button_add_trust }}</button>
+                </div>
               </div>
+
+              {# ===== Tabs repeater (was 3 fixed: details/coa/shipping) ===== #}
               <div class="form-group">
-                <label class="col-sm-2 control-label" for="input-tab-coa-label">{{ entry_product_detail_tab_coa_label }}</label>
-                <div class="col-sm-10"><input type="text" name="product_detail_tab_coa_label" value="{{ product_detail_tab_coa_label }}" id="input-tab-coa-label" class="form-control" style="max-width:300px;"></div>
+                <label class="col-sm-2 control-label">{{ entry_product_detail_tabs }}</label>
+                <div class="col-sm-10">
+                  <div id="tabs-repeater" class="pdp-repeater">
+                    {% for tb in product_detail_tabs %}
+                    <div class="pdp-rep-row pdp-tab-row" style="border:1px solid #e8e8e8;border-radius:8px;padding:10px;margin-bottom:10px;">
+                      <div style="display:flex;gap:8px;margin-bottom:6px;align-items:center;flex-wrap:wrap;">
+                        <input type="text" name="product_detail_tabs[{{ loop.index0 }}][label]" data-name="product_detail_tabs[{i}][label]" value="{{ tb.label }}" class="form-control pdp-tab-label" style="max-width:280px;" placeholder="{{ text_tab_label }}">
+                        <label class="checkbox-inline" style="white-space:nowrap;"><input type="checkbox" name="product_detail_tabs[{{ loop.index0 }}][is_details]" data-name="product_detail_tabs[{i}][is_details]" value="1" class="pdp-tab-is-details" {{ tb.is_details ? 'checked' }}/> {{ text_tab_is_details }}</label>
+                        <button type="button" class="btn btn-danger btn-sm pdp-rep-remove">{{ button_remove }}</button>
+                      </div>
+                      <textarea name="product_detail_tabs[{{ loop.index0 }}][body]" data-name="product_detail_tabs[{i}][body]" rows="3" class="form-control pdp-tab-body" placeholder="{{ text_tab_body }}">{{ tb.body }}</textarea>
+                    </div>
+                    {% endfor %}
+                  </div>
+                  <template id="tab-row-tpl">
+                    <div class="pdp-rep-row pdp-tab-row" style="border:1px solid #e8e8e8;border-radius:8px;padding:10px;margin-bottom:10px;">
+                      <div style="display:flex;gap:8px;margin-bottom:6px;align-items:center;flex-wrap:wrap;">
+                        <input type="text" name="" data-name="product_detail_tabs[{i}][label]" value="" class="form-control pdp-tab-label" style="max-width:280px;" placeholder="{{ text_tab_label }}">
+                        <label class="checkbox-inline" style="white-space:nowrap;"><input type="checkbox" name="" data-name="product_detail_tabs[{i}][is_details]" value="1" class="pdp-tab-is-details"> {{ text_tab_is_details }}</label>
+                        <button type="button" class="btn btn-danger btn-sm pdp-rep-remove">{{ button_remove }}</button>
+                      </div>
+                      <textarea name="" data-name="product_detail_tabs[{i}][body]" rows="3" class="form-control pdp-tab-body" placeholder="{{ text_tab_body }}"></textarea>
+                    </div>
+                  </template>
+                  <button type="button" class="btn btn-default btn-sm pdp-rep-add" data-target="tabs-repeater" data-tpl="tab-row-tpl">{{ button_add_tab }}</button>
+                  <div class="help-block">{{ help_tab_is_details }}</div>
+                </div>
               </div>
-              <div class="form-group">
-                <label class="col-sm-2 control-label" for="input-tab-shipping-label">{{ entry_product_detail_tab_shipping_label }}</label>
-                <div class="col-sm-10"><input type="text" name="product_detail_tab_shipping_label" value="{{ product_detail_tab_shipping_label }}" id="input-tab-shipping-label" class="form-control" style="max-width:300px;"></div>
-              </div>
-              <div class="form-group">
-                <label class="col-sm-2 control-label" for="input-tab-details-body">{{ entry_product_detail_tab_details_body }}</label>
-                <div class="col-sm-10"><textarea name="product_detail_tab_details_body" rows="3" id="input-tab-details-body" class="form-control">{{ product_detail_tab_details_body }}</textarea></div>
-              </div>
-              <div class="form-group">
-                <label class="col-sm-2 control-label" for="input-tab-coa-body">{{ entry_product_detail_tab_coa_body }}</label>
-                <div class="col-sm-10"><textarea name="product_detail_tab_coa_body" rows="4" id="input-tab-coa-body" class="form-control">{{ product_detail_tab_coa_body }}</textarea></div>
-              </div>
-              <div class="form-group">
-                <label class="col-sm-2 control-label" for="input-tab-shipping-body">{{ entry_product_detail_tab_shipping_body }}</label>
-                <div class="col-sm-10"><textarea name="product_detail_tab_shipping_body" rows="4" id="input-tab-shipping-body" class="form-control">{{ product_detail_tab_shipping_body }}</textarea></div>
-              </div>
-              <div class="form-group">
-                <label class="col-sm-2 control-label" for="input-trust-1">{{ entry_product_detail_trust_item_1 }}</label>
-                <div class="col-sm-10"><input type="text" name="product_detail_trust_item_1" value="{{ product_detail_trust_item_1 }}" id="input-trust-1" class="form-control" style="max-width:400px;"></div>
-              </div>
-              <div class="form-group">
-                <label class="col-sm-2 control-label" for="input-trust-2">{{ entry_product_detail_trust_item_2 }}</label>
-                <div class="col-sm-10"><input type="text" name="product_detail_trust_item_2" value="{{ product_detail_trust_item_2 }}" id="input-trust-2" class="form-control" style="max-width:400px;"></div>
-              </div>
-              <div class="form-group">
-                <label class="col-sm-2 control-label" for="input-trust-3">{{ entry_product_detail_trust_item_3 }}</label>
-                <div class="col-sm-10"><input type="text" name="product_detail_trust_item_3" value="{{ product_detail_trust_item_3 }}" id="input-trust-3" class="form-control" style="max-width:400px;"></div>
-              </div>
+
               <div class="form-group">
                 <label class="col-sm-2 control-label" for="input-related-title">{{ entry_product_detail_related_title }}</label>
                 <div class="col-sm-10"><input type="text" name="product_detail_related_title" value="{{ product_detail_related_title }}" id="input-related-title" class="form-control" style="max-width:300px;"></div>
@@ -208,17 +225,29 @@
                 <div class="col-sm-10"><input type="text" name="product_detail_research_title" value="{{ product_detail_research_title }}" id="input-research-title" class="form-control" style="max-width:300px;"></div>
               </div>
 
-              {% for i in 1..4 %}
+              {# ===== Research links repeater (was capped at 4) ===== #}
               <div class="form-group">
-                <label class="col-sm-2 control-label">研究链接 {{ i }}</label>
+                <label class="col-sm-2 control-label">{{ entry_product_detail_research_links }}</label>
                 <div class="col-sm-10">
-                  <div class="row">
-                    <div class="col-sm-6"><input type="text" name="product_detail_research_link_{{ i }}_label" value="{{ _context['product_detail_research_link_' ~ i ~ '_label'] }}" class="form-control" placeholder="文字"></div>
-                    <div class="col-sm-6"><input type="text" name="product_detail_research_link_{{ i }}_url" value="{{ _context['product_detail_research_link_' ~ i ~ '_url'] }}" class="form-control" placeholder="地址"></div>
+                  <div id="research-repeater" class="pdp-repeater">
+                    {% for rl in product_detail_research_links %}
+                    <div class="pdp-rep-row" style="display:flex;gap:8px;margin-bottom:8px;">
+                      <input type="text" name="product_detail_research_links[{{ loop.index0 }}][label]" data-name="product_detail_research_links[{i}][label]" value="{{ rl.label }}" class="form-control pdp-rl-label" placeholder="{{ text_rl_label }}">
+                      <input type="text" name="product_detail_research_links[{{ loop.index0 }}][url]" data-name="product_detail_research_links[{i}][url]" value="{{ rl.url }}" class="form-control pdp-rl-url" placeholder="{{ text_rl_url }}">
+                      <button type="button" class="btn btn-danger btn-sm pdp-rep-remove">{{ button_remove }}</button>
+                    </div>
+                    {% endfor %}
                   </div>
+                  <template id="research-row-tpl">
+                    <div class="pdp-rep-row" style="display:flex;gap:8px;margin-bottom:8px;">
+                      <input type="text" name="" data-name="product_detail_research_links[{i}][label]" value="" class="form-control pdp-rl-label" placeholder="{{ text_rl_label }}">
+                      <input type="text" name="" data-name="product_detail_research_links[{i}][url]" value="" class="form-control pdp-rl-url" placeholder="{{ text_rl_url }}">
+                      <button type="button" class="btn btn-danger btn-sm pdp-rep-remove">{{ button_remove }}</button>
+                    </div>
+                  </template>
+                  <button type="button" class="btn btn-default btn-sm pdp-rep-add" data-target="research-repeater" data-tpl="research-row-tpl">{{ button_add_link }}</button>
                 </div>
               </div>
-              {% endfor %}
 
               <legend>{{ text_section_color }}</legend>
               <div class="form-group">
@@ -283,10 +312,30 @@
   function val(name, def) { var el = field(name); return el && el.value !== '' ? el.value : def; }
 
   function read() {
+    // Repeaters: read straight from the DOM (names are array-indexed, so the
+    // [name="..."] helper can't match them - query by row class instead).
+    var trustItems = [];
+    form.querySelectorAll('#trust-repeater .pdp-rep-row input[type="text"]').forEach(function (el) {
+      var v = el.value.trim();
+      if (v) { trustItems.push(el.value); }
+    });
+    var tabs = [];
+    form.querySelectorAll('#tabs-repeater .pdp-tab-row').forEach(function (row) {
+      var label = row.querySelector('.pdp-tab-label').value;
+      var body = row.querySelector('.pdp-tab-body').value;
+      var isDetails = row.querySelector('.pdp-tab-is-details').checked ? 1 : 0;
+      if (label.trim() !== '' || body.trim() !== '') {
+        tabs.push({ label: label, body: body, is_details: isDetails });
+      }
+    });
     var links = [];
-    for (var i = 1; i <= 4; i++) {
-      links.push({ label: val('product_detail_research_link_' + i + '_label', '') });
-    }
+    form.querySelectorAll('#research-repeater .pdp-rep-row').forEach(function (row) {
+      var label = row.querySelector('.pdp-rl-label').value;
+      var url = row.querySelector('.pdp-rl-url').value;
+      if (label.trim() !== '' || url.trim() !== '') {
+        links.push({ label: label, url: url });
+      }
+    });
     return {
       show_breadcrumb: chk('product_detail_show_breadcrumb'),
       show_gallery: chk('product_detail_show_gallery'),
@@ -299,15 +348,8 @@
       body_font_size: num('product_detail_body_font_size', 15),
       coa_badge_text: val('product_detail_coa_badge_text', '★ COA ON FILE'),
       batch_verified_text: val('product_detail_batch_verified_text', 'BATCH-VERIFIED'),
-      tab_details_label: val('product_detail_tab_details_label', 'DETAILS'),
-      tab_coa_label: val('product_detail_tab_coa_label', 'CERTIFICATE OF ANALYSIS'),
-      tab_shipping_label: val('product_detail_tab_shipping_label', 'SHIPPING & RETURNS'),
-      tab_details_body: val('product_detail_tab_details_body', ''),
-      tab_coa_body: val('product_detail_tab_coa_body', ''),
-      tab_shipping_body: val('product_detail_tab_shipping_body', ''),
-      trust_item_1: val('product_detail_trust_item_1', ''),
-      trust_item_2: val('product_detail_trust_item_2', ''),
-      trust_item_3: val('product_detail_trust_item_3', ''),
+      trust_items: trustItems,
+      tabs: tabs,
       related_title: val('product_detail_related_title', 'MORE COMPOUNDS'),
       research_title: val('product_detail_research_title', 'RESEARCH LIBRARY'),
       research_links: links,
@@ -352,24 +394,38 @@
     html += '<div class="pdp-qty-row"><span class="pdp-qty">1</span><span class="pdp-add-btn"><i class="fa fa-cart-shopping"></i> 加入购物车</span></div>';
     if (s.show_trust_box) {
       html += '<ul class="pdp-trust" data-jump="product_detail_show_trust_box">';
-      if (s.trust_item_1) html += '<li><i class="fa fa-check-circle"></i> ' + esc(s.trust_item_1) + '</li>';
-      if (s.trust_item_2) html += '<li><i class="fa fa-check-circle"></i> ' + esc(s.trust_item_2) + '</li>';
-      if (s.trust_item_3) html += '<li><i class="fa fa-check-circle"></i> ' + esc(s.trust_item_3) + '</li>';
+      for (var t = 0; t < s.trust_items.length; t++) {
+        if (s.trust_items[t]) {
+          html += '<li><i class="fa fa-check-circle"></i> ' + esc(s.trust_items[t]) + '</li>';
+        }
+      }
       html += '</ul>';
     }
     html += '</div>'; // pdp-info
     html += '</div>'; // pdp-buy
 
-    if (s.show_tabs) {
+    if (s.show_tabs && s.tabs.length) {
       html += '<div class="pdp-tabs-section" data-jump="product_detail_show_tabs">';
       html += '<nav class="pdp-tab-nav">';
-      html += '<button class="pdp-tab-link active" data-jump="product_detail_tab_details_label">' + esc(s.tab_details_label) + '</button>';
-      html += '<button class="pdp-tab-link" data-jump="product_detail_tab_coa_label">' + esc(s.tab_coa_label) + '</button>';
-      html += '<button class="pdp-tab-link" data-jump="product_detail_tab_shipping_label">' + esc(s.tab_shipping_label) + '</button>';
+      for (var ti = 0; ti < s.tabs.length; ti++) {
+        var lbl = s.tabs[ti].label || ('TAB ' + (ti + 1));
+        html += '<button class="pdp-tab-link' + (ti === 0 ? ' active' : '') + '" data-jump="product_detail_tabs">' + esc(lbl) + '</button>';
+      }
       html += '</nav>';
-      html += '<div class="pdp-tab-panel" data-jump="product_detail_tab_details_body"><span class="pdp-panel-label">' + esc(s.tab_details_label) + '</span><p>' + esc(s.tab_details_body) + '</p></div>';
-      html += '<div class="pdp-tab-panel" data-jump="product_detail_tab_coa_body"><span class="pdp-panel-label">' + esc(s.tab_coa_label) + '</span><p>' + esc(s.tab_coa_body) + '</p></div>';
-      html += '<div class="pdp-tab-panel" data-jump="product_detail_tab_shipping_body"><span class="pdp-panel-label">' + esc(s.tab_shipping_label) + '</span><p>' + esc(s.tab_shipping_body) + '</p></div>';
+      for (var tj = 0; tj < s.tabs.length; tj++) {
+        var tab = s.tabs[tj];
+        var tabLabel = tab.label || ('TAB ' + (tj + 1));
+        html += '<div class="pdp-tab-panel" data-jump="product_detail_tabs"><span class="pdp-panel-label">' + esc(tabLabel) + '</span>';
+        if (tab.is_details) {
+          // details tab: product description first, then the body, then specs
+          html += '<p>' + esc(SAMPLE.desc) + '</p>';
+          if (tab.body) { html += '<p>' + esc(tab.body) + '</p>'; }
+          html += '<table class="pdp-spec-table" style="margin-top:8px;font-size:10px;"><tr><th>纯度</th><td>≥99%</td></tr><tr><th>装量</th><td>5mg</td></tr></table>';
+        } else {
+          html += '<p>' + esc(tab.body) + '</p>';
+        }
+        html += '</div>';
+      }
       html += '</div>';
     }
     if (s.show_related) {
@@ -391,7 +447,7 @@
       html += '<div class="pdp-research-list">';
       for (var j = 0; j < s.research_links.length; j++) {
         if (s.research_links[j].label) {
-          html += '<a class="pdp-research-item" data-jump="product_detail_research_link_1_label">' + esc(s.research_links[j].label) + '</a>';
+          html += '<a class="pdp-research-item" data-jump="product_detail_research_links">' + esc(s.research_links[j].label) + '</a>';
         }
       }
       html += '</div>';
@@ -412,6 +468,49 @@
   form.addEventListener('input', render);
   form.addEventListener('change', render);
   render();
+
+  // ===== Repeater management: add / remove / reindex rows =====
+  // reindex rewrites the [index] in each data-name so tabs/research rows submit
+  // as a clean 0..N array (trust_items[] is index-less, so it's left alone).
+  function reindexRepeater(repeater) {
+    var rows = repeater.querySelectorAll('.pdp-rep-row');
+    rows.forEach(function (row, i) {
+      row.querySelectorAll('[data-name]').forEach(function (el) {
+        el.name = el.getAttribute('data-name').replace('{i}', i);
+      });
+    });
+  }
+  document.querySelectorAll('.pdp-rep-add').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var repeater = document.getElementById(btn.getAttribute('data-target'));
+      var tpl = document.getElementById(btn.getAttribute('data-tpl'));
+      if (!repeater || !tpl) return;
+      repeater.appendChild(tpl.content.cloneNode(true));
+      reindexRepeater(repeater);
+      render();
+    });
+  });
+  // Remove row (delegated; keep >=1 row so there is always one to edit).
+  form.addEventListener('click', function (e) {
+    if (!e.target.closest('.pdp-rep-remove')) return;
+    var repeater = e.target.closest('.pdp-repeater');
+    var row = e.target.closest('.pdp-rep-row');
+    if (repeater && row && repeater.querySelectorAll('.pdp-rep-row').length > 1) {
+      row.remove();
+      reindexRepeater(repeater);
+      render();
+    }
+  });
+  // is_details is single-select: checking one unchecks the others, so the
+  // product description + specifications render in exactly one tab.
+  form.addEventListener('change', function (e) {
+    if (!e.target.classList || !e.target.classList.contains('pdp-tab-is-details')) return;
+    if (!e.target.checked) return;
+    form.querySelectorAll('.pdp-tab-is-details').forEach(function (cb) {
+      if (cb !== e.target) { cb.checked = false; }
+    });
+  });
+  document.querySelectorAll('.pdp-repeater').forEach(reindexRepeater);
 
   // 点击预览各部分 -> 滚动到对应设置项并高亮
   frame.addEventListener('click', function (e) {

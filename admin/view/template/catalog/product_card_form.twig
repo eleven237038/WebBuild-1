@@ -185,6 +185,34 @@
                 <div class="col-sm-10"><input type="color" name="product_card_price_color" value="{{ product_card_price_color }}" id="input-price-color" class="form-control" style="max-width:80px;height:38px;padding:2px;"></div>
               </div>
 
+              {# ===== 自定义徽章 repeater (动态增删, 存为 JSON 数组) ===== #}
+              <legend>{{ entry_product_card_badges }}</legend>
+              <div class="form-group">
+                <label class="col-sm-2 control-label">{{ entry_product_card_badges }}</label>
+                <div class="col-sm-10">
+                  <div id="badges-repeater" class="pcard-repeater">
+                    {% for b in product_card_badges %}
+                    <div class="pcard-rep-row" style="display:flex;gap:8px;margin-bottom:8px;align-items:center;flex-wrap:wrap;">
+                      <input type="text" name="product_card_badges[{{ loop.index0 }}][text]" data-name="product_card_badges[{i}][text]" value="{{ b.text }}" class="form-control pcard-badge-text" style="max-width:220px;" placeholder="{{ text_badge_text }}">
+                      <label style="display:flex;align-items:center;gap:4px;font-weight:normal;margin:0;"><span style="font-size:12px;color:#888;">{{ text_badge_bg }}</span><input type="color" name="product_card_badges[{{ loop.index0 }}][bg]" data-name="product_card_badges[{i}][bg]" value="{{ b.bg }}" class="form-control pcard-badge-bg" style="width:44px;height:34px;padding:2px;"></label>
+                      <label style="display:flex;align-items:center;gap:4px;font-weight:normal;margin:0;"><span style="font-size:12px;color:#888;">{{ text_badge_color }}</span><input type="color" name="product_card_badges[{{ loop.index0 }}][color]" data-name="product_card_badges[{i}][color]" value="{{ b.color }}" class="form-control pcard-badge-color" style="width:44px;height:34px;padding:2px;"></label>
+                      <button type="button" class="btn btn-danger btn-sm pcard-rep-remove">{{ button_remove }}</button>
+                    </div>
+                    {% endfor %}
+                  </div>
+                  <template id="badge-row-tpl">
+                    <div class="pcard-rep-row" style="display:flex;gap:8px;margin-bottom:8px;align-items:center;flex-wrap:wrap;">
+                      <input type="text" name="product_card_badges[{i}][text]" data-name="product_card_badges[{i}][text]" value="" class="form-control pcard-badge-text" style="max-width:220px;" placeholder="{{ text_badge_text }}">
+                      <label style="display:flex;align-items:center;gap:4px;font-weight:normal;margin:0;"><span style="font-size:12px;color:#888;">{{ text_badge_bg }}</span><input type="color" name="product_card_badges[{i}][bg]" data-name="product_card_badges[{i}][bg]" value="#10B981" class="form-control pcard-badge-bg" style="width:44px;height:34px;padding:2px;"></label>
+                      <label style="display:flex;align-items:center;gap:4px;font-weight:normal;margin:0;"><span style="font-size:12px;color:#888;">{{ text_badge_color }}</span><input type="color" name="product_card_badges[{i}][color]" data-name="product_card_badges[{i}][color]" value="#ffffff" class="form-control pcard-badge-color" style="width:44px;height:34px;padding:2px;"></label>
+                      <button type="button" class="btn btn-danger btn-sm pcard-rep-remove">{{ button_remove }}</button>
+                    </div>
+                  </template>
+                  <button type="button" class="btn btn-default btn-sm pcard-rep-add" data-target="badges-repeater" data-tpl="badge-row-tpl">{{ button_add_badge }}</button>
+                  <p style="font-size:12px;color:#888;margin-top:6px;">{{ text_badge_hint }}</p>
+                </div>
+              </div>
+
             </form>
           </div>
         </div>
@@ -247,6 +275,18 @@
   }
 
   function read() {
+    // 自定义徽章: 从 repeater DOM 读取 (text + bg + color), 保留空行供预览即时反映
+    var badges = [];
+    form.querySelectorAll('#badges-repeater .pcard-rep-row').forEach(function (row) {
+      var t = row.querySelector('.pcard-badge-text');
+      var b = row.querySelector('.pcard-badge-bg');
+      var c = row.querySelector('.pcard-badge-color');
+      badges.push({
+        text:  t ? t.value : '',
+        bg:    b ? b.value : '#10B981',
+        color: c ? c.value : '#ffffff'
+      });
+    });
     return {
       show_image: sel('product_card_show_image'),
       show_name: sel('product_card_show_name'),
@@ -263,7 +303,8 @@
       add_btn_text: val('product_card_add_btn_text', '+'),
       primary_color: val('product_card_primary_color', '#10B981'),
       name_color: val('product_card_name_color', '#0F172A'),
-      price_color: val('product_card_price_color', '#10B981')
+      price_color: val('product_card_price_color', '#10B981'),
+      badges: badges
     };
   }
 
@@ -278,6 +319,13 @@
   // 每个可点部分带 data-jump, 点击跳转到对应设置项
   function build(s) {
     var html = '<article class="product-card">';
+    // 自定义徽章 (repeater; 空文字行不渲染, 与前台 product_card.twig 的空文字过滤一致)
+    if (s.badges && s.badges.length) {
+      s.badges.forEach(function (cb) {
+        if (!cb.text) return;
+        html += '<span class="pcard-badge pcard-badge--custom" data-jump="product_card_badges" style="background:' + esc(cb.bg) + ';color:' + esc(cb.color) + ';">' + esc(cb.text) + '</span>';
+      });
+    }
     // 动态标签徽章 (单字段映射: 预览取首个示例标签)
     if (s.show_badges) {
       var t = SAMPLE.tags[0];
@@ -331,6 +379,38 @@
   form.addEventListener('change', render);
   render();
 
+  // ===== 自定义徽章 repeater 管理 (克隆模板 + 重排索引 + 删除行) =====
+  // reindex 把 data-name 里的 {i} 替换为行序号, 保证提交为 0..N 干净数组
+  function reindexRepeater(repeater) {
+    repeater.querySelectorAll('.pcard-rep-row').forEach(function (row, i) {
+      row.querySelectorAll('[data-name]').forEach(function (el) {
+        el.name = el.getAttribute('data-name').replace('{i}', i);
+      });
+    });
+  }
+  document.querySelectorAll('.pcard-rep-add').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var repeater = document.getElementById(btn.getAttribute('data-target'));
+      var tpl = document.getElementById(btn.getAttribute('data-tpl'));
+      if (!repeater || !tpl) return;
+      repeater.appendChild(tpl.content.cloneNode(true));
+      reindexRepeater(repeater);
+      render();
+    });
+  });
+  // 删除行 (委托; 保留 >=1 行以便始终可编辑)
+  form.addEventListener('click', function (e) {
+    if (!e.target.closest('.pcard-rep-remove')) return;
+    var repeater = e.target.closest('.pcard-repeater');
+    var row = e.target.closest('.pcard-rep-row');
+    if (repeater && row && repeater.querySelectorAll('.pcard-rep-row').length > 1) {
+      row.remove();
+      reindexRepeater(repeater);
+      render();
+    }
+  });
+  document.querySelectorAll('.pcard-repeater').forEach(reindexRepeater);
+
   // 点击预览各部分 -> 滚动到对应设置项并高亮
   frame.addEventListener('click', function (e) {
     var el = e.target.closest('[data-jump]');
@@ -338,6 +418,8 @@
     e.preventDefault();
     var name = el.getAttribute('data-jump');
     var field = form.querySelector('[name="' + name + '"]');
+    // repeater 字段 (如 product_card_badges) 没有精确 name 匹配 -> 取首个 [N][...] 输入
+    if (!field) { field = form.querySelector('[name^="' + name + '["]'); }
     if (!field) return;
     var group = field.closest('.form-group') || field;
     // 清掉残留高亮, 重启动画
