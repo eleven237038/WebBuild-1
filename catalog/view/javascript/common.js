@@ -153,12 +153,15 @@ $(document).ready(function() {
 
 // Cart add remove functions
 var cart = {
-  'add': function(product_id, quantity) {
+  'add': function(product_id, quantity, el) {
+    var $btn = el ? $(el) : null;
     $.ajax({
       url: 'index.php?route=checkout/cart/add',
       type: 'post',
       data: 'product_id=' + product_id + '&quantity=' + (typeof(quantity) != 'undefined' ? quantity : 1),
       dataType: 'json',
+      beforeSend: function() {},  // suppress global loading spinner - snappy add (matches wishlist.toggle)
+      complete: function() {},
       success: function(json) {
         $('.alert-dismissible, .text-danger').remove();
 
@@ -172,14 +175,52 @@ var cart = {
             $('#cart > button #cart-total').html(json['total']);
           }, 100);
 
-          // Success popup suppressed per request - cart-total + dropdown refresh
+          // Success popup suppressed per request - count badge + button checkmark
           // are enough feedback (matches the wishlist.toggle silent behavior).
           // showAlert('cart', json['success']);
 
           $('#cart > ul').load('index.php?route=common/cart/info ul li');
+
+          // Header cart count badge (like the wishlist heart badge).
+          if (typeof json['count'] !== 'undefined') {
+            cart.setCount(json['count']);
+          }
+
+          // Swap the clicked card button icon to a checkmark, then revert.
+          if ($btn && $btn.length) {
+            cart.markAdded($btn);
+          }
         }
       }
     });
+  },
+  // Update the header cart count badge.
+  'setCount': function(count) {
+    var $c = $('#cart-count');
+    if (!$c.length) {
+      $('.header-cart-btn').append('<span class="header-cart-count" id="cart-count"></span>');
+      $c = $('#cart-count');
+    }
+    $c.text(count);
+    if (count > 0) { $c.show(); } else { $c.hide(); }
+  },
+  // Temporarily swap a card add-button's cart icon to a checkmark to confirm the add.
+  'markAdded': function($btn) {
+    if (!$btn || !$btn.length) return;
+    if ($btn.data('cart-added-timer')) {
+      clearTimeout($btn.data('cart-added-timer'));
+      $btn.find('i.fa-check').first().removeClass('fa-check').addClass('fa-cart-shopping');
+    }
+    $btn.addClass('is-added');
+    var $icon = $btn.find('i.fa-cart-shopping').first();
+    if ($icon.length) {
+      $icon.removeClass('fa-cart-shopping').addClass('fa-check');
+    }
+    var t = setTimeout(function() {
+      $btn.removeClass('is-added');
+      $btn.find('i.fa-check').first().removeClass('fa-check').addClass('fa-cart-shopping');
+    }, 1500);
+    $btn.data('cart-added-timer', t);
   },
   'remove': function(key) {
     $.ajax({

@@ -291,6 +291,7 @@ class ControllerCheckoutCart extends Controller {
                 unset($this->session->data['payment_methods']);
 
                 $json['total'] = $this->formatted_total_text();
+                $json['count'] = $this->cartCount();
             } else {
                 $json['redirect'] = str_replace('&amp;', '&', $this->url->link('product/product', 'product_id=' . $this->request->post['product_id']));
             }
@@ -350,6 +351,7 @@ class ControllerCheckoutCart extends Controller {
 
             $json['status'] = 1;
             $json['total'] = $this->formatted_total_text();
+            $json['count'] = $this->cartCount();
             $json['message'] = t('text_remove');
 
             if (!$this->cart->hasProducts()) {
@@ -389,6 +391,7 @@ class ControllerCheckoutCart extends Controller {
 
         $json['status'] = 1;
         $json['total'] = $this->formatted_total_text();
+        $json['count'] = $this->cartCount();
         $json['message'] = t('text_remove');
 
         unset($this->session->data['shipping_method']);
@@ -600,6 +603,17 @@ class ControllerCheckoutCart extends Controller {
         }
 
         return sprintf(t('text_items'), $this->cart->countProducts() + $vouchers + $recharges, $this->currency->format($total, $this->session->data['currency']));
+    }
+
+    /**
+     *购物车商品件数 (产品 + 礼品券 + 充值). 用于前端 header 购物车角标.
+     */
+    private function cartCount()
+    {
+        $vouchers = isset($this->session->data['vouchers']) ? count($this->session->data['vouchers']) : 0;
+        $recharges = isset($this->session->data['recharges']) ? count($this->session->data['recharges']) : 0;
+
+        return $this->cart->countProducts() + $vouchers + $recharges;
     }
 
     private function getTotalsValue()

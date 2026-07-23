@@ -92,6 +92,11 @@ class ControllerCommonHeader extends Controller {
 
 		$data['text_logged'] = sprintf($this->language->get('text_logged'), $this->url->link('account/account'), get_name($this->customer->getFirstName(), $this->customer->getLastName()), $this->url->link('account/logout'));
 
+		// Cart count (header badge) - matches checkout/cart cartCount(): products + vouchers + recharges
+		$cart_vouchers  = isset($this->session->data['vouchers'])  ? count($this->session->data['vouchers'])  : 0;
+		$cart_recharges = isset($this->session->data['recharges']) ? count($this->session->data['recharges']) : 0;
+		$data['cart_count'] = $this->cart->countProducts() + $cart_vouchers + $cart_recharges;
+
 		$data['home'] = $this->url->link('common/home');
 		$data['wishlist'] = $this->url->link('account/wishlist');
 		$data['logged'] = $this->customer->isLogged();

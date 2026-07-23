@@ -192,6 +192,8 @@
 }
 .pcard-add:hover { background: #008c44; }
 .pcard-add:active { transform: scale(0.96); }
+.pcard-add i { font-size: 13px; }
+.pcard-add.is-added { background: #16a34a; transform: scale(0.96); }
 
 /* ---- Legacy compat: old multi-badge class kept for any stale callers ---- */
 .pcard-badge-pop,

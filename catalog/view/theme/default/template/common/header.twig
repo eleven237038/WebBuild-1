@@ -46,7 +46,7 @@
 <link rel="stylesheet" href="catalog/view/theme/default/stylesheet/genscript/header-nav.css">
 <link rel="stylesheet" href="catalog/view/theme/default/stylesheet/genscript/header-nav-screen.css">
 <link rel="stylesheet" href="catalog/view/theme/default/stylesheet/genscript/home.css">
-<link rel="stylesheet" href="catalog/view/theme/default/stylesheet/genscript/product-card.css">
+<link rel="stylesheet" href="catalog/view/theme/default/stylesheet/genscript/product-card.css?v=20260723f">
 <link rel="stylesheet" href="catalog/view/theme/default/stylesheet/genscript/redesign.css">
 <link rel="stylesheet" href="catalog/view/theme/default/stylesheet/genscript/iconfont.css">
 <link rel="stylesheet" href="catalog/view/theme/default/stylesheet/login.css">
@@ -79,6 +79,17 @@
   border-radius: 9px; font-size: 10px; font-weight: 800;
   line-height: 16px; text-align: center; box-sizing: border-box;
   font-family: "Figtree", sans-serif;
+}
+/* Cart count badge on header cart button */
+.header-cart-btn { position: relative; }
+.header-cart-count {
+  position: absolute; top: -4px; right: -4px;
+  min-width: 18px; height: 18px; padding: 0 4px;
+  background: #e74c3c; color: #fff;
+  border-radius: 9px; font-size: 10px; font-weight: 800;
+  line-height: 18px; text-align: center; box-sizing: border-box;
+  font-family: "Figtree", sans-serif;
+  border: 2px solid #fff;
 }
 </style>
 </head>
@@ -159,6 +170,7 @@
         <a href="{{ shopping_cart }}" class="header-cart-btn" id="get-box" aria-label="Shopping Cart">
           <i class="fa-solid fa-cart-shopping"></i>
           <span>Cart</span>
+          <span class="header-cart-count" id="cart-count"{% if cart_count < 1 %} style="display:none"{% endif %}>{{ cart_count }}</span>
         </a>
       </div>
 
