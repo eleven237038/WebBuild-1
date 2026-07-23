@@ -172,6 +172,12 @@ class ControllerCommonColumnLeft extends Controller {
 				$types = glob(DIR_APPLICATION . 'controller/extension/extension/*.php', GLOB_BRACE);
 				foreach ($types as $type) {
 					$type = basename($type, '.php');
+
+					// 支付模块已整体移植到顶级 "支付管理" (sale/payment), 不再在此列出
+					if ($type === 'payment') {
+						continue;
+					}
+
 					$extension[] = array(
 						'name'     => $this->language->get("text_extension_{$type}"),
 						'href'     => $this->url->link('marketplace/extension', 'user_token=' . $this->session->data['user_token'] . '&type=' . $type),
@@ -248,7 +254,26 @@ class ControllerCommonColumnLeft extends Controller {
 			);
 		}
 
-			// Customer
+		// 支付管理 (顶级, 与前端内容同级): 支付模块 (从插件管理完整移植到 sale/payment 全页)
+		$payment = array();
+		if ($this->user->hasPermission("access", "sale/payment")) {
+			$payment[] = array(
+				"name"     => "支付模块",
+				"href"     => $this->url->link("sale/payment", "user_token=" . $this->session->data["user_token"]),
+				"children" => array()
+			);
+		}
+		if ($payment) {
+			$data["menus"][] = array(
+				"id"       => "menu-payment",
+				"icon"     => "fa-credit-card",
+				"name"     => "支付管理",
+				"href"     => "",
+				"children" => $payment
+			);
+		}
+
+						// Customer
 			$customer = array();
 
 			if ($this->user->hasPermission('access', 'customer/customer')) {

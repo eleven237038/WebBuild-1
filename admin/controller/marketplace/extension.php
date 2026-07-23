@@ -34,6 +34,11 @@ class ControllerMarketplaceExtension extends Controller {
 		foreach ($files as $file) {
 			$extension = basename($file, '.php');
 
+			// 支付模块已整体移植到顶级 "支付管理" (sale/payment), 不再作为插件管理的一个分类
+			if ($extension === 'payment') {
+				continue;
+			}
+
 			// Compatibility code for old extension folders
 			$this->load->language('extension/extension/' . $extension, 'extension');
 
