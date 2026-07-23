@@ -1,5 +1,10 @@
 <?php
 class ControllerCatalogProduct extends Controller {
+	/** SHOP 顶级分类 (模板里硬编码 path=59 的 "SHOP / THE CATALOG / All Compounds")。
+	 *  商品表单已移除分类选择器, 故新建/缺省商品默认归此分类, 保证 status=1 的商品前台 shop
+	 *  可见 (否则 oc_product_to_category 无记录 -> getProducts 按 filter_category_id 过滤后不返回)。 */
+	const SHOP_CATEGORY_ID = 59;
+
 	private $error = array();
 
 	/**
@@ -60,6 +65,11 @@ class ControllerCatalogProduct extends Controller {
 		// addProduct 不写 oc_product_to_store -> 前台 p2s.store_id=0 过滤隐藏该商品 (已上架却不在首页/shop);
 		// editProduct 先 DELETE 既有门店关联却不重插 -> 原可见商品编辑后消失。默认归属 store_id=0。
 		if (!isset($this->request->post['product_store'])) { $this->request->post['product_store'] = array(0); }
+		// 表单无分类选择器, POST 不含 product_category。新建商品若无分类归属, oc_product_to_category
+		// 无记录 -> 前台 shop (filter_category_id=59) 永远不返回该商品 (status=1 却不可见)。默认归 shop 分类。
+		if (!isset($this->request->post['product_category']) || !array_filter((array)$this->request->post['product_category'])) {
+			$this->request->post['product_category'] = array(self::SHOP_CATEGORY_ID);
+		}
 		$this->mirrorChineseToAllLanguages();
 		$this->model_catalog_product->addProduct($this->request->post);
 
@@ -114,9 +124,13 @@ class ControllerCatalogProduct extends Controller {
 		if (!isset($this->request->post['product_store'])) { $this->request->post['product_store'] = array(0); }
 		// 同理: 表单无分类选择器, POST 不含 product_category。editProduct 会先 DELETE
 		// oc_product_to_category 再按 POST 重插; 缺省则既有分类关联被清空, 商品从对应分类/shop
-		// 列表消失 (status=1 且 store 正常却看不到)。缺省时保留既有分类。
+		// 列表消失 (status=1 且 store 正常却看不到)。缺省时保留既有分类; 若仍为空 (历史保存被清空
+		// 或本就无分类) 则默认归 shop 分类, 保证已上架商品前台可见。
 		if (!isset($this->request->post['product_category'])) {
 			$this->request->post['product_category'] = $this->model_catalog_product->getProductCategories($this->request->get['product_id']);
+		}
+		if (!array_filter((array)$this->request->post['product_category'])) {
+			$this->request->post['product_category'] = array(self::SHOP_CATEGORY_ID);
 		}
 		$this->mirrorChineseToAllLanguages();
 		// Preserve scalar system columns absent from POST (form is custom_tag-driven; fields without a custom_tag
